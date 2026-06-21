@@ -113,7 +113,7 @@ const plans = {
         steps: [
           step('warmup', 'Warm-up', 'Locker starten und Atmung finden.', '5-10 Min'),
           step('lower', 'Kniebeugen', 'Sauber, ruhig und kontrolliert arbeiten.', '3 x 15'),
-          step('lower', 'Rumänisches Kreuzheben', 'Hüfte nach hinten, Rücken lang lassen.', '3 x 12'),
+          step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper bleibt ruhig.', '3 x 12 je Bein'),
           step('upper', 'Brustdrücken am Boden', 'Hanteln kontrolliert nach oben drücken.', '3 x 12'),
           step('upper', 'Rudern mit Hanteln', 'Schulterblätter bewusst zusammenziehen.', '3 x 12'),
           step('upper', 'Seitheben', 'Leichtes Gewicht, ohne Schwung.', '3 x 15'),
