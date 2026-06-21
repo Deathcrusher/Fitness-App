@@ -129,10 +129,16 @@ const plans = {
       {
         title: 'Freitag',
         focus: 'Ganzkörper + Laufband',
-        tone: 'Wiederholen, steigern und locker auslaufen.',
+        tone: 'Kraft wiederholen, leicht steigern und locker auslaufen.',
         steps: [
-          step('warmup', 'Mobilisieren', 'Kurz mobilisieren und warm werden.', '5-10 Min'),
-          step('upper', 'Ganzkörper A Runde', 'Montag wiederholen: sauberer oder minimal mehr Wiederholungen.', 'ca. 35 Min'),
+          step('warmup', 'Aufwärmen', 'Marschieren, Arme kreisen, Knie heben, leichte Kniebeugen.', '5-10 Min'),
+          step('lower', 'Kniebeugen', 'Kontrolliert tief gehen, saubere Technik vor Gewicht.', '3 x 10-12'),
+          step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper aufrecht.', '3 x 8 je Bein'),
+          step('upper', 'Rudern mit Hanteln', 'Rücken gerade, Schulterblätter zusammenführen.', '3 x 10-12'),
+          step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, stabil in den Schultern.', '3 x 10-12'),
+          step('upper', 'Schulterdrücken', 'Bauch fest, kontrolliert nach oben drücken.', '3 x 8-10'),
+          step('upper', 'Trizepsdrücken', 'Ellbogen nah am Körper, langsam führen.', '2 x 12'),
+          step('core', 'Plank', 'Spannung halten, ruhig atmen.', '2 x 30-45 Sek'),
           step('cardio', 'Laufband Gehen', '5 Min langsam, danach zügig gehen. Nicht rennen.', '10-15 Min'),
           step('recovery', 'Cooldown', 'Kurz dehnen, Wasser trinken und Puls senken.', '5 Min'),
         ],
@@ -253,7 +259,7 @@ export default function App() {
             <span><Dumbbell size={16} /> Zuhause</span>
           </div>
         </div>
-        <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" />
+        <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" fetchpriority="high" decoding="async" />
       </section>
 
       <section className="switcher" aria-label="Programm wählen">
@@ -286,7 +292,7 @@ export default function App() {
           ) : (
             <>
               <div className="sessionImageWrap">
-                <img src={VISUALS[currentStep.type]} alt={`${currentStep.name} Foto`} />
+                <img src={VISUALS[currentStep.type]} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
                 <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
               </div>
 
