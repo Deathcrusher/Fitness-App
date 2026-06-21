@@ -31,6 +31,36 @@ const VISUALS = {
   recovery: '/assets/recovery.jpg',
 }
 
+const EXERCISE_IMG = {
+  'Warm-up': 'warmup',
+  'Aufwärmen': 'warmup',
+  'Mobilisieren': 'warmup',
+  'Kniebeugen': 'kniebeugen',
+  'Ausfallschritte': 'ausfallschritte',
+  'Rudern mit Hanteln': 'rudern',
+  'Rudern': 'rudern',
+  'Einarmiges Rudern': 'rudern',
+  'Schulterdrücken': 'schulterdruecken',
+  'Plank': 'plank',
+  'Hula Hoop': 'hula-hoop',
+  'Hula Hoop Finish': 'hula-hoop',
+  'Bicycle Crunches': 'bicycle-crunches',
+  'Beinheben': 'beinheben',
+  'Rumänisches Kreuzheben': 'rdl',
+  'Brustdrücken am Boden': 'brustdruecken',
+  'Bizeps-Curls': 'bizeps-curls',
+  'Liegestütze': 'liegestuetze',
+  'Hammer Curls': 'hammer-curls',
+  'Trizepsdrücken': 'trizeps',
+  'Laufband Gehen': 'laufband',
+  'Cooldown': 'cooldown',
+}
+
+function imageFor(step) {
+  const slug = EXERCISE_IMG[step.name]
+  return slug ? `/assets/exercises/${slug}.jpg` : VISUALS[step.type]
+}
+
 const TYPE_META = {
   warmup: { label: 'Warm-up', icon: Footprints },
   lower: { label: 'Beine & Po', icon: Flame },
@@ -455,7 +485,7 @@ export default function App() {
           ) : (
             <>
               <div className="sessionImageWrap">
-                <img src={VISUALS[currentStep.type]} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
+                <img src={imageFor(currentStep)} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
                 <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
               </div>
 
