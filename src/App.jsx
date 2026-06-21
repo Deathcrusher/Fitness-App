@@ -22,12 +22,12 @@ import {
 const PAUSE_SECONDS = 60
 
 const VISUALS = {
-  warmup: '/assets/warmup.png',
-  lower: '/assets/lower.png',
-  upper: '/assets/upper.png',
-  core: '/assets/core.png',
-  cardio: '/assets/cardio.png',
-  recovery: '/assets/recovery.png',
+  warmup: '/assets/warmup.jpg',
+  lower: '/assets/lower.jpg',
+  upper: '/assets/upper.jpg',
+  core: '/assets/core.jpg',
+  cardio: '/assets/cardio.jpg',
+  recovery: '/assets/recovery.jpg',
 }
 
 const TYPE_META = {
@@ -253,7 +253,7 @@ export default function App() {
             <span><Dumbbell size={16} /> Zuhause</span>
           </div>
         </div>
-        <img className="heroImage" src="/assets/hero.png" alt="Helles Home-Workout mit Matte und Hanteln" />
+        <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" />
       </section>
 
       <section className="switcher" aria-label="Programm wählen">
