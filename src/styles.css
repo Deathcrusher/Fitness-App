@@ -349,6 +349,11 @@ button { font: inherit; color: inherit; }
   color: #ffffff;
 }
 
+.doneAction {
+  background: #15803d;
+  color: #ffffff;
+}
+
 .iconAction {
   width: 48px;
   padding: 0;

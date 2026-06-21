@@ -508,12 +508,12 @@ export default function App() {
                     {running ? <Pause size={20} /> : <Play size={20} />}
                     {running ? 'Pause' : 'Timer starten'}
                   </button>
-                  <button onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                  <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
                   <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
                 </div>
               ) : (
                 <div className="controls exerciseControls">
-                  <button className="primaryAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                  <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
                   <button onClick={resetWorkout}><RotateCcw size={20} /> Neustart</button>
                 </div>
               )}
