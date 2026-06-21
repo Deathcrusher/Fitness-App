@@ -1,14 +1,15 @@
 # FitFlow
 
-Mobile-first Web-App fuer zwei Trainingsprogramme mit Tagesauswahl, PNG-Uebungsbildern, Schrittlisten und einem Pausentimer.
+Mobile-first Web-App fuer zwei Trainingsprogramme mit Tagesauswahl, generierten Uebungsbildern, Schrittlisten und einem 1-Minuten-Pausentimer.
 
 ## Features
 
 - Auswahl zwischen Connie und Rene
 - Drei Trainingstage pro Programm
 - Mobile optimierte Trainingsansicht
-- PNG-Bilder fuer Warm-up, Kraft, Core, Cardio und Cooldown
-- Kein Timer fuer die Uebung selbst: nach Erledigt startet eine 1-Minuten-Pause
+- Generierte PNG-Bilder fuer Warm-up, Kraft, Core, Cardio und Cooldown
+- Uebungen werden manuell als erledigt markiert
+- Nach jeder erledigten Uebung startet automatisch 1 Minute Pause
 - Vite/React Deployment fuer Vercel
 
 ## Start
