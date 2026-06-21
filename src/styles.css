@@ -541,3 +541,43 @@ button { font: inherit; color: inherit; }
   grid-template-columns: 1fr 1fr auto;
   margin-top: 12px;
 }
+
+.restPresets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.restPresets > span {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.restPresets button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #33423c;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.restPresets button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.workControls {
+  grid-template-columns: 1fr 1fr auto;
+  margin-top: 12px;
+}

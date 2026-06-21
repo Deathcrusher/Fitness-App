@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Activity,
   Bike,
@@ -19,7 +19,8 @@ import {
   Trophy,
 } from 'lucide-react'
 
-const PAUSE_SECONDS = 60
+const PAUSE_PRESETS = [30, 60, 90]
+const STORAGE_KEY = 'fitflow-state-v1'
 
 const VISUALS = {
   warmup: '/assets/warmup.jpg',
@@ -109,7 +110,7 @@ const plans = {
           step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, Schulterblätter stabil.', '3 x 10'),
           step('upper', 'Schulterdrücken', 'Bauch fest, nicht ins Hohlkreuz fallen.', '3 x 8-10'),
           step('upper', 'Bizeps-Curls', 'Ellbogen ruhig halten, langsam senken.', '2 x 12'),
-          step('core', 'Plank', 'Spannung halten und ruhig atmen.', '2 x 30 Sek'),
+          step('core', 'Plank', 'Spannung halten und ruhig atmen.', '3 x 30-45 Sek'),
         ],
       },
       {
@@ -138,7 +139,7 @@ const plans = {
           step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, stabil in den Schultern.', '3 x 10-12'),
           step('upper', 'Schulterdrücken', 'Bauch fest, kontrolliert nach oben drücken.', '3 x 8-10'),
           step('upper', 'Trizepsdrücken', 'Ellbogen nah am Körper, langsam führen.', '2 x 12'),
-          step('core', 'Plank', 'Spannung halten, ruhig atmen.', '2 x 30-45 Sek'),
+          step('core', 'Plank', 'Spannung halten, ruhig atmen.', '3 x 30-45 Sek'),
           step('cardio', 'Laufband Gehen', '5 Min langsam, danach zügig gehen. Nicht rennen.', '10-15 Min'),
           step('recovery', 'Cooldown', 'Kurz dehnen, Wasser trinken und Puls senken.', '5 Min'),
         ],
@@ -151,100 +152,262 @@ function step(type, name, detail, reps) {
   return { type, name, detail, reps }
 }
 
+function timedSeconds(reps) {
+  const match = reps.match(/(\d+)\s*Sek/i)
+  return match ? Number(match[1]) : null
+}
+
 function fmt(seconds) {
   const minutes = Math.floor(seconds / 60)
   const rest = seconds % 60
   return `${minutes}:${String(rest).padStart(2, '0')}`
 }
 
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw)
+  } catch {
+    return {}
+  }
+}
+
+let audioCtx = null
+function ensureAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+  } catch {
+    /* noop */
+  }
+}
+function tone(freq, dur, when = 0) {
+  ensureAudio()
+  if (!audioCtx) return
+  try {
+    const start = audioCtx.currentTime + when
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.25, start + 0.01)
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + dur)
+    osc.start(start)
+    osc.stop(start + dur)
+  } catch {
+    /* noop */
+  }
+}
+function vibrate(pattern) {
+  try {
+    navigator.vibrate?.(pattern)
+  } catch {
+    /* noop */
+  }
+}
+function signal(kind) {
+  ensureAudio()
+  if (kind === 'work-done') {
+    vibrate([180])
+    tone(880, 0.18)
+    tone(660, 0.22, 0.18)
+  } else if (kind === 'rest-end') {
+    vibrate([120, 60, 120])
+    tone(523, 0.15)
+    tone(659, 0.15, 0.16)
+    tone(784, 0.25, 0.32)
+  } else if (kind === 'done') {
+    vibrate([140, 80, 140, 80, 220])
+    tone(523, 0.15)
+    tone(659, 0.15, 0.16)
+    tone(784, 0.4, 0.32)
+  }
+}
+
 export default function App() {
-  const [person, setPerson] = useState('connie')
-  const [dayIndex, setDayIndex] = useState(0)
-  const [stepIndex, setStepIndex] = useState(0)
+  const saved = loadState()
+  const initialStep =
+    plans[saved.person || 'connie'].days[saved.dayIndex || 0].steps[saved.stepIndex || 0]
+  const initialWork = timedSeconds(initialStep.reps)
+
+  const [person, setPerson] = useState(saved.person || 'connie')
+  const [dayIndex, setDayIndex] = useState(saved.dayIndex || 0)
+  const [stepIndex, setStepIndex] = useState(saved.stepIndex || 0)
   const [phase, setPhase] = useState('work')
   const [running, setRunning] = useState(false)
-  const [seconds, setSeconds] = useState(PAUSE_SECONDS)
+  const [seconds, setSeconds] = useState(initialWork != null ? initialWork : 0)
+  const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
+
+  const wakeLockRef = useRef(null)
+  const skipPersonReset = useRef(true)
 
   const plan = plans[person]
   const day = plan.days[dayIndex]
   const steps = day.steps
   const currentStep = steps[stepIndex] || steps[steps.length - 1]
+  const workSeconds = timedSeconds(currentStep.reps)
+  const isTimed = workSeconds != null
   const meta = TYPE_META[currentStep.type]
   const TypeIcon = meta.icon
 
   const completedSteps = phase === 'done' ? steps.length : phase === 'rest' ? stepIndex + 1 : stepIndex
   const progress = Math.min(100, Math.round((completedSteps / steps.length) * 100))
-  const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? '1 Min Pause' : meta.label
+  const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? 'Pause' : meta.label
+  const showTimer = phase === 'rest' || (phase === 'work' && isTimed)
 
   useEffect(() => {
-    setDayIndex(0)
-    setStepIndex(0)
-    setPhase('work')
-    setRunning(false)
-    setSeconds(PAUSE_SECONDS)
-  }, [person])
-
-  function selectDay(index) {
-    setDayIndex(index)
-    setStepIndex(0)
-    setPhase('work')
-    setRunning(false)
-    setSeconds(PAUSE_SECONDS)
-  }
-
-  function selectStep(index) {
-    setStepIndex(index)
-    setPhase('work')
-    setRunning(false)
-    setSeconds(PAUSE_SECONDS)
-  }
-
-  function finishPause() {
-    if (stepIndex < steps.length - 1) {
-      setStepIndex(stepIndex + 1)
-      setPhase('work')
-      setRunning(false)
-      setSeconds(PAUSE_SECONDS)
-      return
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds }),
+      )
+    } catch {
+      /* noop */
     }
+  }, [person, dayIndex, stepIndex, pauseSeconds])
 
-    setPhase('done')
+  function enterWork(nextStepIndex) {
+    const target = steps[nextStepIndex]
+    const work = timedSeconds(target.reps)
+    setStepIndex(nextStepIndex)
+    setPhase('work')
     setRunning(false)
-    setSeconds(0)
+    setSeconds(work != null ? work : 0)
   }
 
   function completeExercise() {
     setPhase('rest')
-    setSeconds(PAUSE_SECONDS)
+    setSeconds(pauseSeconds)
     setRunning(true)
   }
 
-  useEffect(() => {
-    if (!running || phase !== 'rest') return
+  function advanceAfterRest() {
+    if (stepIndex < steps.length - 1) {
+      enterWork(stepIndex + 1)
+    } else {
+      setPhase('done')
+      setRunning(false)
+      setSeconds(0)
+      signal('done')
+    }
+  }
 
-    const timer = window.setInterval(() => {
-      setSeconds((value) => {
-        if (value > 1) return value - 1
-        window.clearInterval(timer)
-        window.setTimeout(finishPause, 240)
-        return 0
-      })
-    }, 1000)
-
-    return () => window.clearInterval(timer)
-  }, [running, phase, stepIndex, dayIndex, person])
-
-  function resetWorkout() {
+  function selectDay(index) {
+    const firstStep = plans[person].days[index].steps[0]
+    const work = timedSeconds(firstStep.reps)
+    setDayIndex(index)
     setStepIndex(0)
     setPhase('work')
     setRunning(false)
-    setSeconds(PAUSE_SECONDS)
+    setSeconds(work != null ? work : 0)
+  }
+
+  function selectStep(index) {
+    enterWork(index)
+  }
+
+  function togglePlay() {
+    ensureAudio()
+    setRunning((value) => !value)
+  }
+
+  function changePause(value) {
+    setPauseSeconds(value)
+    if (phase === 'rest') setSeconds(value)
   }
 
   function resetPause() {
     setRunning(false)
-    setSeconds(PAUSE_SECONDS)
+    setSeconds(pauseSeconds)
   }
+
+  function resetWorkout() {
+    enterWork(0)
+  }
+
+  useEffect(() => {
+    if (skipPersonReset.current) {
+      skipPersonReset.current = false
+      return
+    }
+    setDayIndex(0)
+    setStepIndex(0)
+    setPhase('work')
+    setRunning(false)
+    const firstStep = plans[person].days[0].steps[0]
+    const work = timedSeconds(firstStep.reps)
+    setSeconds(work != null ? work : 0)
+  }, [person])
+
+  useEffect(() => {
+    if (!running || phase === 'done') return
+    const id = window.setInterval(() => {
+      setSeconds((value) => (value > 0 ? value - 1 : 0))
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [running, phase])
+
+  useEffect(() => {
+    if (seconds !== 0 || !running) return
+    const id = window.setTimeout(() => {
+      if (phase === 'work' && isTimed) {
+        signal('work-done')
+        completeExercise()
+      } else if (phase === 'rest') {
+        signal('rest-end')
+        advanceAfterRest()
+      }
+    }, 200)
+    return () => window.clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds, running])
+
+  useEffect(() => {
+    let active = true
+    async function acquire() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLockRef.current = await navigator.wakeLock.request('screen')
+        }
+      } catch {
+        /* noop */
+      }
+    }
+    function release() {
+      try {
+        wakeLockRef.current?.release()
+        wakeLockRef.current = null
+      } catch {
+        /* noop */
+      }
+    }
+    if (running) acquire()
+    else release()
+    return () => {
+      active = false
+      release()
+    }
+  }, [running])
+
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible' && running) {
+        try {
+          if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then((lock) => {
+            wakeLockRef.current = lock
+          }).catch(() => {})
+        } catch {
+          /* noop */
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [running])
 
   return (
     <main className={`app ${plan.accent}`}>
@@ -252,10 +415,10 @@ export default function App() {
         <div className="heroCopy">
           <span className="eyebrow"><Sparkles size={16} /> FitFlow</span>
           <h1>Dein Training, Schritt für Schritt.</h1>
-          <p>Übung machen, erledigt tippen, 1 Minute Pause nehmen und weitertrainieren.</p>
+          <p>Übung machen, erledigt tippen, Pause nehmen und weitertrainieren.</p>
           <div className="quickStats" aria-label="Trainingsdaten">
             <span><CalendarDays size={16} /> 3 Tage</span>
-            <span><Clock3 size={16} /> 1 Min Pause</span>
+            <span><Clock3 size={16} /> {pauseSeconds}s Pause</span>
             <span><Dumbbell size={16} /> Zuhause</span>
           </div>
         </div>
@@ -310,23 +473,43 @@ export default function App() {
                   : currentStep.detail}
               </p>
 
-              {phase === 'rest' && (
-                <div className="timerPanel" aria-label="Pausentimer">
+              {showTimer && (
+                <div className="timerPanel" aria-label={phase === 'rest' ? 'Pausentimer' : 'Halte-Timer'}>
                   <TimerReset size={24} />
                   <strong>{fmt(seconds)}</strong>
+                  <span>{phase === 'rest' ? 'Pause' : 'Halten'}</span>
                 </div>
               )}
 
               <div className="progressLine"><span style={{ width: `${progress}%` }} /></div>
 
               {phase === 'rest' ? (
-                <div className="controls pauseControls">
-                  <button className="primaryAction" onClick={() => setRunning(!running)}>
+                <>
+                  <div className="controls pauseControls">
+                    <button className="primaryAction" onClick={togglePlay}>
+                      {running ? <Pause size={20} /> : <Play size={20} />}
+                      {running ? 'Pause' : 'Weiterlaufen'}
+                    </button>
+                    <button onClick={advanceAfterRest}><SkipForward size={20} /> Überspringen</button>
+                    <button className="iconAction" onClick={resetPause} aria-label="Pause zurücksetzen"><RotateCcw size={20} /></button>
+                  </div>
+                  <div className="restPresets" aria-label="Pausenlänge">
+                    <span>Pause:</span>
+                    {PAUSE_PRESETS.map((preset) => (
+                      <button key={preset} className={pauseSeconds === preset ? 'active' : ''} onClick={() => changePause(preset)}>
+                        {preset}s
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : isTimed ? (
+                <div className="controls workControls">
+                  <button className="primaryAction" onClick={togglePlay}>
                     {running ? <Pause size={20} /> : <Play size={20} />}
-                    {running ? 'Pause' : 'Weiterlaufen'}
+                    {running ? 'Pause' : 'Timer starten'}
                   </button>
-                  <button onClick={finishPause}><SkipForward size={20} /> Überspringen</button>
-                  <button className="iconAction" onClick={resetPause} aria-label="Pause zurücksetzen"><RotateCcw size={20} /></button>
+                  <button onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                  <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
                 </div>
               ) : (
                 <div className="controls exerciseControls">
