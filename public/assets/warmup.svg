@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Warm-up exercise">
-  <defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff8ee"/><stop offset="1" stop-color="#d7ead7"/></linearGradient></defs>
-  <rect width="900" height="650" rx="34" fill="url(#b)"/><ellipse cx="446" cy="548" rx="292" ry="48" fill="#dbe7d6"/>
-  <g fill="none" stroke="#243238" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M443 176l-76 142 112 84"/><path d="M445 176l92 112 105-43"/><path d="M368 319l-78 121"/><path d="M480 403l71 106"/><path d="M538 288l52 156"/><path d="M367 318l-58-105"/></g>
-  <circle cx="445" cy="115" r="48" fill="#243238"/><path d="M393 191c41 30 100 30 144 0 13 73-19 142-87 157-66-16-95-83-57-157z" fill="#f47d69"/>
-  <circle cx="247" cy="183" r="28" fill="#78b66d" opacity="0.45"/><circle cx="690" cy="182" r="36" fill="#f47d69" opacity="0.28"/>
-</svg>

@@ -484,3 +484,60 @@ button { font: inherit; color: inherit; }
   .controls { grid-template-columns: 1fr; }
   .iconAction { width: 100%; }
 }
+
+.exercisePrompt {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9fbf7;
+  color: #33423c;
+}
+
+.exercisePrompt svg {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.exercisePrompt strong,
+.exercisePrompt span {
+  display: block;
+}
+
+.exercisePrompt strong {
+  font-size: 15px;
+  margin-bottom: 3px;
+}
+
+.exercisePrompt span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.timerPanel span {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.workControls {
+  grid-template-columns: 1fr;
+  margin-top: 12px;
+}
+
+.pauseControls {
+  grid-template-columns: 1fr 1fr auto;
+  margin-top: 12px;
+}
