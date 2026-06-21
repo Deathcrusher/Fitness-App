@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Cardio exercise">
+  <defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ecfbff"/><stop offset="1" stop-color="#ffe6d6"/></linearGradient></defs>
+  <rect width="900" height="650" rx="34" fill="url(#b)"/><ellipse cx="455" cy="548" rx="314" ry="45" fill="#d9e6dc"/>
+  <g fill="none" stroke="#253036" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"><circle cx="316" cy="453" r="86"/><circle cx="614" cy="453" r="86"/><path d="M316 453h140l73-116 85 116"/><path d="M456 453l-54-116h127"/><path d="M529 337h98"/><path d="M399 337l-53-79"/></g>
+  <g stroke="#253036" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M454 177l-57 126 58 81"/><path d="M456 178l98 75 91-4"/><path d="M397 303l-53 91"/><path d="M456 384l84 75"/></g>
+  <circle cx="455" cy="118" r="46" fill="#253036"/><path d="M413 191c36 23 89 23 128-1 11 62-21 114-85 132-60-19-86-70-43-131z" fill="#2f7667"/>
+</svg>

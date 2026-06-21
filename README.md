@@ -1,15 +1,15 @@
-# Fitness Thermomix App
+# FitFlow
 
-Eine Web-App mit zwei Trainingsprogrammen: dein Plan und der Plan deiner Freundin.
+Mobile-first Web-App für zwei Trainingsprogramme mit Tagesauswahl, Übungsbildern, Schrittlisten und großem Timer.
 
 ## Features
 
-- Auswahl zwischen zwei Trainingsplänen
-- Trainingstage auswählbar
-- Schritt-für-Schritt-Anleitung
-- Automatischer Pausen-Timer
-- Große Timer-Anzeige
-- Mobile optimiert
+- Auswahl zwischen Connie und René
+- Drei Trainingstage pro Programm
+- Mobile optimierte Trainingsansicht
+- Übungsbilder für Warm-up, Kraft, Core, Cardio und Cooldown
+- Automatischer Arbeits- und Pausentimer
+- Vite/React Deployment für Vercel
 
 ## Start
 

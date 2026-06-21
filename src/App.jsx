@@ -1,77 +1,157 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, Dumbbell, HeartPulse, Pause, Play, RotateCcw, SkipForward, Timer, Trophy } from 'lucide-react'
+import {
+  Activity,
+  Bike,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  Dumbbell,
+  Flame,
+  Footprints,
+  HeartPulse,
+  Pause,
+  Play,
+  RotateCcw,
+  SkipForward,
+  Sparkles,
+  TimerReset,
+  Trophy,
+} from 'lucide-react'
+
+const VISUALS = {
+  warmup: '/assets/warmup.svg',
+  lower: '/assets/lower.svg',
+  upper: '/assets/upper.svg',
+  core: '/assets/core.svg',
+  cardio: '/assets/cardio.svg',
+  recovery: '/assets/recovery.svg',
+}
+
+const TYPE_META = {
+  warmup: { label: 'Warm-up', icon: Footprints },
+  lower: { label: 'Beine & Po', icon: Flame },
+  upper: { label: 'Kraft', icon: Dumbbell },
+  core: { label: 'Core', icon: Activity },
+  cardio: { label: 'Cardio', icon: Bike },
+  recovery: { label: 'Cooldown', icon: HeartPulse },
+}
 
 const plans = {
   connie: {
-    name: "Connie's Programm",
-    goal: 'Abnehmen, straffen & wohlfühlen',
-    theme: 'pink',
+    name: 'Connie',
+    title: 'Straffen & wohlfühlen',
+    accent: 'coral',
+    equipment: 'Hanteln, Matte, Hula Hoop, Hometrainer',
     days: [
-      { title: 'Montag – Ganzkörper + Cardio', focus: 'Straffen & Kalorien verbrennen', steps: [
-        ['Warm-up', 'Locker starten: marschieren, Arme kreisen, Knie heben, Fersen zum Po.', 480, 0, '5–10 Min'],
-        ['Kniebeugen', 'Brust aufrecht, Knie leicht nach außen, ruhig atmen.', 45, 50, '3 × 15'],
-        ['Ausfallschritte', 'Kontrolliert runter, pro Bein sauber arbeiten.', 45, 50, '3 × 12 je Bein'],
-        ['Rudern mit Hanteln', 'Rücken gerade, Ellbogen eng am Körper ziehen.', 45, 50, '3 × 12'],
-        ['Schulterdrücken', 'Hanteln kontrolliert hochdrücken, Bauch fest.', 45, 50, '3 × 12'],
-        ['Glute Bridge', 'Po oben kurz anspannen, langsam absenken.', 45, 50, '3 × 15'],
-        ['Plank', 'Rücken gerade, Bauch fest, nicht durchhängen.', 40, 30, '3 × 30–45 Sek'],
-        ['Cardio Finish', 'Hometrainer locker, Puls moderat, sprechen möglich.', 1200, 0, '20 Min']
-      ]},
-      { title: 'Mittwoch – Cardio & Core', focus: 'Bauch & Ausdauer', steps: [
-        ['Warm-up', 'Gelenke vorbereiten und locker bewegen.', 420, 0, '5–10 Min'],
-        ['Hula Hoop', 'Gleichmäßiges Tempo, Spaß haben und dranbleiben.', 1800, 60, '30 Min'],
-        ['Plank', 'Bauch fest, ruhig halten.', 40, 30, '3 × 30–45 Sek'],
-        ['Russian Twists', 'Oberkörper drehen, Core bleibt aktiv.', 45, 30, '3 × 20'],
-        ['Bicycle Crunches', 'Langsam und sauber, nicht am Nacken ziehen.', 45, 30, '3 × 20'],
-        ['Beinheben', 'Rücken bleibt am Boden.', 45, 30, '3 × 15'],
-        ['Cardio Finish', 'Hometrainer locker ausfahren.', 900, 0, '15 Min']
-      ]},
-      { title: 'Freitag – Ganzkörper + Cardio', focus: 'Po, Beine & Oberkörper', steps: [
-        ['Warm-up', 'Locker starten und Atmung finden.', 480, 0, '5–10 Min'],
-        ['Kniebeugen', 'Sauber und kontrolliert.', 45, 50, '3 × 15'],
-        ['Rumänisches Kreuzheben', 'Hüfte nach hinten, Rücken gerade.', 45, 50, '3 × 12'],
-        ['Brustdrücken am Boden', 'Hanteln kontrolliert nach oben drücken.', 45, 50, '3 × 12'],
-        ['Rudern mit Hanteln', 'Schulterblätter zusammenziehen.', 45, 50, '3 × 12'],
-        ['Seitheben', 'Leichtes Gewicht, kein Schwung.', 45, 50, '3 × 15'],
-        ['Glute Bridge', 'Po oben aktiv anspannen.', 45, 50, '3 × 15'],
-        ['Hula Hoop Finish', 'Locker, spaßig, Kalorien verbrennen.', 1200, 0, '20 Min']
-      ]}
-    ]
+      {
+        title: 'Montag',
+        focus: 'Ganzkörper + Cardio',
+        tone: 'Kalorien verbrennen und Körperspannung aufbauen.',
+        steps: [
+          step('warmup', 'Warm-up', 'Locker starten: marschieren, Arme kreisen, Knie heben, Fersen zum Po.', 480, 0, '5-10 Min'),
+          step('lower', 'Kniebeugen', 'Brust aufrecht, Knie leicht nach außen, kontrolliert tief gehen.', 45, 50, '3 x 15'),
+          step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper bleibt ruhig.', 45, 50, '3 x 12 je Bein'),
+          step('upper', 'Rudern mit Hanteln', 'Rücken gerade, Ellbogen eng am Koerper ziehen.', 45, 50, '3 x 12'),
+          step('upper', 'Schulterdrücken', 'Bauch fest, Hanteln kontrolliert nach oben drücken.', 45, 50, '3 x 12'),
+          step('lower', 'Glute Bridge', 'Po oben kurz anspannen und langsam absenken.', 45, 50, '3 x 15'),
+          step('core', 'Plank', 'Rücken lang, Bauch fest, Nacken entspannt.', 40, 30, '3 x 30-45 Sek'),
+          step('cardio', 'Cardio Finish', 'Hometrainer moderat fahren, gleichmäßig atmen.', 1200, 0, '20 Min'),
+        ],
+      },
+      {
+        title: 'Mittwoch',
+        focus: 'Cardio & Core',
+        tone: 'Ausdauer, Bauchspannung und lockerer Rhythmus.',
+        steps: [
+          step('warmup', 'Warm-up', 'Gelenke vorbereiten und entspannt in Bewegung kommen.', 420, 0, '5-10 Min'),
+          step('cardio', 'Hula Hoop', 'Gleichmaessiges Tempo, locker bleiben und dranbleiben.', 1800, 60, '30 Min'),
+          step('core', 'Plank', 'Ruhig halten und gleichmäßig atmen.', 40, 30, '3 x 30-45 Sek'),
+          step('core', 'Russian Twists', 'Oberkörper drehen, Core bleibt aktiv.', 45, 30, '3 x 20'),
+          step('core', 'Bicycle Crunches', 'Langsam und sauber, nicht am Nacken ziehen.', 45, 30, '3 x 20'),
+          step('core', 'Beinheben', 'Rücken bleibt am Boden, Bewegung kontrollieren.', 45, 30, '3 x 15'),
+          step('cardio', 'Ausfahren', 'Hometrainer locker ausfahren und Puls senken.', 900, 0, '15 Min'),
+        ],
+      },
+      {
+        title: 'Freitag',
+        focus: 'Ganzkörper + Hula Hoop',
+        tone: 'Po, Beine, Oberkörper und ein leichter Abschluss.',
+        steps: [
+          step('warmup', 'Warm-up', 'Locker starten und Atmung finden.', 480, 0, '5-10 Min'),
+          step('lower', 'Kniebeugen', 'Sauber, ruhig und kontrolliert arbeiten.', 45, 50, '3 x 15'),
+          step('lower', 'Rumänisches Kreuzheben', 'Hüfte nach hinten, Rücken lang lassen.', 45, 50, '3 x 12'),
+          step('upper', 'Brustdrücken am Boden', 'Hanteln kontrolliert nach oben drücken.', 45, 50, '3 x 12'),
+          step('upper', 'Rudern mit Hanteln', 'Schulterblätter bewusst zusammenziehen.', 45, 50, '3 x 12'),
+          step('upper', 'Seitheben', 'Leichtes Gewicht, ohne Schwung.', 45, 50, '3 x 15'),
+          step('lower', 'Glute Bridge', 'Po oben aktiv anspannen.', 45, 50, '3 x 15'),
+          step('cardio', 'Hula Hoop Finish', 'Locker, gleichmäßig und mit Spaß abschliessen.', 1200, 0, '20 Min'),
+        ],
+      },
+    ],
   },
   rene: {
-    name: "René's Programm",
-    goal: 'Kraft, Muskeln & Ausdauer',
-    theme: 'green',
+    name: 'René',
+    title: 'Kraft & Ausdauer',
+    accent: 'green',
+    equipment: 'Hanteln, Matte, Laufband',
     days: [
-      { title: 'Montag – Ganzkörper A', focus: 'Basis-Kraft', steps: [
-        ['Aufwärmprogramm', 'Marschieren, Arme kreisen, Knie heben, leichte Kniebeugen.', 480, 0, '5–10 Min'],
-        ['Kniebeugen', 'Optional mit Hanteln, kontrolliert tief gehen.', 45, 75, '3 × 10'],
-        ['Rudern', 'Rücken gerade, Hanteln zum Körper ziehen.', 45, 75, '3 × 10'],
-        ['Brustdrücken am Boden', 'Saubere Wiederholungen, Schulterblätter stabil.', 45, 75, '3 × 10'],
-        ['Schulterdrücken', 'Bauch fest, nicht ins Hohlkreuz.', 45, 75, '3 × 8–10'],
-        ['Bizeps-Curls', 'Ellbogen ruhig halten.', 40, 60, '2 × 12'],
-        ['Plank', 'Spannung halten, ruhig atmen.', 30, 45, '2 × 30 Sek']
-      ]},
-      { title: 'Mittwoch – Ganzkörper B', focus: 'Variation & Technik', steps: [
-        ['Aufwärmprogramm', 'Locker starten, Gelenke vorbereiten.', 480, 0, '5–10 Min'],
-        ['Ausfallschritte', 'Pro Bein kontrolliert arbeiten.', 45, 75, '2–3 × 8 je Bein'],
-        ['Einarmiges Rudern', 'Abstützen, Rücken gerade.', 45, 75, '2–3 × 10 je Seite'],
-        ['Liegestütze', 'Auf Knien möglich, sauber ausführen.', 45, 75, '2–3 × 8–12'],
-        ['Seitheben', 'Langsam und ohne Schwung.', 40, 60, '2 × 10–12'],
-        ['Hammer Curls', 'Kontrolliert curlen.', 40, 60, '2 × 10'],
-        ['Russian Twists', '10 pro Seite, Bauch fest.', 45, 45, '2 × 20']
-      ]},
-      { title: 'Freitag – Ganzkörper A + Laufband', focus: 'Wiederholen & steigern', steps: [
-        ['Aufwärmprogramm', 'Kurz mobilisieren und warm werden.', 420, 0, '5–10 Min'],
-        ['Ganzkörper A Runde', 'Montag wiederholen: etwas sauberer oder minimal mehr Wiederholungen.', 2100, 60, 'ca. 35 Min'],
-        ['Laufband Gehen', '5 Min langsam, danach 5–10 Min zügig. Nicht rennen.', 900, 0, '10–15 Min']
-      ]}
-    ]
-  }
+      {
+        title: 'Montag',
+        focus: 'Ganzkörper A',
+        tone: 'Basis-Kraft sauber aufbauen.',
+        steps: [
+          step('warmup', 'Aufwärmen', 'Marschieren, Arme kreisen, Knie heben, leichte Kniebeugen.', 480, 0, '5-10 Min'),
+          step('lower', 'Kniebeugen', 'Optional mit Hanteln, kontrolliert tief gehen.', 45, 75, '3 x 10'),
+          step('upper', 'Rudern', 'Rücken gerade, Hanteln zum Koerper ziehen.', 45, 75, '3 x 10'),
+          step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, Schulterblätter stabil.', 45, 75, '3 x 10'),
+          step('upper', 'Schulterdrücken', 'Bauch fest, nicht ins Hohlkreuz fallen.', 45, 75, '3 x 8-10'),
+          step('upper', 'Bizeps-Curls', 'Ellbogen ruhig halten, langsam senken.', 40, 60, '2 x 12'),
+          step('core', 'Plank', 'Spannung halten und ruhig atmen.', 30, 45, '2 x 30 Sek'),
+        ],
+      },
+      {
+        title: 'Mittwoch',
+        focus: 'Ganzkörper B',
+        tone: 'Variation, Technik und stabiler Rumpf.',
+        steps: [
+          step('warmup', 'Aufwärmen', 'Locker starten, Gelenke vorbereiten.', 480, 0, '5-10 Min'),
+          step('lower', 'Ausfallschritte', 'Pro Bein kontrolliert arbeiten.', 45, 75, '2-3 x 8 je Bein'),
+          step('upper', 'Einarmiges Rudern', 'Abstützen, Rücken gerade, sauber ziehen.', 45, 75, '2-3 x 10 je Seite'),
+          step('upper', 'Liegestütze', 'Auf Knien möglich, Rumpf bleibt fest.', 45, 75, '2-3 x 8-12'),
+          step('upper', 'Seitheben', 'Langsam und ohne Schwung.', 40, 60, '2 x 10-12'),
+          step('upper', 'Hammer Curls', 'Kontrolliert curlen und langsam senken.', 40, 60, '2 x 10'),
+          step('core', 'Russian Twists', 'Bauch fest, 10 Drehungen pro Seite.', 45, 45, '2 x 20'),
+        ],
+      },
+      {
+        title: 'Freitag',
+        focus: 'Ganzkörper + Laufband',
+        tone: 'Wiederholen, steigern und locker auslaufen.',
+        steps: [
+          step('warmup', 'Mobilisieren', 'Kurz mobilisieren und warm werden.', 420, 0, '5-10 Min'),
+          step('upper', 'Ganzkörper A Runde', 'Montag wiederholen: sauberer oder minimal mehr Wiederholungen.', 2100, 60, 'ca. 35 Min'),
+          step('cardio', 'Laufband Gehen', '5 Min langsam, danach zügig gehen. Nicht rennen.', 900, 0, '10-15 Min'),
+          step('recovery', 'Cooldown', 'Kurz dehnen, Wasser trinken und Puls senken.', 300, 0, '5 Min'),
+        ],
+      },
+    ],
+  },
 }
 
-function toStep(data) { return { name: data[0], detail: data[1], work: data[2], rest: data[3], reps: data[4] } }
-function fmt(s) { const m = Math.floor(s / 60); const sec = s % 60; return `${m}:${String(sec).padStart(2, '0')}` }
+function step(type, name, detail, work, rest, reps) {
+  return { type, name, detail, work, rest, reps }
+}
+
+function fmt(seconds) {
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds % 60
+  return `${minutes}:${String(rest).padStart(2, '0')}`
+}
+
+function minutesFor(steps) {
+  return Math.round(steps.reduce((total, item) => total + item.work + item.rest, 0) / 60)
+}
 
 export default function App() {
   const [person, setPerson] = useState('connie')
@@ -82,91 +162,189 @@ export default function App() {
 
   const plan = plans[person]
   const day = plan.days[dayIndex]
-  const steps = day.steps.map(toStep)
-  const step = steps[stepIndex]
-  const [seconds, setSeconds] = useState(step.work)
+  const steps = day.steps
+  const currentStep = steps[stepIndex] || steps[steps.length - 1]
+  const meta = TYPE_META[currentStep.type]
+  const TypeIcon = meta.icon
+  const [seconds, setSeconds] = useState(currentStep.work)
 
-  useEffect(() => { setDayIndex(0); setStepIndex(0); setPhase('work'); setRunning(false) }, [person])
-  useEffect(() => { setSeconds(phase === 'rest' ? step.rest : step.work) }, [person, dayIndex, stepIndex, phase])
+  const completedSteps = phase === 'done' ? steps.length : phase === 'rest' ? stepIndex + 1 : stepIndex
+  const progress = Math.min(100, Math.round((completedSteps / steps.length) * 100))
+  const totalMinutes = useMemo(() => minutesFor(steps), [steps])
+  const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? 'Pause' : meta.label
 
-  const progress = Math.round((stepIndex / steps.length) * 100)
-  const phaseLabel = phase === 'rest' ? 'Pause' : 'Übung'
+  useEffect(() => {
+    setDayIndex(0)
+    setStepIndex(0)
+    setPhase('work')
+    setRunning(false)
+  }, [person])
 
-  function next() {
-    if (phase === 'work' && step.rest > 0) { setPhase('rest'); setRunning(true); return }
-    if (stepIndex < steps.length - 1) { setStepIndex(stepIndex + 1); setPhase('work'); setRunning(false); return }
-    setPhase('done'); setRunning(false)
+  useEffect(() => {
+    setSeconds(phase === 'rest' ? currentStep.rest : phase === 'done' ? 0 : currentStep.work)
+  }, [person, dayIndex, stepIndex, phase, currentStep.rest, currentStep.work])
+
+  function selectDay(index) {
+    setDayIndex(index)
+    setStepIndex(0)
+    setPhase('work')
+    setRunning(false)
+  }
+
+  function selectStep(index) {
+    setStepIndex(index)
+    setPhase('work')
+    setRunning(false)
+  }
+
+  function advance() {
+    if (phase === 'work' && currentStep.rest > 0) {
+      setPhase('rest')
+      setRunning(true)
+      return
+    }
+
+    if (stepIndex < steps.length - 1) {
+      setStepIndex(stepIndex + 1)
+      setPhase('work')
+      setRunning(false)
+      return
+    }
+
+    setPhase('done')
+    setRunning(false)
   }
 
   useEffect(() => {
     if (!running || phase === 'done') return
-    const timer = setInterval(() => {
-      setSeconds(v => {
-        if (v > 1) return v - 1
-        clearInterval(timer)
-        setTimeout(next, 250)
+
+    const timer = window.setInterval(() => {
+      setSeconds((value) => {
+        if (value > 1) return value - 1
+        window.clearInterval(timer)
+        window.setTimeout(advance, 240)
         return 0
       })
     }, 1000)
-    return () => clearInterval(timer)
+
+    return () => window.clearInterval(timer)
   }, [running, phase, stepIndex, dayIndex, person])
 
-  function resetWorkout() { setStepIndex(0); setPhase('work'); setRunning(false) }
-  function resetTimer() { setRunning(false); setPhase('work'); setSeconds(step.work) }
+  function resetWorkout() {
+    setStepIndex(0)
+    setPhase('work')
+    setRunning(false)
+  }
 
-  return <main className={`app ${plan.theme}`}>
-    <section className="hero">
-      <div>
-        <p className="kicker">Fitness App</p>
-        <h1>Trainieren wie mit Thermomix-Steps</h1>
-        <p>Programm wählen, Übung starten, Pause automatisch laufen lassen, weiterziehen.</p>
-      </div>
-      <div className="heroBadge"><HeartPulse size={34}/><span>3 Tage Plan</span></div>
-    </section>
+  function resetTimer() {
+    setPhase('work')
+    setRunning(false)
+    setSeconds(currentStep.work)
+  }
 
-    <section className="chooser">
-      {Object.entries(plans).map(([key, p]) => <button key={key} className={person === key ? 'selected' : ''} onClick={() => setPerson(key)}>
-        <div className="avatar">{key === 'connie' ? 'C' : 'R'}</div>
-        <div><strong>{p.name}</strong><small>{p.goal}</small></div>
-      </button>)}
-    </section>
-
-    <section className="dayTabs">
-      {plan.days.map((d, i) => <button key={d.title} className={i === dayIndex ? 'active' : ''} onClick={() => { setDayIndex(i); setStepIndex(0); setPhase('work'); setRunning(false) }}>
-        <span>{d.title.split(' – ')[0]}</span><b>{d.focus}</b>
-      </button>)}
-    </section>
-
-    <section className="grid">
-      <aside className="panel list">
-        <h2>{day.title}</h2>
-        <p>{day.focus}</p>
-        {steps.map((s, i) => <button key={s.name} className={i === stepIndex ? 'current' : i < stepIndex ? 'done' : ''} onClick={() => { setStepIndex(i); setPhase('work'); setRunning(false) }}>
-          <span>{i < stepIndex ? <CheckCircle2 size={18}/> : i + 1}</span>
-          <div><strong>{s.name}</strong><small>{s.reps}</small></div>
-        </button>)}
-      </aside>
-
-      <section className="panel workout">
-        {phase === 'done' ? <div className="finish">
-          <Trophy size={80}/><h2>Training geschafft!</h2><p>Stark durchgezogen. Wasser trinken, kurz bewegen und stolz sein.</p>
-          <button onClick={resetWorkout}><RotateCcw/> Nochmal starten</button>
-        </div> : <>
-          <div className="topline"><span>{phaseLabel}</span><b>{progress}%</b></div>
-          <div className="bar"><i style={{width: `${progress}%`}} /></div>
-          <div className="exerciseIcon"><Dumbbell size={70}/></div>
-          <h2>{step.name}</h2>
-          <p className="reps">{step.reps}</p>
-          <p className="detail">{step.detail}</p>
-          <div className="timer"><Timer/><strong>{fmt(seconds)}</strong></div>
-          <div className="controls">
-            <button className="primary" onClick={() => setRunning(!running)}>{running ? <Pause/> : <Play/>}{running ? 'Pause' : 'Start'}</button>
-            <button onClick={next}><SkipForward/> {phase === 'rest' ? 'Weiter' : 'Erledigt'}</button>
-            <button onClick={resetTimer}><RotateCcw/> Reset</button>
+  return (
+    <main className={`app ${plan.accent}`}>
+      <section className="hero" aria-label="Trainingsübersicht">
+        <div className="heroCopy">
+          <span className="eyebrow"><Sparkles size={16} /> FitFlow</span>
+          <h1>Dein Training, Schritt für Schritt.</h1>
+          <p>Klare Einheiten für zuhause, große Timer und schnelle Wechsel zwischen Connie und René.</p>
+          <div className="quickStats" aria-label="Trainingsdaten">
+            <span><CalendarDays size={16} /> 3 Tage</span>
+            <span><Clock3 size={16} /> {totalMinutes} Min heute</span>
+            <span><Dumbbell size={16} /> Zuhause</span>
           </div>
-          <p className="hint">{phase === 'rest' ? 'Atmen, kurz trinken, gleich geht es weiter.' : step.rest > 0 ? `Danach startet automatisch ${step.rest} Sekunden Pause.` : 'Diese Übung hat keine Pause danach.'}</p>
-        </>}
+        </div>
+        <img className="heroImage" src="/assets/hero.svg" alt="Helles Home-Workout mit Matte und Hanteln" />
       </section>
-    </section>
-  </main>
+
+      <section className="switcher" aria-label="Programm wählen">
+        {Object.entries(plans).map(([key, item]) => (
+          <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)}>
+            <span className="avatar">{item.name.slice(0, 1)}</span>
+            <span><strong>{item.name}</strong><small>{item.title}</small></span>
+          </button>
+        ))}
+      </section>
+
+      <section className="dayRail" aria-label="Trainingstag wählen">
+        {plan.days.map((item, index) => (
+          <button key={item.title} className={dayIndex === index ? 'active' : ''} onClick={() => selectDay(index)}>
+            <strong>{item.title}</strong>
+            <span>{item.focus}</span>
+          </button>
+        ))}
+      </section>
+
+      <section className="dashboard">
+        <article className="sessionCard">
+          {phase === 'done' ? (
+            <div className="finishState">
+              <Trophy size={76} />
+              <h2>Training fertig</h2>
+              <p>{day.title}: {day.focus}</p>
+              <button className="primaryAction" onClick={resetWorkout}><RotateCcw size={20} /> Neu starten</button>
+            </div>
+          ) : (
+            <>
+              <div className="sessionImageWrap">
+                <img src={VISUALS[currentStep.type]} alt={`${currentStep.name} Illustration`} />
+                <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
+              </div>
+
+              <div className="sessionHeader">
+                <div>
+                  <p className="muted">{day.title} · {day.focus}</p>
+                  <h2>{currentStep.name}</h2>
+                </div>
+                <span className="repBadge">{currentStep.reps}</span>
+              </div>
+
+              <p className="exerciseText">{phase === 'rest' ? 'Kurz Luft holen, trinken und bereit machen.' : currentStep.detail}</p>
+
+              <div className="timerPanel" aria-label="Timer">
+                <TimerReset size={24} />
+                <strong>{fmt(seconds)}</strong>
+              </div>
+
+              <div className="progressLine"><span style={{ width: `${progress}%` }} /></div>
+
+              <div className="controls">
+                <button className="primaryAction" onClick={() => setRunning(!running)}>
+                  {running ? <Pause size={20} /> : <Play size={20} />}
+                  {running ? 'Pause' : 'Start'}
+                </button>
+                <button onClick={advance}><SkipForward size={20} /> {phase === 'rest' ? 'Weiter' : 'Erledigt'}</button>
+                <button className="iconAction" onClick={resetTimer} aria-label="Timer zuruecksetzen"><RotateCcw size={20} /></button>
+              </div>
+            </>
+          )}
+        </article>
+
+        <aside className="planPanel">
+          <div className="panelHead">
+            <div>
+              <p className="muted">{plan.equipment}</p>
+              <h2>{day.focus}</h2>
+            </div>
+            <span>{progress}%</span>
+          </div>
+          <p className="dayTone">{day.tone}</p>
+          <div className="stepList">
+            {steps.map((item, index) => {
+              const ItemIcon = TYPE_META[item.type].icon
+              const state = index === stepIndex && phase !== 'done' ? 'current' : index < completedSteps ? 'done' : ''
+              return (
+                <button key={`${item.name}-${index}`} className={state} onClick={() => selectStep(index)}>
+                  <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
+                  <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
+                  <ChevronRight size={18} />
+                </button>
+              )
+            })}
+          </div>
+        </aside>
+      </section>
+    </main>
+  )
 }

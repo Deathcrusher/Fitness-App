@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Lower body strength exercise">
+  <defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4fbf7"/><stop offset="1" stop-color="#ffe0d6"/></linearGradient></defs>
+  <rect width="900" height="650" rx="34" fill="url(#b)"/><rect x="154" y="514" width="590" height="54" rx="27" fill="#2f7667" opacity="0.22"/>
+  <g stroke="#263238" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M442 176l-24 143 96 72"/><path d="M419 320l-105 99"/><path d="M514 391l118 21"/><path d="M443 181l108 92"/><path d="M551 273l120-17"/><path d="M442 181l-116 74"/><path d="M326 255l-108-17"/></g>
+  <circle cx="443" cy="115" r="48" fill="#263238"/><path d="M398 188c43 22 92 21 136-2 10 70-21 121-77 140-62-17-88-68-59-138z" fill="#2f7667"/>
+  <g fill="#263238"><rect x="174" y="214" width="78" height="42" rx="21"/><rect x="648" y="232" width="78" height="42" rx="21"/></g>
+</svg>
