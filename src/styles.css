@@ -344,12 +344,12 @@ button { font: inherit; color: inherit; }
   font-weight: 900;
 }
 
-.primaryAction {
+button.primaryAction {
   background: var(--accent);
   color: #ffffff;
 }
 
-.doneAction {
+button.doneAction {
   background: #15803d;
   color: #ffffff;
 }
