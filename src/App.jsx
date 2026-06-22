@@ -4,16 +4,14 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock3,
-  Copy,
+  Dumbbell,
   Pause,
-  Pencil,
   Play,
   Plus,
   RotateCcw,
   SkipForward,
   Sparkles,
   TimerReset,
-  Trash2,
   Trophy,
   Video,
 } from 'lucide-react'
@@ -26,9 +24,11 @@ import {
   videoKey,
   emptyPlan,
   duplicatePlan,
+  examplePlans,
+  makeId,
 } from './plans'
 import VideoPlayer from './VideoPlayer'
-import Editor from './Editor'
+import Builder from './Builder'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
@@ -48,7 +48,11 @@ function loadState() {
 function loadCustomPlans() {
   try {
     const raw = localStorage.getItem(CUSTOM_KEY)
-    if (!raw) return {}
+    if (raw === null) {
+      const seeded = {}
+      for (const p of examplePlans()) seeded[p.id] = p
+      return seeded
+    }
     return JSON.parse(raw)
   } catch {
     return {}
@@ -161,6 +165,7 @@ export default function App() {
   const initialStep = savedSteps[savedStepIndex]
   const initialWork = timedSeconds(initialStep.reps)
 
+  const [view, setView] = useState('train')
   const [person, setPerson] = useState(savedPerson)
   const [dayIndex, setDayIndex] = useState(savedDayIndex)
   const [stepIndex, setStepIndex] = useState(savedStepIndex)
@@ -169,7 +174,6 @@ export default function App() {
   const [seconds, setSeconds] = useState(initialWork != null ? initialWork : 0)
   const [workSeconds, setWorkSeconds] = useState(initialWork != null ? initialWork : 0)
   const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
-  const [editing, setEditing] = useState(false)
   const [showVideo, setShowVideo] = useState(false)
   const [linkTarget, setLinkTarget] = useState(null)
 
@@ -268,11 +272,6 @@ export default function App() {
     enterWork(index)
   }
 
-  function selectPerson(key) {
-    setPerson(key)
-    if (allPlans[key]?.builtin) setEditing(false)
-  }
-
   function togglePlay() {
     ensureAudio()
     setRunning((value) => !value)
@@ -301,14 +300,14 @@ export default function App() {
     const p = emptyPlan()
     setCustomPlans((cp) => ({ ...cp, [p.id]: p }))
     setPerson(p.id)
-    setEditing(true)
+    setView('build')
   }
 
-  function duplicateCurrent() {
-    const copy = duplicatePlan(plan, person)
+  function duplicateBuiltin(key) {
+    const copy = duplicatePlan(builtinPlans[key], key)
     setCustomPlans((cp) => ({ ...cp, [copy.id]: copy }))
     setPerson(copy.id)
-    setEditing(true)
+    setView('build')
   }
 
   function updateCurrentPlan(updated) {
@@ -322,8 +321,12 @@ export default function App() {
       delete next[key]
       return next
     })
-    setEditing(false)
-    setPerson('connie')
+    if (person === key) setPerson('connie')
+  }
+
+  function runProgram(key) {
+    setPerson(key)
+    setView('train')
   }
 
   function saveVideoLink(key, url) {
@@ -343,7 +346,6 @@ export default function App() {
       return
     }
     const fallback = allPlans[person] ? person : 'connie'
-    const dayCount = allPlans[fallback].days.length
     setDayIndex(0)
     setStepIndex(0)
     setPhase('work')
@@ -386,12 +388,9 @@ export default function App() {
   }, [seconds, running])
 
   useEffect(() => {
-    let active = true
     async function acquire() {
       try {
-        if ('wakeLock' in navigator) {
-          wakeLockRef.current = await navigator.wakeLock.request('screen')
-        }
+        if ('wakeLock' in navigator) wakeLockRef.current = await navigator.wakeLock.request('screen')
       } catch {
         /* noop */
       }
@@ -406,10 +405,7 @@ export default function App() {
     }
     if (running) acquire()
     else release()
-    return () => {
-      active = false
-      release()
-    }
+    return () => release()
   }, [running])
 
   useEffect(() => {
@@ -428,57 +424,55 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [running])
 
+  const builtinEntries = Object.entries(builtinPlans)
+  const customEntries = Object.entries(customPlans)
+
   return (
     <main className={`app ${plan.accent}`}>
-      <section className="hero" aria-label="Trainingsübersicht">
-        <div className="heroCopy">
-          <span className="eyebrow"><Sparkles size={16} /> FitFlow</span>
-          <h1>Dein Training, Schritt für Schritt.</h1>
-          <p>Übung machen, erledigt tippen, Pause nehmen und weitertrainieren.</p>
-          <div className="quickStats" aria-label="Trainingsdaten">
-            <span><CalendarDays size={16} /> {plan.days.length} Tage</span>
-            <span><Clock3 size={16} /> {pauseSeconds}s Pause</span>
-            <span><Video size={16} /> {Object.keys(videos).length} Videos</span>
-          </div>
+      <nav className="topnav" aria-label="Hauptnavigation">
+        <span className="brand"><Sparkles size={16} /> FitFlow</span>
+        <div className="navTabs">
+          <button className={view === 'train' ? 'active' : ''} onClick={() => setView('train')}>Training</button>
+          <button className={view === 'build' ? 'active' : ''} onClick={() => setView('build')}>Programme</button>
         </div>
-        <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" fetchPriority="high" decoding="async" />
-      </section>
+      </nav>
 
-      <section className="switcher" aria-label="Programm wählen">
-        {Object.entries(allPlans).map(([key, item]) => (
-          <button key={key} className={person === key ? 'active' : ''} onClick={() => selectPerson(key)}>
-            <span className="avatar">{item.name.slice(0, 1)}</span>
-            <span className="switchCopy"><strong>{item.name}</strong><small>{item.title}</small></span>
-            {!item.builtin && <span className="tag">Eigenes</span>}
-          </button>
-        ))}
-        <button className="addProgram" onClick={createProgram}>
-          <Plus size={20} /> <span>Neues Programm</span>
-        </button>
-      </section>
-
-      <section className="programActions">
-        {plan.builtin ? (
-          <button className="ghostBtn" onClick={duplicateCurrent}><Copy size={16} /> Als eigenes duplizieren</button>
-        ) : (
-          <>
-            <button className="ghostBtn" onClick={() => setEditing(true)}><Pencil size={16} /> Bearbeiten</button>
-            <button className="ghostBtn danger" onClick={() => deleteProgram(person)}><Trash2 size={16} /> Löschen</button>
-          </>
-        )}
-      </section>
-
-      {editing && !plan.builtin ? (
-        <section className="dashboard editorMode">
-          <Editor
-            plan={plan}
-            onChange={updateCurrentPlan}
-            onDelete={() => deleteProgram(person)}
-            onClose={() => setEditing(false)}
-          />
-        </section>
-      ) : (
+      {view === 'train' ? (
         <>
+          <section className="hero" aria-label="Trainingsübersicht">
+            <div className="heroCopy">
+              <span className="eyebrow"><Dumbbell size={16} /> {plan.builtin ? 'Grundtraining' : 'Eigenes Programm'}</span>
+              <h1>{plan.name}</h1>
+              <p>{plan.title}</p>
+              <div className="quickStats" aria-label="Trainingsdaten">
+                <span><CalendarDays size={16} /> {plan.days.length} Tage</span>
+                <span><Clock3 size={16} /> {pauseSeconds}s Pause</span>
+                <span><Video size={16} /> {Object.keys(videos).length} Videos</span>
+              </div>
+            </div>
+            <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" fetchPriority="high" decoding="async" />
+          </section>
+
+          <section className="switcher grouped" aria-label="Programm wählen">
+            <span className="groupLabel">Grundtraining</span>
+            {builtinEntries.map(([key, item]) => (
+              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)}>
+                <span className="avatar">{item.name.slice(0, 1)}</span>
+                <span className="switchCopy"><strong>{item.name}</strong><small>{item.title}</small></span>
+              </button>
+            ))}
+            {customEntries.length > 0 && <span className="groupLabel">Eigene Programme</span>}
+            {customEntries.map(([key, item]) => (
+              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)}>
+                <span className="avatar">{item.name.slice(0, 1)}</span>
+                <span className="switchCopy"><strong>{item.name}</strong><small>{item.title}</small></span>
+              </button>
+            ))}
+            <button className="addProgram" onClick={createProgram}>
+              <Plus size={20} /> <span>Neues Programm</span>
+            </button>
+          </section>
+
           <section className="dayRail" aria-label="Trainingstag wählen">
             {plan.days.map((item, index) => (
               <button key={`${item.title}-${index}`} className={dayIndex === index ? 'active' : ''} onClick={() => selectDay(index)}>
@@ -540,7 +534,7 @@ export default function App() {
                     </div>
                   )}
                   {phase === 'work' && !stepVideo && !plan.builtin && (
-                    <p className="videoHint"><Video size={14} /> Tipp: Im Editor kannst du ein Video pro Übung hinterlegen.</p>
+                    <p className="videoHint"><Video size={14} /> Tipp: Unter „Programme“ kannst du jeder Übung ein Video geben.</p>
                   )}
                   {showVideo && stepVideo && phase === 'work' && (
                     <VideoPlayer url={stepVideo} onClose={() => setShowVideo(false)} />
@@ -638,6 +632,20 @@ export default function App() {
             </aside>
           </section>
         </>
+      ) : (
+        <section className="dashboard editorMode">
+          <Builder
+            customPlans={customPlans}
+            builtinPlans={builtinPlans}
+            selected={customPlans[person] ? person : null}
+            onChange={updateCurrentPlan}
+            onNew={createProgram}
+            onDuplicateBuiltin={duplicateBuiltin}
+            onDelete={deleteProgram}
+            onBack={() => setView('train')}
+            onRun={runProgram}
+          />
+        </section>
       )}
 
       {linkTarget && (

@@ -856,3 +856,153 @@ button.doneAction {
   .editor { padding: 18px; }
   .editorHead h2 { font-size: 30px; }
 }
+
+/* Top navigation */
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  max-width: 1160px;
+  margin: 0 auto 12px;
+  padding: 4px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--accent-strong);
+}
+.navTabs { display: flex; gap: 6px; }
+.navTabs button {
+  min-height: 40px;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.navTabs button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+@media (hover: hover) { .navTabs button:hover { transform: translateY(-1px); } }
+
+/* Grouped switcher (Grundtraining / Eigene) */
+.switcher.grouped { align-content: start; }
+.switcher .groupLabel {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.switcher .groupLabel:first-child { margin-top: 0; }
+
+/* Builder page */
+.builder {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 14px 34px rgba(24, 34, 31, 0.08);
+}
+.builderHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.builderHead h2 { margin: 0; font-size: 26px; }
+.builderGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+.programCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 86px;
+  padding: 12px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.programCard.active { border-color: var(--accent); background: var(--accent-soft); }
+.programCard strong { font-size: 15px; }
+.programCard small { color: var(--muted); font-size: 12px; }
+.cardMeta { margin-top: auto; font-size: 12px; color: var(--muted); font-weight: 800; }
+.programCard.add {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-style: dashed;
+  color: var(--muted);
+  font-weight: 900;
+}
+@media (hover: hover) { .programCard:hover { transform: translateY(-1px); } }
+
+.templates {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.templates > span {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.builderActions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.builderEmpty { padding: 24px 0; }
+
+/* Building blocks palette */
+.blockFilter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.blockFilter button {
+  min-height: 32px;
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.blockFilter button.active { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+.blockGrid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.blockChip {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: #f9fbf7;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+@media (hover: hover) { .blockChip:hover { transform: translateY(-1px); border-color: var(--accent); } }
+
+@media (min-width: 720px) {
+  .builder { padding: 18px; }
+  .builderHead h2 { font-size: 32px; }
+}

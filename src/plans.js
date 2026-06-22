@@ -269,3 +269,125 @@ export function parseVideo(url) {
 export function videoKey(programId, dayIndex, step) {
   return `${programId}:${dayIndex}:${step.name}`
 }
+
+export const EXERCISE_LIBRARY = [
+  { type: 'warmup', name: 'Marschieren', reps: '60 Sek', detail: 'Auf der Stelle marschieren, Arme locker mitnehmen.' },
+  { type: 'warmup', name: 'Arme kreisen', reps: '30 Sek', detail: 'Arme groß und weich kreisen, Schultern entspannt.' },
+  { type: 'warmup', name: 'Knie heben', reps: '45 Sek', detail: 'Knie abwechselnd Richtung Brust, Rumpf stabil.' },
+  { type: 'warmup', name: 'Hampelmann', reps: '30 Sek', detail: 'Locker einhüpfen, Arme und Beine kreuzen.' },
+  { type: 'warmup', name: 'Seilspringen (ohne Seil)', reps: '60 Sek', detail: 'Leicht auf den Ballen, rhythmusgleichmäßig.' },
+
+  { type: 'lower', name: 'Kniebeugen', reps: '3 x 15', detail: 'Brust aufrecht, Knie leicht nach außen, kontrolliert tief.' },
+  { type: 'lower', name: 'Ausfallschritte', reps: '3 x 12 je Bein', detail: 'Pro Bein sauber arbeiten, Oberkörper ruhig.' },
+  { type: 'lower', name: 'Glute Bridge', reps: '3 x 15', detail: 'Po oben kurz anspannen, langsam absenken.' },
+  { type: 'lower', name: 'Wandsitz', reps: '30 Sek', detail: 'Rücken flach an die Wand, Oberschenkel waagerecht.' },
+  { type: 'lower', name: 'Beinheben liegend', reps: '3 x 15 je Bein', detail: 'Seitlich liegen, Bein kontrolliert heben und senken.' },
+
+  { type: 'upper', name: 'Liegestütze', reps: '3 x 10', detail: 'Rumpf fest, auf Knien möglich.' },
+  { type: 'upper', name: 'Rudern', reps: '3 x 12', detail: 'Rücken gerade, Schulterblätter zusammenführen.' },
+  { type: 'upper', name: 'Schulterdrücken', reps: '3 x 12', detail: 'Bauch fest, kontrolliert nach oben drücken.' },
+  { type: 'upper', name: 'Bizeps-Curls', reps: '2 x 12', detail: 'Ellbogen ruhig, langsam senken.' },
+  { type: 'upper', name: 'Trizepsdrücken', reps: '2 x 12', detail: 'Ellbogen nah am Körper, langsam führen.' },
+  { type: 'upper', name: 'Seitheben', reps: '3 x 15', detail: 'Leichtes Gewicht, ohne Schwung.' },
+  { type: 'upper', name: 'Brustdrücken am Boden', reps: '3 x 12', detail: 'Hanteln kontrolliert nach oben drücken.' },
+
+  { type: 'core', name: 'Plank', reps: '45 Sek', detail: 'Rücken lang, Bauch fest, ruhig atmen.' },
+  { type: 'core', name: 'Russian Twists', reps: '3 x 20', detail: 'Oberkörper drehen, Core aktiv.' },
+  { type: 'core', name: 'Bicycle Crunches', reps: '3 x 20', detail: 'Langsam und sauber, nicht am Nacken ziehen.' },
+  { type: 'core', name: 'Beinheben', reps: '3 x 15', detail: 'Rücken am Boden, Bewegung kontrollieren.' },
+  { type: 'core', name: 'Unterarmstütz seitlich', reps: '30 Sek je Seite', detail: 'Hüfte hoch, Körper in einer Linie.' },
+
+  { type: 'cardio', name: 'Hampelmann', reps: '60 Sek', detail: 'Schnell und leicht, gleichmäßig atmen.' },
+  { type: 'cardio', name: 'Bergsteiger', reps: '40 Sek', detail: 'Knie abwechselnd zum Bauch, Rumpf stabil.' },
+  { type: 'cardio', name: 'Seilspringen', reps: '60 Sek', detail: 'Leicht auf den Ballen, im Rhythmus bleiben.' },
+  { type: 'cardio', name: 'Hometrainer', reps: '15 Min', detail: 'Moderates Tempo, gleichmäßig treten.' },
+
+  { type: 'recovery', name: 'Dehnen', reps: '5 Min', detail: 'Große Muskelgruppen ruhig dehnen, nicht wippen.' },
+  { type: 'recovery', name: 'Koordiniertes Atmen', reps: '2 Min', detail: 'Tief in den Bauch atmen, Puls senken.' },
+]
+
+export function examplePlans() {
+  return [
+    {
+      id: makeId(),
+      name: 'Rücken & Haltung',
+      title: 'Aufgerichtet durch den Tag',
+      accent: 'violet',
+      equipment: 'Hanteln, Matte',
+      days: [
+        {
+          title: 'Haltungstag',
+          focus: 'Oberrücken & Core',
+          tone: 'Gegen langes Sitzen: Rumpf fest, Schultern zurück.',
+          steps: [
+            step('warmup', 'Marschieren', 'Auf der Stelle marschieren, Arme locker mitnehmen.', '60 Sek'),
+            step('warmup', 'Arme kreisen', 'Arme groß und weich kreisen.', '30 Sek'),
+            step('upper', 'Rudern', 'Rücken gerade, Schulterblätter zusammenführen.', '3 x 12'),
+            step('upper', 'Liegestütze', 'Auf Knien möglich, Rumpf bleibt fest.', '3 x 10'),
+            step('core', 'Plank', 'Rücken lang, Bauch fest.', '45 Sek'),
+            step('core', 'Unterarmstütz seitlich', 'Hüfte hoch, Körper in einer Linie.', '30 Sek je Seite'),
+            step('recovery', 'Dehnen', 'Brust und Nackel locker dehnen.', '5 Min'),
+          ],
+        },
+      ],
+    },
+    {
+      id: makeId(),
+      name: 'Cardio-Mix',
+      title: 'Kurz, knackig, Puls hoch',
+      accent: 'blue',
+      equipment: 'Kein Equipment',
+      days: [
+        {
+          title: 'Intervalltag',
+          focus: 'Cardio-Intervalle',
+          tone: 'Kurz und intensiv – jede Minute bewegen.',
+          steps: [
+            step('warmup', 'Hampelmann', 'Locker einhüpfen.', '30 Sek'),
+            step('warmup', 'Knie heben', 'Knie abwechselnd hoch.', '45 Sek'),
+            step('cardio', 'Bergsteiger', 'Knie zügig zum Bauch.', '40 Sek'),
+            step('cardio', 'Hampelmann', 'Tempo raus, dranbleiben.', '60 Sek'),
+            step('cardio', 'Seilspringen', 'Ohne Seil, im Rhythmus.', '60 Sek'),
+            step('core', 'Bicycle Crunches', 'Langsam und sauber.', '3 x 20'),
+            step('recovery', 'Koordiniertes Atmen', 'Tief in den Bauch atmen.', '2 Min'),
+          ],
+        },
+      ],
+    },
+    {
+      id: makeId(),
+      name: 'Urlaubsprogramm',
+      title: 'Überall, ohne Equipment',
+      accent: 'amber',
+      equipment: 'Ohne Equipment',
+      days: [
+        {
+          title: 'Ganzkörper',
+          focus: 'Kraft mit Körpergewicht',
+          tone: 'Kompakt für unterwegs – nur dein Gewicht.',
+          steps: [
+            step('warmup', 'Marschieren', 'Auf der Stelle marschieren.', '60 Sek'),
+            step('lower', 'Kniebeugen', 'Kontrolliert tief.', '3 x 15'),
+            step('upper', 'Liegestütze', 'Auf Knien möglich.', '3 x 10'),
+            step('core', 'Plank', 'Bauch fest, ruhig atmen.', '45 Sek'),
+            step('cardio', 'Bergsteiger', 'Zügig, Rumpf stabil.', '40 Sek'),
+            step('recovery', 'Dehnen', 'Große Muskelgruppen dehnen.', '5 Min'),
+          ],
+        },
+        {
+          title: 'Kurz & knackig',
+          focus: 'Schnelle Runde',
+          tone: '15 Minuten für Zwischendurch.',
+          steps: [
+            step('warmup', 'Arme kreisen', 'Schultern wachmachen.', '30 Sek'),
+            step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten.', '3 x 12 je Bein'),
+            step('lower', 'Wandsitz', 'Oberschenkel waagerecht.', '30 Sek'),
+            step('core', 'Russian Twists', 'Oberkörper drehen.', '3 x 20'),
+            step('cardio', 'Hampelmann', 'Dranbleiben.', '60 Sek'),
+            step('recovery', 'Dehnen', 'Locker auslaufen.', '5 Min'),
+          ],
+        },
+      ],
+    },
+  ]
+}

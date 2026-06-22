@@ -5,12 +5,12 @@ import {
   Plus,
   Trash2,
   Video,
-  X,
 } from 'lucide-react'
-import { ACCENTS, TYPE_META, TYPE_KEYS, emptyStep, emptyDay } from './plans'
+import { ACCENTS, EXERCISE_LIBRARY, TYPE_META, TYPE_KEYS, emptyStep, emptyDay } from './plans'
 
-export default function Editor({ plan, onChange, onDelete, onClose }) {
+export default function Editor({ plan, onChange }) {
   const [dayIndex, setDayIndex] = useState(0)
+  const [blockType, setBlockType] = useState('all')
   const day = plan.days[dayIndex] || plan.days[0]
 
   function patchProgram(patch) {
@@ -31,11 +31,14 @@ export default function Editor({ plan, onChange, onDelete, onClose }) {
       }),
     })
   }
-  function addStep(di) {
+  function addStep(di, stepObj) {
     onChange({
       ...plan,
-      days: plan.days.map((d, i) => (i === di ? { ...d, steps: [...d.steps, emptyStep()] } : d)),
+      days: plan.days.map((d, i) => (i === di ? { ...d, steps: [...d.steps, stepObj || emptyStep()] } : d)),
     })
+  }
+  function addBlock(block) {
+    addStep(dayIndex, { type: block.type, name: block.name, detail: block.detail, reps: block.reps })
   }
   function removeStep(di, si) {
     onChange({
@@ -72,13 +75,10 @@ export default function Editor({ plan, onChange, onDelete, onClose }) {
     setDayIndex((idx) => Math.max(0, Math.min(idx, days.length - 1)))
   }
 
+  const blocks = blockType === 'all' ? EXERCISE_LIBRARY : EXERCISE_LIBRARY.filter((b) => b.type === blockType)
+
   return (
     <div className="editor">
-      <div className="editorHead">
-        <h2>Programm bearbeiten</h2>
-        <button className="iconAction" onClick={onClose} aria-label="Editor schließen"><X size={20} /></button>
-      </div>
-
       <section className="editorSection">
         <h3>Programm</h3>
         <label className="field">
@@ -108,11 +108,7 @@ export default function Editor({ plan, onChange, onDelete, onClose }) {
         </div>
         <div className="dayTabs">
           {plan.days.map((d, i) => (
-            <button
-              key={i}
-              className={i === dayIndex ? 'active' : ''}
-              onClick={() => setDayIndex(i)}
-            >
+            <button key={i} className={i === dayIndex ? 'active' : ''} onClick={() => setDayIndex(i)}>
               {d.title || `Tag ${i + 1}`}
             </button>
           ))}
@@ -141,9 +137,30 @@ export default function Editor({ plan, onChange, onDelete, onClose }) {
       </section>
 
       <section className="editorSection">
+        <h3>Bausteine · Übung hinzufügen</h3>
+        <div className="blockFilter">
+          <button className={blockType === 'all' ? 'active' : ''} onClick={() => setBlockType('all')}>Alle</button>
+          {TYPE_KEYS.map((t) => (
+            <button key={t} className={blockType === t ? 'active' : ''} onClick={() => setBlockType(t)}>
+              {TYPE_META[t].label}
+            </button>
+          ))}
+        </div>
+        <div className="blockGrid">
+          {blocks.map((b, i) => (
+            <button key={`${b.name}-${i}`} className="blockChip" onClick={() => addBlock(b)} title={b.detail}>
+              + {b.name}
+            </button>
+          ))}
+        </div>
+        <button className="ghostBtn block" onClick={() => addStep(dayIndex)}>
+          <Plus size={16} /> Eigene Übung (leer)
+        </button>
+      </section>
+
+      <section className="editorSection">
         <div className="editorRow">
           <h3>Übungen · {day?.title}</h3>
-          <button className="ghostBtn" onClick={() => addStep(dayIndex)}><Plus size={16} /> Übung</button>
         </div>
         <div className="stepEditorList">
           {day?.steps.map((s, si) => (
@@ -195,13 +212,7 @@ export default function Editor({ plan, onChange, onDelete, onClose }) {
             </div>
           ))}
         </div>
-        <button className="ghostBtn block" onClick={() => addStep(dayIndex)}><Plus size={16} /> Übung hinzufügen</button>
-      </section>
-
-      <section className="editorSection dangerZone">
-        <button className="dangerGhost" onClick={onDelete}>
-          <Trash2 size={16} /> Programm löschen
-        </button>
+        <button className="ghostBtn block" onClick={() => addStep(dayIndex)}><Plus size={16} /> Eigene Übung hinzufügen</button>
       </section>
     </div>
   )
