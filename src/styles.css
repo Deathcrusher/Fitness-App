@@ -8,8 +8,17 @@
 }
 
 * { box-sizing: border-box; }
-html { min-width: 320px; background: #f5f7f3; }
-body { margin: 0; min-width: 320px; }
+html {
+  min-width: 320px;
+  background: #f5f7f3;
+  overscroll-behavior: none;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
 button { font: inherit; color: inherit; }
 
 .app {
