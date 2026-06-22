@@ -1,232 +1,62 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
-  Activity,
-  Bike,
   CalendarDays,
   CheckCircle2,
   ChevronRight,
   Clock3,
-  Dumbbell,
-  Flame,
-  Footprints,
-  HeartPulse,
+  Copy,
   Pause,
+  Pencil,
   Play,
+  Plus,
   RotateCcw,
   SkipForward,
   Sparkles,
   TimerReset,
+  Trash2,
   Trophy,
+  Video,
 } from 'lucide-react'
+import {
+  builtinPlans,
+  TYPE_META,
+  imageFor,
+  timedSeconds,
+  fmt,
+  videoKey,
+  emptyPlan,
+  duplicatePlan,
+} from './plans'
+import VideoPlayer from './VideoPlayer'
+import Editor from './Editor'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
 const STORAGE_KEY = 'fitflow-state-v2'
-
-const VISUALS = {
-  warmup: '/assets/warmup.jpg',
-  lower: '/assets/lower.jpg',
-  upper: '/assets/upper.jpg',
-  core: '/assets/core.jpg',
-  cardio: '/assets/cardio.jpg',
-  recovery: '/assets/recovery.jpg',
-}
-
-const EXERCISE_IMG = {
-  connie: {
-    'Warm-up': 'warmup',
-    'Mobilisieren': 'warmup',
-    'Kniebeugen': 'kniebeugen',
-    'Ausfallschritte': 'ausfallschritte',
-    'Rudern mit Hanteln': 'rudern',
-    'Schulterdrücken': 'schulterdruecken',
-    'Glute Bridge': 'glute-bridge',
-    'Plank': 'plank',
-    'Cardio Finish': 'hometrainer',
-    'Hula Hoop': 'hula-hoop',
-    'Hula Hoop Finish': 'hula-hoop',
-    'Russian Twists': 'russian-twists',
-    'Bicycle Crunches': 'bicycle-crunches',
-    'Beinheben': 'beinheben',
-    'Ausfahren': 'hometrainer',
-    'Brustdrücken am Boden': '/assets/exercises/brustdruecken.jpg',
-    'Seitheben': 'seitheben',
-  },
-  rene: {
-    'Aufwärmen': 'warmup',
-    'Kniebeugen': 'kniebeugen',
-    'Ausfallschritte': 'ausfallschritte',
-    'Rudern': 'rudern',
-    'Rudern mit Hanteln': 'rudern',
-    'Einarmiges Rudern': 'rudern',
-    'Brustdrücken am Boden': 'brustdruecken',
-    'Schulterdrücken': 'schulterdruecken',
-    'Bizeps-Curls': 'bizeps-curls',
-    'Plank': 'plank',
-    'Liegestütze': 'liegestuetze',
-    'Seitheben': 'seitheben',
-    'Hammer Curls': 'hammer-curls',
-    'Russian Twists': 'russian-twists',
-    'Trizepsdrücken': 'trizeps',
-    'Laufband Gehen': 'laufband',
-    'Cooldown': 'warmup',
-  },
-}
-
-function imageFor(step, person) {
-  const slug = EXERCISE_IMG[person]?.[step.name]
-  if (slug?.startsWith('/')) return slug
-  return slug ? `/assets/exercises/${person}/${slug}.webp` : VISUALS[step.type]
-}
-
-const TYPE_META = {
-  warmup: { label: 'Warm-up', icon: Footprints },
-  lower: { label: 'Beine & Po', icon: Flame },
-  upper: { label: 'Kraft', icon: Dumbbell },
-  core: { label: 'Core', icon: Activity },
-  cardio: { label: 'Cardio', icon: Bike },
-  recovery: { label: 'Cooldown', icon: HeartPulse },
-}
-
-const plans = {
-  connie: {
-    name: 'Connie',
-    title: 'Straffen & wohlfühlen',
-    accent: 'coral',
-    equipment: 'Hanteln, Matte, Hula Hoop, Hometrainer',
-    days: [
-      {
-        title: 'Montag',
-        focus: 'Ganzkörper + Cardio',
-        tone: 'Kalorien verbrennen und Körperspannung aufbauen.',
-        steps: [
-          ...warmupSteps(),
-          step('lower', 'Kniebeugen', 'Brust aufrecht, Knie leicht nach außen, kontrolliert tief gehen.', '3 x 15'),
-          step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper bleibt ruhig.', '3 x 12 je Bein'),
-          step('upper', 'Rudern mit Hanteln', 'Rücken gerade, Ellbogen eng am Körper ziehen.', '3 x 12'),
-          step('upper', 'Schulterdrücken', 'Bauch fest, Hanteln kontrolliert nach oben drücken.', '3 x 12'),
-          step('lower', 'Glute Bridge', 'Po oben kurz anspannen und langsam absenken.', '3 x 15'),
-          step('core', 'Plank', 'Rücken lang, Bauch fest, Nacken entspannt.', '3 x 30-45 Sek'),
-          step('cardio', 'Cardio Finish', 'Hometrainer moderat fahren, gleichmäßig atmen.', '20 Min'),
-        ],
-      },
-      {
-        title: 'Mittwoch',
-        focus: 'Cardio & Core',
-        tone: 'Ausdauer, Bauchspannung und lockerer Rhythmus.',
-        steps: [
-          ...warmupSteps(),
-          step('cardio', 'Hula Hoop', 'Gleichmäßiges Tempo, locker bleiben und dranbleiben.', '30 Min'),
-          step('core', 'Plank', 'Ruhig halten und gleichmäßig atmen.', '3 x 30-45 Sek'),
-          step('core', 'Russian Twists', 'Oberkörper drehen, Core bleibt aktiv.', '3 x 20'),
-          step('core', 'Bicycle Crunches', 'Langsam und sauber, nicht am Nacken ziehen.', '3 x 20'),
-          step('core', 'Beinheben', 'Rücken bleibt am Boden, Bewegung kontrollieren.', '3 x 15'),
-          step('cardio', 'Ausfahren', 'Hometrainer locker ausfahren und Puls senken.', '15 Min'),
-        ],
-      },
-      {
-        title: 'Freitag',
-        focus: 'Ganzkörper + Hula Hoop',
-        tone: 'Po, Beine, Oberkörper und ein leichter Abschluss.',
-        steps: [
-          ...warmupSteps(),
-          step('lower', 'Kniebeugen', 'Sauber, ruhig und kontrolliert arbeiten.', '3 x 15'),
-          step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper bleibt ruhig.', '3 x 12 je Bein'),
-          step('upper', 'Brustdrücken am Boden', 'Hanteln kontrolliert nach oben drücken.', '3 x 12'),
-          step('upper', 'Rudern mit Hanteln', 'Schulterblätter bewusst zusammenziehen.', '3 x 12'),
-          step('upper', 'Seitheben', 'Leichtes Gewicht, ohne Schwung.', '3 x 15'),
-          step('lower', 'Glute Bridge', 'Po oben aktiv anspannen.', '3 x 15'),
-          step('cardio', 'Hula Hoop Finish', 'Locker, gleichmäßig und mit Spaß abschließen.', '20 Min'),
-        ],
-      },
-    ],
-  },
-  rene: {
-    name: 'René',
-    title: 'Kraft & Ausdauer',
-    accent: 'green',
-    equipment: 'Hanteln, Matte, Laufband',
-    days: [
-      {
-        title: 'Montag',
-        focus: 'Ganzkörper A',
-        tone: 'Basis-Kraft sauber aufbauen.',
-        steps: [
-          ...warmupSteps(),
-          step('lower', 'Kniebeugen', 'Optional mit Hanteln, kontrolliert tief gehen.', '3 x 10'),
-          step('upper', 'Rudern', 'Rücken gerade, Hanteln zum Körper ziehen.', '3 x 10'),
-          step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, Schulterblätter stabil.', '3 x 10'),
-          step('upper', 'Schulterdrücken', 'Bauch fest, nicht ins Hohlkreuz fallen.', '3 x 8-10'),
-          step('upper', 'Bizeps-Curls', 'Ellbogen ruhig halten, langsam senken.', '2 x 12'),
-          step('core', 'Plank', 'Spannung halten und ruhig atmen.', '3 x 30-45 Sek'),
-        ],
-      },
-      {
-        title: 'Mittwoch',
-        focus: 'Ganzkörper B',
-        tone: 'Variation, Technik und stabiler Rumpf.',
-        steps: [
-          ...warmupSteps(),
-          step('lower', 'Ausfallschritte', 'Pro Bein kontrolliert arbeiten.', '2-3 x 8 je Bein'),
-          step('upper', 'Einarmiges Rudern', 'Abstützen, Rücken gerade, sauber ziehen.', '2-3 x 10 je Seite'),
-          step('upper', 'Liegestütze', 'Auf Knien möglich, Rumpf bleibt fest.', '2-3 x 8-12'),
-          step('upper', 'Seitheben', 'Langsam und ohne Schwung.', '2 x 10-12'),
-          step('upper', 'Hammer Curls', 'Kontrolliert curlen und langsam senken.', '2 x 10'),
-          step('core', 'Russian Twists', 'Bauch fest, 10 Drehungen pro Seite.', '2 x 20'),
-        ],
-      },
-      {
-        title: 'Freitag',
-        focus: 'Ganzkörper + Laufband',
-        tone: 'Kraft wiederholen, leicht steigern und locker auslaufen.',
-        steps: [
-          ...warmupSteps(),
-          step('lower', 'Kniebeugen', 'Kontrolliert tief gehen, saubere Technik vor Gewicht.', '3 x 10-12'),
-          step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper aufrecht.', '3 x 8 je Bein'),
-          step('upper', 'Rudern mit Hanteln', 'Rücken gerade, Schulterblätter zusammenführen.', '3 x 10-12'),
-          step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, stabil in den Schultern.', '3 x 10-12'),
-          step('upper', 'Schulterdrücken', 'Bauch fest, kontrolliert nach oben drücken.', '3 x 8-10'),
-          step('upper', 'Trizepsdrücken', 'Ellbogen nah am Körper, langsam führen.', '2 x 12'),
-          step('core', 'Plank', 'Spannung halten, ruhig atmen.', '3 x 30-45 Sek'),
-          step('cardio', 'Laufband Gehen', '5 Min langsam, danach zügig gehen. Nicht rennen.', '10-15 Min'),
-          step('recovery', 'Cooldown', 'Kurz dehnen, Wasser trinken und Puls senken.', '5 Min'),
-        ],
-      },
-    ],
-  },
-}
-
-function step(type, name, detail, reps) {
-  return { type, name, detail, reps }
-}
-
-function warmupSteps() {
-  return [
-    step('warmup', 'Marschieren', 'Auf der Stelle marschieren, Arme locker mitnehmen.', '60 Sek'),
-    step('warmup', 'Arme kreisen', 'Arme groß und weich kreisen, Schultern entspannt.', '30 Sek'),
-    step('warmup', 'Arme kreisen (andere Richtung)', 'Richtung wechseln und gleichmäßig weiterkreisen.', '30 Sek'),
-    step('warmup', 'Knie heben – links', 'Linkes Knie Richtung Brust heben, Rumpf stabil halten.', '60 Sek'),
-    step('warmup', 'Knie heben – rechts', 'Rechtes Knie Richtung Brust heben.', '60 Sek'),
-    step('warmup', 'Ferse zum Po – links', 'Linke Ferse zum Po führen, aufrecht bleiben.', '60 Sek'),
-    step('warmup', 'Ferse zum Po – rechts', 'Rechte Ferse zum Po führen.', '60 Sek'),
-    step('warmup', 'Leichte Kniebeugen', 'Kontrolliert in die Knie gehen, nicht zu tief.', '30 Sek'),
-  ]
-}
-
-function timedSeconds(reps) {
-  const match = reps.match(/(\d+)\s*Sek/i)
-  return match ? Number(match[1]) : null
-}
-
-function fmt(seconds) {
-  const minutes = Math.floor(seconds / 60)
-  const rest = seconds % 60
-  return `${minutes}:${String(rest).padStart(2, '0')}`
-}
+const CUSTOM_KEY = 'fitflow-custom-plans-v1'
+const VIDEOS_KEY = 'fitflow-videos-v1'
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw)
+  } catch {
+    return {}
+  }
+}
+function loadCustomPlans() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw)
+  } catch {
+    return {}
+  }
+}
+function loadVideos() {
+  try {
+    const raw = localStorage.getItem(VIDEOS_KEY)
     if (!raw) return {}
     return JSON.parse(raw)
   } catch {
@@ -313,13 +143,17 @@ function signal(kind) {
 }
 
 export default function App() {
+  const [customPlans, setCustomPlans] = useState(loadCustomPlans)
+  const [videos, setVideos] = useState(loadVideos)
+  const allPlans = { ...builtinPlans, ...customPlans }
+
   const saved = loadState()
-  const savedPerson = plans[saved.person] ? saved.person : 'connie'
+  const savedPerson = allPlans[saved.person] ? saved.person : 'connie'
   const savedDayIndex = Math.min(
     Math.max(Number(saved.dayIndex) || 0, 0),
-    plans[savedPerson].days.length - 1,
+    allPlans[savedPerson].days.length - 1,
   )
-  const savedSteps = plans[savedPerson].days[savedDayIndex].steps
+  const savedSteps = allPlans[savedPerson].days[savedDayIndex].steps
   const savedStepIndex = Math.min(
     Math.max(Number(saved.stepIndex) || 0, 0),
     savedSteps.length - 1,
@@ -335,11 +169,14 @@ export default function App() {
   const [seconds, setSeconds] = useState(initialWork != null ? initialWork : 0)
   const [workSeconds, setWorkSeconds] = useState(initialWork != null ? initialWork : 0)
   const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
+  const [editing, setEditing] = useState(false)
+  const [showVideo, setShowVideo] = useState(false)
+  const [linkTarget, setLinkTarget] = useState(null)
 
   const wakeLockRef = useRef(null)
   const skipPersonReset = useRef(true)
 
-  const plan = plans[person]
+  const plan = allPlans[person]
   const day = plan.days[dayIndex]
   const steps = day.steps
   const currentStep = steps[stepIndex] || steps[steps.length - 1]
@@ -347,6 +184,10 @@ export default function App() {
   const isTimed = parsedWork != null
   const meta = TYPE_META[currentStep.type]
   const TypeIcon = meta.icon
+
+  const programId = person
+  const stepVideo = currentStep.video || videos[videoKey(programId, dayIndex, currentStep)] || null
+  const hasVideo = (item) => Boolean(item.video || videos[videoKey(programId, dayIndex, item)])
 
   const completedSteps = phase === 'done' ? steps.length : phase === 'rest' ? stepIndex + 1 : stepIndex
   const progress = Math.min(100, Math.round((completedSteps / steps.length) * 100))
@@ -356,14 +197,27 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds }),
-      )
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds }))
     } catch {
       /* noop */
     }
   }, [person, dayIndex, stepIndex, pauseSeconds])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CUSTOM_KEY, JSON.stringify(customPlans))
+    } catch {
+      /* noop */
+    }
+  }, [customPlans])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(VIDEOS_KEY, JSON.stringify(videos))
+    } catch {
+      /* noop */
+    }
+  }, [videos])
 
   function enterWork(nextStepIndex) {
     const target = steps[nextStepIndex]
@@ -373,6 +227,7 @@ export default function App() {
     setRunning(false)
     setSeconds(work != null ? work : 0)
     setWorkSeconds(work != null ? work : 0)
+    setShowVideo(false)
   }
 
   function completeExercise() {
@@ -383,6 +238,7 @@ export default function App() {
     setPhase('rest')
     setSeconds(pauseSeconds)
     setRunning(true)
+    setShowVideo(false)
   }
 
   function advanceAfterRest() {
@@ -397,7 +253,7 @@ export default function App() {
   }
 
   function selectDay(index) {
-    const firstStep = plans[person].days[index].steps[0]
+    const firstStep = allPlans[person].days[index].steps[0]
     const work = timedSeconds(firstStep.reps)
     setDayIndex(index)
     setStepIndex(0)
@@ -405,10 +261,16 @@ export default function App() {
     setRunning(false)
     setSeconds(work != null ? work : 0)
     setWorkSeconds(work != null ? work : 0)
+    setShowVideo(false)
   }
 
   function selectStep(index) {
     enterWork(index)
+  }
+
+  function selectPerson(key) {
+    setPerson(key)
+    if (allPlans[key]?.builtin) setEditing(false)
   }
 
   function togglePlay() {
@@ -435,19 +297,63 @@ export default function App() {
     enterWork(0)
   }
 
+  function createProgram() {
+    const p = emptyPlan()
+    setCustomPlans((cp) => ({ ...cp, [p.id]: p }))
+    setPerson(p.id)
+    setEditing(true)
+  }
+
+  function duplicateCurrent() {
+    const copy = duplicatePlan(plan, person)
+    setCustomPlans((cp) => ({ ...cp, [copy.id]: copy }))
+    setPerson(copy.id)
+    setEditing(true)
+  }
+
+  function updateCurrentPlan(updated) {
+    setCustomPlans((cp) => ({ ...cp, [updated.id]: updated }))
+  }
+
+  function deleteProgram(key) {
+    if (!window.confirm('Dieses Programm wirklich löschen?')) return
+    setCustomPlans((cp) => {
+      const next = { ...cp }
+      delete next[key]
+      return next
+    })
+    setEditing(false)
+    setPerson('connie')
+  }
+
+  function saveVideoLink(key, url) {
+    setVideos((v) => {
+      const next = { ...v }
+      const value = (url || '').trim()
+      if (value) next[key] = value
+      else delete next[key]
+      return next
+    })
+    setLinkTarget(null)
+  }
+
   useEffect(() => {
     if (skipPersonReset.current) {
       skipPersonReset.current = false
       return
     }
+    const fallback = allPlans[person] ? person : 'connie'
+    const dayCount = allPlans[fallback].days.length
     setDayIndex(0)
     setStepIndex(0)
     setPhase('work')
     setRunning(false)
-    const firstStep = plans[person].days[0].steps[0]
+    const firstStep = allPlans[fallback].days[0].steps[0]
     const work = timedSeconds(firstStep.reps)
     setSeconds(work != null ? work : 0)
     setWorkSeconds(work != null ? work : 0)
+    setShowVideo(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [person])
 
   useEffect(() => {
@@ -530,154 +436,233 @@ export default function App() {
           <h1>Dein Training, Schritt für Schritt.</h1>
           <p>Übung machen, erledigt tippen, Pause nehmen und weitertrainieren.</p>
           <div className="quickStats" aria-label="Trainingsdaten">
-            <span><CalendarDays size={16} /> 3 Tage</span>
+            <span><CalendarDays size={16} /> {plan.days.length} Tage</span>
             <span><Clock3 size={16} /> {pauseSeconds}s Pause</span>
-            <span><Dumbbell size={16} /> Zuhause</span>
+            <span><Video size={16} /> {Object.keys(videos).length} Videos</span>
           </div>
         </div>
         <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" fetchPriority="high" decoding="async" />
       </section>
 
       <section className="switcher" aria-label="Programm wählen">
-        {Object.entries(plans).map(([key, item]) => (
-          <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)}>
+        {Object.entries(allPlans).map(([key, item]) => (
+          <button key={key} className={person === key ? 'active' : ''} onClick={() => selectPerson(key)}>
             <span className="avatar">{item.name.slice(0, 1)}</span>
-            <span><strong>{item.name}</strong><small>{item.title}</small></span>
+            <span className="switchCopy"><strong>{item.name}</strong><small>{item.title}</small></span>
+            {!item.builtin && <span className="tag">Eigenes</span>}
           </button>
         ))}
+        <button className="addProgram" onClick={createProgram}>
+          <Plus size={20} /> <span>Neues Programm</span>
+        </button>
       </section>
 
-      <section className="dayRail" aria-label="Trainingstag wählen">
-        {plan.days.map((item, index) => (
-          <button key={item.title} className={dayIndex === index ? 'active' : ''} onClick={() => selectDay(index)}>
-            <strong>{item.title}</strong>
-            <span>{item.focus}</span>
-          </button>
-        ))}
+      <section className="programActions">
+        {plan.builtin ? (
+          <button className="ghostBtn" onClick={duplicateCurrent}><Copy size={16} /> Als eigenes duplizieren</button>
+        ) : (
+          <>
+            <button className="ghostBtn" onClick={() => setEditing(true)}><Pencil size={16} /> Bearbeiten</button>
+            <button className="ghostBtn danger" onClick={() => deleteProgram(person)}><Trash2 size={16} /> Löschen</button>
+          </>
+        )}
       </section>
 
-      <section className="dashboard">
-        <article className="sessionCard">
-          {phase === 'done' ? (
-            <div className="finishState">
-              <Trophy size={76} />
-              <h2>Training fertig</h2>
-              <p>{day.title}: {day.focus}</p>
-              <button className="primaryAction" onClick={resetWorkout}><RotateCcw size={20} /> Neu starten</button>
-            </div>
-          ) : (
-            <>
-              <div className="sessionImageWrap">
-                <img src={imageFor(currentStep, person)} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
-                <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
-              </div>
+      {editing && !plan.builtin ? (
+        <section className="dashboard editorMode">
+          <Editor
+            plan={plan}
+            onChange={updateCurrentPlan}
+            onDelete={() => deleteProgram(person)}
+            onClose={() => setEditing(false)}
+          />
+        </section>
+      ) : (
+        <>
+          <section className="dayRail" aria-label="Trainingstag wählen">
+            {plan.days.map((item, index) => (
+              <button key={`${item.title}-${index}`} className={dayIndex === index ? 'active' : ''} onClick={() => selectDay(index)}>
+                <strong>{item.title}</strong>
+                <span>{item.focus}</span>
+              </button>
+            ))}
+          </section>
 
-              <div className="sessionHeader">
-                <div>
-                  <p className="muted">{day.title} · {day.focus}</p>
-                  <h2>{phase === 'rest' ? 'Pause' : currentStep.name}</h2>
+          <section className="dashboard">
+            <article className="sessionCard">
+              {phase === 'done' ? (
+                <div className="finishState">
+                  <Trophy size={76} />
+                  <h2>Training fertig</h2>
+                  <p>{day.title}: {day.focus}</p>
+                  <button className="primaryAction" onClick={resetWorkout}><RotateCcw size={20} /> Neu starten</button>
                 </div>
-                <span className="repBadge">{currentStep.reps}</span>
-              </div>
-
-              <p className="exerciseText">
-                {phase === 'rest'
-                  ? restEnded
-                    ? 'Pause vorbei – tippe auf Weiter, wenn du startklar bist.'
-                    : 'Atmen, kurz trinken und bereit machen.'
-                  : currentStep.detail}
-              </p>
-
-              {showTimer && (
-                <div className="timerPanel" aria-label={phase === 'rest' ? 'Pausentimer' : 'Halte-Timer'}>
-                  <TimerReset size={24} />
-                  <strong>{fmt(seconds)}</strong>
-                  <span>{phase === 'rest' ? 'Pause' : 'Halten'}</span>
-                </div>
-              )}
-
-              <div className="progressLine"><span style={{ width: `${progress}%` }} /></div>
-
-              {phase === 'rest' ? (
+              ) : (
                 <>
-                  <div className={`controls pauseControls${restEnded ? ' singleAction' : ''}`}>
-                    {restEnded ? (
-                      <button className="primaryAction" onClick={advanceAfterRest}>
-                        <SkipForward size={20} /> Weiter
+                  <div className="sessionImageWrap">
+                    <img src={imageFor(currentStep, plan.builtin ? person : 'custom')} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
+                    <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
+                  </div>
+
+                  <div className="sessionHeader">
+                    <div>
+                      <p className="muted">{day.title} · {day.focus}</p>
+                      <h2>{phase === 'rest' ? 'Pause' : currentStep.name}</h2>
+                    </div>
+                    <span className="repBadge">{currentStep.reps}</span>
+                  </div>
+
+                  <p className="exerciseText">
+                    {phase === 'rest'
+                      ? restEnded
+                        ? 'Pause vorbei – tippe auf Weiter, wenn du startklar bist.'
+                        : 'Atmen, kurz trinken und bereit machen.'
+                      : currentStep.detail}
+                  </p>
+
+                  {phase === 'work' && stepVideo && (
+                    <div className="videoActions">
+                      <button className="ghostBtn" onClick={() => setShowVideo((v) => !v)}>
+                        <Video size={16} /> {showVideo ? 'Video ausblenden' : 'Video anzeigen'}
                       </button>
-                    ) : (
-                      <>
+                      {plan.builtin && (
+                        <button className="ghostBtn" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: videos[videoKey(programId, dayIndex, currentStep)] || '' })}>
+                          Ändern
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {phase === 'work' && !stepVideo && plan.builtin && (
+                    <div className="videoActions">
+                      <button className="ghostBtn" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: '' })}>
+                        <Video size={16} /> Video verknüpfen
+                      </button>
+                    </div>
+                  )}
+                  {phase === 'work' && !stepVideo && !plan.builtin && (
+                    <p className="videoHint"><Video size={14} /> Tipp: Im Editor kannst du ein Video pro Übung hinterlegen.</p>
+                  )}
+                  {showVideo && stepVideo && phase === 'work' && (
+                    <VideoPlayer url={stepVideo} onClose={() => setShowVideo(false)} />
+                  )}
+
+                  {showTimer && (
+                    <div className="timerPanel" aria-label={phase === 'rest' ? 'Pausentimer' : 'Halte-Timer'}>
+                      <TimerReset size={24} />
+                      <strong>{fmt(seconds)}</strong>
+                      <span>{phase === 'rest' ? 'Pause' : 'Halten'}</span>
+                    </div>
+                  )}
+
+                  <div className="progressLine"><span style={{ width: `${progress}%` }} /></div>
+
+                  {phase === 'rest' ? (
+                    <>
+                      <div className={`controls pauseControls${restEnded ? ' singleAction' : ''}`}>
+                        {restEnded ? (
+                          <button className="primaryAction" onClick={advanceAfterRest}>
+                            <SkipForward size={20} /> Weiter
+                          </button>
+                        ) : (
+                          <>
+                            <button className="primaryAction" onClick={togglePlay}>
+                              {running ? <Pause size={20} /> : <Play size={20} />}
+                              {running ? 'Pause' : 'Weiterlaufen'}
+                            </button>
+                            <button onClick={advanceAfterRest}><SkipForward size={20} /> Überspringen</button>
+                            <button className="iconAction" onClick={resetPause} aria-label="Pause zurücksetzen"><RotateCcw size={20} /></button>
+                          </>
+                        )}
+                      </div>
+                      <div className="restPresets" aria-label="Pausenlänge">
+                        <span>Pause:</span>
+                        {PAUSE_PRESETS.map((preset) => (
+                          <button key={preset} className={pauseSeconds === preset ? 'active' : ''} onClick={() => changePause(preset)}>
+                            {preset}s
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : isTimed ? (
+                    <>
+                      <div className="controls workControls">
                         <button className="primaryAction" onClick={togglePlay}>
                           {running ? <Pause size={20} /> : <Play size={20} />}
-                          {running ? 'Pause' : 'Weiterlaufen'}
+                          {running ? 'Pause' : 'Timer starten'}
                         </button>
-                        <button onClick={advanceAfterRest}><SkipForward size={20} /> Überspringen</button>
-                        <button className="iconAction" onClick={resetPause} aria-label="Pause zurücksetzen"><RotateCcw size={20} /></button>
-                      </>
-                    )}
-                  </div>
-                  <div className="restPresets" aria-label="Pausenlänge">
-                    <span>Pause:</span>
-                    {PAUSE_PRESETS.map((preset) => (
-                      <button key={preset} className={pauseSeconds === preset ? 'active' : ''} onClick={() => changePause(preset)}>
-                        {preset}s
-                      </button>
-                    ))}
-                  </div>
+                        <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                        <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
+                      </div>
+                      <div className="restPresets" aria-label="Übungs-Dauer">
+                        <span>Dauer:</span>
+                        {WORK_PRESETS.map((preset) => (
+                          <button key={preset} className={workSeconds === preset ? 'active' : ''} onClick={() => changeWork(preset)}>
+                            {preset}s
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="controls exerciseControls">
+                      <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                      <button onClick={resetWorkout}><RotateCcw size={20} /> Neustart</button>
+                    </div>
+                  )}
                 </>
-              ) : isTimed ? (
-                <>
-                  <div className="controls workControls">
-                    <button className="primaryAction" onClick={togglePlay}>
-                      {running ? <Pause size={20} /> : <Play size={20} />}
-                      {running ? 'Pause' : 'Timer starten'}
-                    </button>
-                    <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
-                    <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
-                  </div>
-                  <div className="restPresets" aria-label="Übungs-Dauer">
-                    <span>Dauer:</span>
-                    {WORK_PRESETS.map((preset) => (
-                      <button key={preset} className={workSeconds === preset ? 'active' : ''} onClick={() => changeWork(preset)}>
-                        {preset}s
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="controls exerciseControls">
-                  <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
-                  <button onClick={resetWorkout}><RotateCcw size={20} /> Neustart</button>
-                </div>
               )}
-            </>
-          )}
-        </article>
+            </article>
 
-        <aside className="planPanel">
-          <div className="panelHead">
-            <div>
-              <p className="muted">{plan.equipment}</p>
-              <h2>{day.focus}</h2>
+            <aside className="planPanel">
+              <div className="panelHead">
+                <div>
+                  <p className="muted">{plan.equipment}</p>
+                  <h2>{day.focus}</h2>
+                </div>
+                <span>{progress}%</span>
+              </div>
+              <p className="dayTone">{day.tone}</p>
+              <div className="stepList">
+                {steps.map((item, index) => {
+                  const ItemIcon = TYPE_META[item.type].icon
+                  const state = index === stepIndex && phase !== 'done' ? 'current' : index < completedSteps ? 'done' : ''
+                  const linked = hasVideo(item)
+                  return (
+                    <button key={`${item.name}-${index}`} className={state} onClick={() => selectStep(index)}>
+                      <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
+                      <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
+                      {linked ? <Video size={15} className="stepVideoIcon" /> : <ChevronRight size={18} />}
+                    </button>
+                  )
+                })}
+              </div>
+            </aside>
+          </section>
+        </>
+      )}
+
+      {linkTarget && (
+        <div className="modalOverlay" onClick={() => setLinkTarget(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Video verknüpfen">
+            <h3>Video verknüpfen</h3>
+            <p className="muted">YouTube-Link oder direkte Video-URL (z. B. .mp4).</p>
+            <input
+              className="modalInput"
+              type="url"
+              value={linkTarget.value}
+              onChange={(e) => setLinkTarget((t) => ({ ...t, value: e.target.value }))}
+              placeholder="https://youtu.be/…"
+              autoFocus
+            />
+            <div className="modalActions">
+              <button className="ghostBtn" onClick={() => setLinkTarget(null)}>Abbrechen</button>
+              {videos[linkTarget.key] && (
+                <button className="ghostBtn danger" onClick={() => saveVideoLink(linkTarget.key, '')}>Entfernen</button>
+              )}
+              <button className="primaryAction" onClick={() => saveVideoLink(linkTarget.key, linkTarget.value)}>Speichern</button>
             </div>
-            <span>{progress}%</span>
           </div>
-          <p className="dayTone">{day.tone}</p>
-          <div className="stepList">
-            {steps.map((item, index) => {
-              const ItemIcon = TYPE_META[item.type].icon
-              const state = index === stepIndex && phase !== 'done' ? 'current' : index < completedSteps ? 'done' : ''
-              return (
-                <button key={`${item.name}-${index}`} className={state} onClick={() => selectStep(index)}>
-                  <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
-                  <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
-                  <ChevronRight size={18} />
-                </button>
-              )
-            })}
-          </div>
-        </aside>
-      </section>
+        </div>
+      )}
     </main>
   )
 }
