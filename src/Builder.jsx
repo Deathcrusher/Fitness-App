@@ -5,6 +5,8 @@ import Editor from './Editor'
 export default function Builder({
   customPlans,
   builtinPlans,
+  owner,
+  onOwner,
   selected,
   onChange,
   onNew,
@@ -13,15 +15,22 @@ export default function Builder({
   onBack,
   onRun,
 }) {
-  const keys = Object.keys(customPlans)
-  const [editingKey, setEditingKey] = useState(selected && customPlans[selected] ? selected : keys[0] || null)
+  const ownedEntries = Object.entries(customPlans).filter(([, p]) => (p.owner || 'connie') === owner)
+  const [editingKey, setEditingKey] = useState(
+    selected && customPlans[selected] ? selected : ownedEntries[0]?.[0] || null,
+  )
 
   useEffect(() => {
-    if (selected && customPlans[selected]) setEditingKey(selected)
+    if (selected && customPlans[selected] && customPlans[selected].owner === owner) setEditingKey(selected)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected])
 
-  const validKey = editingKey && customPlans[editingKey] ? editingKey : keys[0] || null
+  useEffect(() => {
+    setEditingKey(null)
+  }, [owner])
+
+  const ownedKeys = ownedEntries.map(([k]) => k)
+  const validKey = editingKey && ownedKeys.includes(editingKey) ? editingKey : ownedKeys[0] || null
   const plan = validKey ? customPlans[validKey] : null
 
   function stepTotal(p) {
@@ -35,9 +44,14 @@ export default function Builder({
         <h2>Meine Programme</h2>
       </div>
 
+      <div className="ownerToggle" role="tablist" aria-label="Programme für">
+        <span>Für:</span>
+        <button className={owner === 'connie' ? 'active' : ''} onClick={() => onOwner('connie')}>Connie</button>
+        <button className={owner === 'rene' ? 'active' : ''} onClick={() => onOwner('rene')}>René</button>
+      </div>
+
       <div className="builderGrid">
-        {keys.map((key) => {
-          const p = customPlans[key]
+        {ownedEntries.map(([key, p]) => {
           return (
             <button
               key={key}

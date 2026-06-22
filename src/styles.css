@@ -973,6 +973,28 @@ button.doneAction {
 .builderActions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .builderEmpty { padding: 24px 0; }
 
+.ownerToggle { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.ownerToggle > span {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+.ownerToggle button {
+  min-height: 36px;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.ownerToggle button.active { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+
 /* Building blocks palette */
 .blockFilter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .blockFilter button {

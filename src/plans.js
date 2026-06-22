@@ -238,6 +238,7 @@ export function emptyPlan() {
     title: 'Eigenes Training',
     accent: 'violet',
     equipment: '',
+    owner: 'connie',
     days: [emptyDay()],
   }
 }
@@ -250,6 +251,7 @@ export function duplicatePlan(source, personKey) {
     title: base.title,
     accent: base.accent,
     equipment: base.equipment,
+    owner: base.owner || 'connie',
     days: JSON.parse(JSON.stringify(base.days)),
   }
 }
@@ -314,6 +316,7 @@ export function examplePlans() {
       title: 'Aufgerichtet durch den Tag',
       accent: 'violet',
       equipment: 'Hanteln, Matte',
+      owner: 'connie',
       days: [
         {
           title: 'Haltungstag',
@@ -337,6 +340,7 @@ export function examplePlans() {
       title: 'Kurz, knackig, Puls hoch',
       accent: 'blue',
       equipment: 'Kein Equipment',
+      owner: 'rene',
       days: [
         {
           title: 'Intervalltag',
@@ -360,6 +364,7 @@ export function examplePlans() {
       title: 'Überall, ohne Equipment',
       accent: 'amber',
       equipment: 'Ohne Equipment',
+      owner: 'connie',
       days: [
         {
           title: 'Ganzkörper',

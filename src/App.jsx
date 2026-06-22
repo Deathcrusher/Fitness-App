@@ -12,6 +12,7 @@ import {
   SkipForward,
   Sparkles,
   TimerReset,
+  Trash2,
   Trophy,
   Video,
 } from 'lucide-react'
@@ -53,7 +54,12 @@ function loadCustomPlans() {
       for (const p of examplePlans()) seeded[p.id] = p
       return seeded
     }
-    return JSON.parse(raw)
+    const parsed = JSON.parse(raw)
+    const out = {}
+    for (const [k, v] of Object.entries(parsed)) {
+      out[k] = { ...v, owner: v.owner || 'connie' }
+    }
+    return out
   } catch {
     return {}
   }
@@ -166,6 +172,8 @@ export default function App() {
   const initialWork = timedSeconds(initialStep.reps)
 
   const [view, setView] = useState('train')
+  const initialOwner = builtinPlans[savedPerson] ? savedPerson : (allPlans[savedPerson]?.owner || 'connie')
+  const [builderOwner, setBuilderOwner] = useState(initialOwner)
   const [person, setPerson] = useState(savedPerson)
   const [dayIndex, setDayIndex] = useState(savedDayIndex)
   const [stepIndex, setStepIndex] = useState(savedStepIndex)
@@ -176,6 +184,7 @@ export default function App() {
   const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
   const [showVideo, setShowVideo] = useState(false)
   const [linkTarget, setLinkTarget] = useState(null)
+  const [confirmKey, setConfirmKey] = useState(null)
 
   const wakeLockRef = useRef(null)
   const skipPersonReset = useRef(true)
@@ -297,14 +306,16 @@ export default function App() {
   }
 
   function createProgram() {
-    const p = emptyPlan()
+    const owner = builtinPlans[person] ? person : (allPlans[person]?.owner || builderOwner)
+    const p = { ...emptyPlan(), owner }
+    setBuilderOwner(owner)
     setCustomPlans((cp) => ({ ...cp, [p.id]: p }))
     setPerson(p.id)
     setView('build')
   }
 
   function duplicateBuiltin(key) {
-    const copy = duplicatePlan(builtinPlans[key], key)
+    const copy = { ...duplicatePlan(builtinPlans[key], key), owner: builderOwner }
     setCustomPlans((cp) => ({ ...cp, [copy.id]: copy }))
     setPerson(copy.id)
     setView('build')
@@ -315,13 +326,18 @@ export default function App() {
   }
 
   function deleteProgram(key) {
-    if (!window.confirm('Dieses Programm wirklich löschen?')) return
+    setConfirmKey(key)
+  }
+
+  function confirmDelete() {
+    const key = confirmKey
     setCustomPlans((cp) => {
       const next = { ...cp }
       delete next[key]
       return next
     })
     if (person === key) setPerson('connie')
+    setConfirmKey(null)
   }
 
   function runProgram(key) {
@@ -433,7 +449,7 @@ export default function App() {
         <span className="brand"><Sparkles size={16} /> FitFlow</span>
         <div className="navTabs">
           <button className={view === 'train' ? 'active' : ''} onClick={() => setView('train')}>Training</button>
-          <button className={view === 'build' ? 'active' : ''} onClick={() => setView('build')}>Programme</button>
+          <button className={view === 'build' ? 'active' : ''} onClick={() => { if (builtinPlans[person]) setBuilderOwner(person); setView('build') }}>Programme</button>
         </div>
       </nav>
 
@@ -637,6 +653,8 @@ export default function App() {
           <Builder
             customPlans={customPlans}
             builtinPlans={builtinPlans}
+            owner={builderOwner}
+            onOwner={setBuilderOwner}
             selected={customPlans[person] ? person : null}
             onChange={updateCurrentPlan}
             onNew={createProgram}
@@ -667,6 +685,19 @@ export default function App() {
                 <button className="ghostBtn danger" onClick={() => saveVideoLink(linkTarget.key, '')}>Entfernen</button>
               )}
               <button className="primaryAction" onClick={() => saveVideoLink(linkTarget.key, linkTarget.value)}>Speichern</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmKey && (
+        <div className="modalOverlay" onClick={() => setConfirmKey(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Programm löschen">
+            <h3>Programm löschen?</h3>
+            <p className="muted">„{customPlans[confirmKey]?.name}" wird endgültig gelöscht.</p>
+            <div className="modalActions">
+              <button className="ghostBtn" onClick={() => setConfirmKey(null)}>Abbrechen</button>
+              <button className="ghostBtn danger" onClick={confirmDelete}><Trash2 size={16} /> Löschen</button>
             </div>
           </div>
         </div>
