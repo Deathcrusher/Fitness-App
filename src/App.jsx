@@ -243,25 +243,28 @@ function ensureAudio() {
     /* noop */
   }
 }
-function tone(freq, dur, when = 0) {
+function tone(freq, dur, when = 0, type = 'sine', peak = 0.25) {
   ensureAudio()
   if (!audioCtx) return
   try {
     const start = audioCtx.currentTime + when
     const osc = audioCtx.createOscillator()
     const gain = audioCtx.createGain()
-    osc.type = 'sine'
+    osc.type = type
     osc.frequency.value = freq
     osc.connect(gain)
     gain.connect(audioCtx.destination)
     gain.gain.setValueAtTime(0.0001, start)
-    gain.gain.exponentialRampToValueAtTime(0.25, start + 0.01)
+    gain.gain.exponentialRampToValueAtTime(peak, start + 0.012)
     gain.gain.exponentialRampToValueAtTime(0.0001, start + dur)
     osc.start(start)
     osc.stop(start + dur)
   } catch {
     /* noop */
   }
+}
+function melody(notes, type = 'triangle', peak = 0.4) {
+  notes.forEach(([freq, when, dur]) => tone(freq, dur, when, type, peak))
 }
 function vibrate(pattern) {
   try {
@@ -274,18 +277,19 @@ function signal(kind) {
   ensureAudio()
   if (kind === 'work-done') {
     vibrate([180])
-    tone(880, 0.18)
-    tone(660, 0.22, 0.18)
+    melody([[659, 0, 0.22], [1047, 0.16, 0.34]])
   } else if (kind === 'rest-end') {
     vibrate([120, 60, 120])
-    tone(523, 0.15)
-    tone(659, 0.15, 0.16)
-    tone(784, 0.25, 0.32)
+    melody([[523, 0, 0.2], [659, 0.15, 0.2], [784, 0.3, 0.34]])
   } else if (kind === 'done') {
     vibrate([140, 80, 140, 80, 220])
-    tone(523, 0.15)
-    tone(659, 0.15, 0.16)
-    tone(784, 0.4, 0.32)
+    melody([
+      [523, 0.0, 0.3],
+      [659, 0.16, 0.3],
+      [784, 0.32, 0.3],
+      [1047, 0.48, 0.34],
+      [1319, 0.66, 0.55],
+    ], 'triangle', 0.42)
   }
 }
 
