@@ -29,6 +29,7 @@ import {
   makeId,
   generatePlan,
   PROGRAM_TEMPLATES,
+  youtubeSearchUrl,
 } from './plans'
 import VideoPlayer from './VideoPlayer'
 import Builder from './Builder'
@@ -565,7 +566,7 @@ export default function App() {
                         <Video size={16} /> {showVideo ? 'Video ausblenden' : 'Video anzeigen'}
                       </button>
                       {plan.builtin && (
-                        <button className="ghostBtn" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: videos[videoKey(programId, dayIndex, currentStep)] || '' })}>
+                        <button className="ghostBtn" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: videos[videoKey(programId, dayIndex, currentStep)] || '', name: currentStep.name })}>
                           Ändern
                         </button>
                       )}
@@ -573,7 +574,7 @@ export default function App() {
                   )}
                   {phase === 'work' && !stepVideo && plan.builtin && (
                     <div className="videoActions">
-                      <button className="ghostBtn" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: '' })}>
+                      <button className="ghostBtn" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: '', name: currentStep.name })}>
                         <Video size={16} /> Video verknüpfen
                       </button>
                     </div>
@@ -711,6 +712,9 @@ export default function App() {
               placeholder="https://youtu.be/…"
               autoFocus
             />
+            <a className="searchLink" href={youtubeSearchUrl(linkTarget.name || '')} target="_blank" rel="noreferrer">
+              → Passendes Video auf YouTube suchen
+            </a>
             <div className="modalActions">
               <button className="ghostBtn" onClick={() => setLinkTarget(null)}>Abbrechen</button>
               {videos[linkTarget.key] && (

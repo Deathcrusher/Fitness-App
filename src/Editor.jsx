@@ -6,7 +6,7 @@ import {
   Trash2,
   Video,
 } from 'lucide-react'
-import { ACCENTS, EXERCISE_LIBRARY, TYPE_META, TYPE_KEYS, emptyStep, emptyDay } from './plans'
+import { ACCENTS, EXERCISE_LIBRARY, TYPE_META, TYPE_KEYS, emptyStep, emptyDay, youtubeSearchUrl } from './plans'
 
 export default function Editor({ plan, onChange }) {
   const [dayIndex, setDayIndex] = useState(0)
@@ -208,6 +208,9 @@ export default function Editor({ plan, onChange }) {
                   onChange={(e) => patchStep(dayIndex, si, { video: e.target.value })}
                   placeholder="https://youtu.be/…"
                 />
+                <a className="searchLink" href={youtubeSearchUrl(s.name)} target="_blank" rel="noreferrer">
+                  → Passendes Video auf YouTube suchen
+                </a>
               </label>
             </div>
           ))}

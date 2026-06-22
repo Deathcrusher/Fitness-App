@@ -261,11 +261,16 @@ export function parseVideo(url) {
   const u = String(url).trim()
   if (!u) return null
   const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([\w-]{11})/)
-  if (yt) return { kind: 'youtube', embed: `https://www.youtube.com/embed/${yt[1]}` }
+  if (yt) return { kind: 'youtube', embed: `https://www.youtube.com/embed/${yt[1]}?mute=1&rel=0&playsinline=1` }
   if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(u) || u.startsWith('blob:')) {
     return { kind: 'file', src: u }
   }
   return { kind: 'iframe', src: u }
+}
+
+export function youtubeSearchUrl(name) {
+  const q = encodeURIComponent(`${name} Übung Anleitung kurz`)
+  return `https://www.youtube.com/results?search_query=${q}`
 }
 
 export function videoKey(programId, dayIndex, step) {

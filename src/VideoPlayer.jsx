@@ -20,7 +20,7 @@ export default function VideoPlayer({ url, onClose }) {
           />
         )}
         {parsed.kind === 'file' && (
-          <video src={parsed.src} controls playsInline />
+          <video src={parsed.src} controls muted playsInline />
         )}
         {parsed.kind === 'iframe' && (
           <iframe src={parsed.src} title="Übungsvideo" allowFullScreen />
