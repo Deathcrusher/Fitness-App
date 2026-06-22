@@ -190,6 +190,8 @@ export default function App() {
   const [linkTarget, setLinkTarget] = useState(null)
   const [confirmKey, setConfirmKey] = useState(null)
   const [generatorOpen, setGeneratorOpen] = useState(false)
+  const [updateInfo, setUpdateInfo] = useState(null)
+  const expectingRefresh = useRef(false)
 
   const wakeLockRef = useRef(null)
   const skipPersonReset = useRef(true)
@@ -213,6 +215,23 @@ export default function App() {
   const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? 'Pause' : meta.label
   const showTimer = phase === 'rest' || (phase === 'work' && isTimed)
   const restEnded = phase === 'rest' && seconds === 0 && !running
+
+  useEffect(() => {
+    function onUpdate(e) { setUpdateInfo(e.detail) }
+    window.addEventListener('sw-update', onUpdate)
+    const sw = navigator.serviceWorker
+    function onCtrl() { if (expectingRefresh.current) window.location.reload() }
+    sw?.addEventListener('controllerchange', onCtrl)
+    return () => {
+      window.removeEventListener('sw-update', onUpdate)
+      sw?.removeEventListener('controllerchange', onCtrl)
+    }
+  }, [])
+
+  function applyUpdate() {
+    expectingRefresh.current = true
+    updateInfo?.registration?.waiting?.postMessage('SKIP_WAITING')
+  }
 
   useEffect(() => {
     try {
@@ -744,6 +763,13 @@ export default function App() {
         onClose={() => setGeneratorOpen(false)}
         onGenerate={generateProgram}
       />
+
+      {updateInfo && (
+        <div className="updateBanner" role="status">
+          <span>Neue Version verfügbar.</span>
+          <button className="primaryAction" onClick={applyUpdate}>Neu laden</button>
+        </div>
+      )}
     </main>
   )
 }
