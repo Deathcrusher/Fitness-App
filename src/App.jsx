@@ -20,7 +20,8 @@ import {
 } from 'lucide-react'
 
 const PAUSE_PRESETS = [30, 60, 90]
-const STORAGE_KEY = 'fitflow-state-v1'
+const WORK_PRESETS = [20, 30, 45, 60, 90]
+const STORAGE_KEY = 'fitflow-state-v2'
 
 const VISUALS = {
   warmup: '/assets/warmup.jpg',
@@ -99,7 +100,7 @@ const plans = {
         focus: 'Ganzkörper + Cardio',
         tone: 'Kalorien verbrennen und Körperspannung aufbauen.',
         steps: [
-          step('warmup', 'Warm-up', 'Locker starten: marschieren, Arme kreisen, Knie heben, Fersen zum Po.', '5-10 Min'),
+          ...warmupSteps(),
           step('lower', 'Kniebeugen', 'Brust aufrecht, Knie leicht nach außen, kontrolliert tief gehen.', '3 x 15'),
           step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper bleibt ruhig.', '3 x 12 je Bein'),
           step('upper', 'Rudern mit Hanteln', 'Rücken gerade, Ellbogen eng am Körper ziehen.', '3 x 12'),
@@ -114,7 +115,7 @@ const plans = {
         focus: 'Cardio & Core',
         tone: 'Ausdauer, Bauchspannung und lockerer Rhythmus.',
         steps: [
-          step('warmup', 'Warm-up', 'Gelenke vorbereiten und entspannt in Bewegung kommen.', '5-10 Min'),
+          ...warmupSteps(),
           step('cardio', 'Hula Hoop', 'Gleichmäßiges Tempo, locker bleiben und dranbleiben.', '30 Min'),
           step('core', 'Plank', 'Ruhig halten und gleichmäßig atmen.', '3 x 30-45 Sek'),
           step('core', 'Russian Twists', 'Oberkörper drehen, Core bleibt aktiv.', '3 x 20'),
@@ -128,7 +129,7 @@ const plans = {
         focus: 'Ganzkörper + Hula Hoop',
         tone: 'Po, Beine, Oberkörper und ein leichter Abschluss.',
         steps: [
-          step('warmup', 'Warm-up', 'Locker starten und Atmung finden.', '5-10 Min'),
+          ...warmupSteps(),
           step('lower', 'Kniebeugen', 'Sauber, ruhig und kontrolliert arbeiten.', '3 x 15'),
           step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper bleibt ruhig.', '3 x 12 je Bein'),
           step('upper', 'Brustdrücken am Boden', 'Hanteln kontrolliert nach oben drücken.', '3 x 12'),
@@ -151,7 +152,7 @@ const plans = {
         focus: 'Ganzkörper A',
         tone: 'Basis-Kraft sauber aufbauen.',
         steps: [
-          step('warmup', 'Aufwärmen', 'Marschieren, Arme kreisen, Knie heben, leichte Kniebeugen.', '5-10 Min'),
+          ...warmupSteps(),
           step('lower', 'Kniebeugen', 'Optional mit Hanteln, kontrolliert tief gehen.', '3 x 10'),
           step('upper', 'Rudern', 'Rücken gerade, Hanteln zum Körper ziehen.', '3 x 10'),
           step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, Schulterblätter stabil.', '3 x 10'),
@@ -165,7 +166,7 @@ const plans = {
         focus: 'Ganzkörper B',
         tone: 'Variation, Technik und stabiler Rumpf.',
         steps: [
-          step('warmup', 'Aufwärmen', 'Locker starten, Gelenke vorbereiten.', '5-10 Min'),
+          ...warmupSteps(),
           step('lower', 'Ausfallschritte', 'Pro Bein kontrolliert arbeiten.', '2-3 x 8 je Bein'),
           step('upper', 'Einarmiges Rudern', 'Abstützen, Rücken gerade, sauber ziehen.', '2-3 x 10 je Seite'),
           step('upper', 'Liegestütze', 'Auf Knien möglich, Rumpf bleibt fest.', '2-3 x 8-12'),
@@ -179,7 +180,7 @@ const plans = {
         focus: 'Ganzkörper + Laufband',
         tone: 'Kraft wiederholen, leicht steigern und locker auslaufen.',
         steps: [
-          step('warmup', 'Aufwärmen', 'Marschieren, Arme kreisen, Knie heben, leichte Kniebeugen.', '5-10 Min'),
+          ...warmupSteps(),
           step('lower', 'Kniebeugen', 'Kontrolliert tief gehen, saubere Technik vor Gewicht.', '3 x 10-12'),
           step('lower', 'Ausfallschritte', 'Pro Bein sauber arbeiten, Oberkörper aufrecht.', '3 x 8 je Bein'),
           step('upper', 'Rudern mit Hanteln', 'Rücken gerade, Schulterblätter zusammenführen.', '3 x 10-12'),
@@ -197,6 +198,19 @@ const plans = {
 
 function step(type, name, detail, reps) {
   return { type, name, detail, reps }
+}
+
+function warmupSteps() {
+  return [
+    step('warmup', 'Marschieren', 'Auf der Stelle marschieren, Arme locker mitnehmen.', '60 Sek'),
+    step('warmup', 'Arme kreisen', 'Arme groß und weich kreisen, Schultern entspannt.', '30 Sek'),
+    step('warmup', 'Arme kreisen (andere Richtung)', 'Richtung wechseln und gleichmäßig weiterkreisen.', '30 Sek'),
+    step('warmup', 'Knie heben – links', 'Linkes Knie Richtung Brust heben, Rumpf stabil halten.', '60 Sek'),
+    step('warmup', 'Knie heben – rechts', 'Rechtes Knie Richtung Brust heben.', '60 Sek'),
+    step('warmup', 'Ferse zum Po – links', 'Linke Ferse zum Po führen, aufrecht bleiben.', '60 Sek'),
+    step('warmup', 'Ferse zum Po – rechts', 'Rechte Ferse zum Po führen.', '60 Sek'),
+    step('warmup', 'Leichte Kniebeugen', 'Kontrolliert in die Knie gehen, nicht zu tief.', '30 Sek'),
+  ]
 }
 
 function timedSeconds(reps) {
@@ -296,6 +310,7 @@ export default function App() {
   const [phase, setPhase] = useState('work')
   const [running, setRunning] = useState(false)
   const [seconds, setSeconds] = useState(initialWork != null ? initialWork : 0)
+  const [workSeconds, setWorkSeconds] = useState(initialWork != null ? initialWork : 0)
   const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
 
   const wakeLockRef = useRef(null)
@@ -305,8 +320,8 @@ export default function App() {
   const day = plan.days[dayIndex]
   const steps = day.steps
   const currentStep = steps[stepIndex] || steps[steps.length - 1]
-  const workSeconds = timedSeconds(currentStep.reps)
-  const isTimed = workSeconds != null
+  const parsedWork = timedSeconds(currentStep.reps)
+  const isTimed = parsedWork != null
   const meta = TYPE_META[currentStep.type]
   const TypeIcon = meta.icon
 
@@ -333,6 +348,7 @@ export default function App() {
     setPhase('work')
     setRunning(false)
     setSeconds(work != null ? work : 0)
+    setWorkSeconds(work != null ? work : 0)
   }
 
   function completeExercise() {
@@ -360,6 +376,7 @@ export default function App() {
     setPhase('work')
     setRunning(false)
     setSeconds(work != null ? work : 0)
+    setWorkSeconds(work != null ? work : 0)
   }
 
   function selectStep(index) {
@@ -374,6 +391,11 @@ export default function App() {
   function changePause(value) {
     setPauseSeconds(value)
     if (phase === 'rest') setSeconds(value)
+  }
+
+  function changeWork(value) {
+    setWorkSeconds(value)
+    setSeconds(value)
   }
 
   function resetPause() {
@@ -397,6 +419,7 @@ export default function App() {
     const firstStep = plans[person].days[0].steps[0]
     const work = timedSeconds(firstStep.reps)
     setSeconds(work != null ? work : 0)
+    setWorkSeconds(work != null ? work : 0)
   }, [person])
 
   useEffect(() => {
@@ -559,14 +582,24 @@ export default function App() {
                   </div>
                 </>
               ) : isTimed ? (
-                <div className="controls workControls">
-                  <button className="primaryAction" onClick={togglePlay}>
-                    {running ? <Pause size={20} /> : <Play size={20} />}
-                    {running ? 'Pause' : 'Timer starten'}
-                  </button>
-                  <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
-                  <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
-                </div>
+                <>
+                  <div className="controls workControls">
+                    <button className="primaryAction" onClick={togglePlay}>
+                      {running ? <Pause size={20} /> : <Play size={20} />}
+                      {running ? 'Pause' : 'Timer starten'}
+                    </button>
+                    <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                    <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
+                  </div>
+                  <div className="restPresets" aria-label="Übungs-Dauer">
+                    <span>Dauer:</span>
+                    {WORK_PRESETS.map((preset) => (
+                      <button key={preset} className={workSeconds === preset ? 'active' : ''} onClick={() => changeWork(preset)}>
+                        {preset}s
+                      </button>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="controls exerciseControls">
                   <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
