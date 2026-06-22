@@ -266,6 +266,9 @@ function tone(freq, dur, when = 0, type = 'sine', peak = 0.25) {
 function melody(notes, type = 'triangle', peak = 0.4) {
   notes.forEach(([freq, when, dur]) => tone(freq, dur, when, type, peak))
 }
+function tick() {
+  tone(1100, 0.07, 0, 'sine', 0.22)
+}
 function vibrate(pattern) {
   try {
     navigator.vibrate?.(pattern)
@@ -349,6 +352,7 @@ export default function App() {
   const progress = Math.min(100, Math.round((completedSteps / steps.length) * 100))
   const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? 'Pause' : meta.label
   const showTimer = phase === 'rest' || (phase === 'work' && isTimed)
+  const restEnded = phase === 'rest' && seconds === 0 && !running
 
   useEffect(() => {
     try {
@@ -455,6 +459,12 @@ export default function App() {
   }, [running, phase])
 
   useEffect(() => {
+    if (!running || phase === 'done') return
+    if (phase !== 'rest' && !(phase === 'work' && isTimed)) return
+    if (seconds > 0 && seconds <= 3) tick()
+  }, [seconds, running, phase, isTimed])
+
+  useEffect(() => {
     if (seconds !== 0 || !running) return
     const id = window.setTimeout(() => {
       if (phase === 'work' && isTimed) {
@@ -462,7 +472,7 @@ export default function App() {
         setRunning(false)
       } else if (phase === 'rest') {
         signal('rest-end')
-        advanceAfterRest()
+        setRunning(false)
       }
     }, 200)
     return () => window.clearTimeout(id)
@@ -572,7 +582,9 @@ export default function App() {
 
               <p className="exerciseText">
                 {phase === 'rest'
-                  ? 'Atmen, kurz trinken und bereit machen. Danach geht es automatisch weiter.'
+                  ? restEnded
+                    ? 'Pause vorbei – tippe auf Weiter, wenn du startklar bist.'
+                    : 'Atmen, kurz trinken und bereit machen.'
                   : currentStep.detail}
               </p>
 
@@ -588,13 +600,21 @@ export default function App() {
 
               {phase === 'rest' ? (
                 <>
-                  <div className="controls pauseControls">
-                    <button className="primaryAction" onClick={togglePlay}>
-                      {running ? <Pause size={20} /> : <Play size={20} />}
-                      {running ? 'Pause' : 'Weiterlaufen'}
-                    </button>
-                    <button onClick={advanceAfterRest}><SkipForward size={20} /> Überspringen</button>
-                    <button className="iconAction" onClick={resetPause} aria-label="Pause zurücksetzen"><RotateCcw size={20} /></button>
+                  <div className={`controls pauseControls${restEnded ? ' singleAction' : ''}`}>
+                    {restEnded ? (
+                      <button className="primaryAction" onClick={advanceAfterRest}>
+                        <SkipForward size={20} /> Weiter
+                      </button>
+                    ) : (
+                      <>
+                        <button className="primaryAction" onClick={togglePlay}>
+                          {running ? <Pause size={20} /> : <Play size={20} />}
+                          {running ? 'Pause' : 'Weiterlaufen'}
+                        </button>
+                        <button onClick={advanceAfterRest}><SkipForward size={20} /> Überspringen</button>
+                        <button className="iconAction" onClick={resetPause} aria-label="Pause zurücksetzen"><RotateCcw size={20} /></button>
+                      </>
+                    )}
                   </div>
                   <div className="restPresets" aria-label="Pausenlänge">
                     <span>Pause:</span>

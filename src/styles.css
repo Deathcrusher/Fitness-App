@@ -556,6 +556,10 @@ button.doneAction {
   margin-top: 12px;
 }
 
+.controls.singleAction {
+  grid-template-columns: 1fr;
+}
+
 .restPresets {
   display: flex;
   align-items: center;
