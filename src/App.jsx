@@ -27,9 +27,12 @@ import {
   duplicatePlan,
   examplePlans,
   makeId,
+  generatePlan,
+  PROGRAM_TEMPLATES,
 } from './plans'
 import VideoPlayer from './VideoPlayer'
 import Builder from './Builder'
+import Generator from './Generator'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
@@ -185,11 +188,13 @@ export default function App() {
   const [showVideo, setShowVideo] = useState(false)
   const [linkTarget, setLinkTarget] = useState(null)
   const [confirmKey, setConfirmKey] = useState(null)
+  const [generatorOpen, setGeneratorOpen] = useState(false)
 
   const wakeLockRef = useRef(null)
   const skipPersonReset = useRef(true)
 
   const plan = allPlans[person]
+  const currentOwner = plan.builtin ? person : (plan.owner || 'connie')
   const day = plan.days[dayIndex]
   const steps = day.steps
   const currentStep = steps[stepIndex] || steps[steps.length - 1]
@@ -306,7 +311,7 @@ export default function App() {
   }
 
   function createProgram() {
-    const owner = builtinPlans[person] ? person : (allPlans[person]?.owner || builderOwner)
+    const owner = view === 'build' ? builderOwner : currentOwner
     const p = { ...emptyPlan(), owner }
     setBuilderOwner(owner)
     setCustomPlans((cp) => ({ ...cp, [p.id]: p }))
@@ -343,6 +348,30 @@ export default function App() {
   function runProgram(key) {
     setPerson(key)
     setView('train')
+  }
+
+  function openGenerator() {
+    setGeneratorOpen(true)
+  }
+
+  function generateProgram(options) {
+    const p = generatePlan({ ...options, owner: builderOwner })
+    setCustomPlans((cp) => ({ ...cp, [p.id]: p }))
+    setPerson(p.id)
+    setView('build')
+    setGeneratorOpen(false)
+  }
+
+  function addTemplate(template) {
+    const p = {
+      ...template,
+      id: makeId(),
+      owner: builderOwner,
+      days: JSON.parse(JSON.stringify(template.days)),
+    }
+    setCustomPlans((cp) => ({ ...cp, [p.id]: p }))
+    setPerson(p.id)
+    setView('build')
   }
 
   function saveVideoLink(key, url) {
@@ -441,7 +470,7 @@ export default function App() {
   }, [running])
 
   const builtinEntries = Object.entries(builtinPlans)
-  const customEntries = Object.entries(customPlans)
+  const customEntries = Object.entries(customPlans).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
   return (
     <main className={`app ${plan.accent}`}>
@@ -449,7 +478,7 @@ export default function App() {
         <span className="brand"><Sparkles size={16} /> FitFlow</span>
         <div className="navTabs">
           <button className={view === 'train' ? 'active' : ''} onClick={() => setView('train')}>Training</button>
-          <button className={view === 'build' ? 'active' : ''} onClick={() => { if (builtinPlans[person]) setBuilderOwner(person); setView('build') }}>Programme</button>
+          <button className={view === 'build' ? 'active' : ''} onClick={() => { setBuilderOwner(currentOwner); setView('build') }}>Programme</button>
         </div>
       </nav>
 
@@ -656,8 +685,11 @@ export default function App() {
             owner={builderOwner}
             onOwner={setBuilderOwner}
             selected={customPlans[person] ? person : null}
+            templates={PROGRAM_TEMPLATES}
             onChange={updateCurrentPlan}
             onNew={createProgram}
+            onGenerate={openGenerator}
+            onAddTemplate={addTemplate}
             onDuplicateBuiltin={duplicateBuiltin}
             onDelete={deleteProgram}
             onBack={() => setView('train')}
@@ -702,6 +734,12 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <Generator
+        open={generatorOpen}
+        onClose={() => setGeneratorOpen(false)}
+        onGenerate={generateProgram}
+      />
     </main>
   )
 }

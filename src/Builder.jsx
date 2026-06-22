@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ArrowLeft, Copy, Play, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Copy, Play, Plus, Sparkles, Trash2 } from 'lucide-react'
 import Editor from './Editor'
 
 export default function Builder({
@@ -8,8 +8,11 @@ export default function Builder({
   owner,
   onOwner,
   selected,
+  templates,
   onChange,
   onNew,
+  onGenerate,
+  onAddTemplate,
   onDuplicateBuiltin,
   onDelete,
   onBack,
@@ -50,6 +53,10 @@ export default function Builder({
         <button className={owner === 'rene' ? 'active' : ''} onClick={() => onOwner('rene')}>René</button>
       </div>
 
+      <button className="primaryAction block generatorCta" onClick={onGenerate}>
+        <Sparkles size={18} /> Auto-Programm erstellen
+      </button>
+
       <div className="builderGrid">
         {ownedEntries.map(([key, p]) => {
           return (
@@ -70,7 +77,10 @@ export default function Builder({
       </div>
 
       <div className="templates">
-        <span>Vorlage kopieren:</span>
+        <span>Vorlage hinzufügen:</span>
+        {templates.map((t, i) => (
+          <button key={i} className="ghostBtn" onClick={() => onAddTemplate(t)}><Plus size={15} /> {t.name}</button>
+        ))}
         {Object.entries(builtinPlans).map(([k, p]) => (
           <button key={k} className="ghostBtn" onClick={() => onDuplicateBuiltin(k)}>
             <Copy size={15} /> {p.name}

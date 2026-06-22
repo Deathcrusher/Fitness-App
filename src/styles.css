@@ -995,6 +995,23 @@ button.doneAction {
 }
 .ownerToggle button.active { background: var(--accent); border-color: var(--accent); color: #ffffff; }
 
+.generatorCta { width: 100%; justify-content: center; margin: 4px 0 2px; }
+.generatorModal { max-width: 540px; }
+.generatorHead { display: flex; align-items: center; justify-content: space-between; }
+.generatorHead h3 { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 20px; }
+.genGroup { margin-top: 12px; }
+.genRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.genLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.generatorModal .blockFilter button { font-size: 13px; }
+
 /* Building blocks palette */
 .blockFilter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .blockFilter button {
