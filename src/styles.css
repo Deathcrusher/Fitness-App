@@ -916,6 +916,15 @@ button.doneAction {
   font-size: 18px;
   color: var(--accent-strong);
 }
+.versionTag {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+}
 .navTabs { display: flex; gap: 6px; }
 .navTabs button {
   min-height: 40px;
