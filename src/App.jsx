@@ -32,33 +32,50 @@ const VISUALS = {
 }
 
 const EXERCISE_IMG = {
-  'Warm-up': 'warmup',
-  'Aufwärmen': 'warmup',
-  'Mobilisieren': 'warmup',
-  'Kniebeugen': 'kniebeugen',
-  'Ausfallschritte': 'ausfallschritte',
-  'Rudern mit Hanteln': 'rudern',
-  'Rudern': 'rudern',
-  'Einarmiges Rudern': 'rudern',
-  'Schulterdrücken': 'schulterdruecken',
-  'Plank': 'plank',
-  'Hula Hoop': 'hula-hoop',
-  'Hula Hoop Finish': 'hula-hoop',
-  'Bicycle Crunches': 'bicycle-crunches',
-  'Beinheben': 'beinheben',
-  'Rumänisches Kreuzheben': 'rdl',
-  'Brustdrücken am Boden': 'brustdruecken',
-  'Bizeps-Curls': 'bizeps-curls',
-  'Liegestütze': 'liegestuetze',
-  'Hammer Curls': 'hammer-curls',
-  'Trizepsdrücken': 'trizeps',
-  'Laufband Gehen': 'laufband',
-  'Cooldown': 'cooldown',
+  connie: {
+    'Warm-up': 'warmup',
+    'Mobilisieren': 'warmup',
+    'Kniebeugen': 'kniebeugen',
+    'Ausfallschritte': 'ausfallschritte',
+    'Rudern mit Hanteln': 'rudern',
+    'Schulterdrücken': 'schulterdruecken',
+    'Glute Bridge': 'glute-bridge',
+    'Plank': 'plank',
+    'Cardio Finish': 'hometrainer',
+    'Hula Hoop': 'hula-hoop',
+    'Hula Hoop Finish': 'hula-hoop',
+    'Russian Twists': 'russian-twists',
+    'Bicycle Crunches': 'bicycle-crunches',
+    'Beinheben': 'beinheben',
+    'Ausfahren': 'hometrainer',
+    'Brustdrücken am Boden': '/assets/exercises/brustdruecken.jpg',
+    'Seitheben': 'seitheben',
+  },
+  rene: {
+    'Aufwärmen': 'warmup',
+    'Kniebeugen': 'kniebeugen',
+    'Ausfallschritte': 'ausfallschritte',
+    'Rudern': 'rudern',
+    'Rudern mit Hanteln': 'rudern',
+    'Einarmiges Rudern': 'rudern',
+    'Brustdrücken am Boden': 'brustdruecken',
+    'Schulterdrücken': 'schulterdruecken',
+    'Bizeps-Curls': 'bizeps-curls',
+    'Plank': 'plank',
+    'Liegestütze': 'liegestuetze',
+    'Seitheben': 'seitheben',
+    'Hammer Curls': 'hammer-curls',
+    'Russian Twists': 'russian-twists',
+    'Trizepsdrücken': 'trizeps',
+    'Laufband Gehen': 'laufband',
+    'Cooldown': 'warmup',
+  },
 }
 
-function imageFor(step) {
-  const slug = EXERCISE_IMG[step.name]
-  return slug ? `/assets/exercises/${slug}.jpg` : VISUALS[step.type]
+function imageFor(step, person) {
+  const slug = EXERCISE_IMG[person]?.[step.name]
+  if (slug?.startsWith('/')) return slug
+  return slug ? `/assets/exercises/${person}/${slug}.webp` : VISUALS[step.type]
 }
 
 const TYPE_META = {
@@ -260,13 +277,22 @@ function signal(kind) {
 
 export default function App() {
   const saved = loadState()
-  const initialStep =
-    plans[saved.person || 'connie'].days[saved.dayIndex || 0].steps[saved.stepIndex || 0]
+  const savedPerson = plans[saved.person] ? saved.person : 'connie'
+  const savedDayIndex = Math.min(
+    Math.max(Number(saved.dayIndex) || 0, 0),
+    plans[savedPerson].days.length - 1,
+  )
+  const savedSteps = plans[savedPerson].days[savedDayIndex].steps
+  const savedStepIndex = Math.min(
+    Math.max(Number(saved.stepIndex) || 0, 0),
+    savedSteps.length - 1,
+  )
+  const initialStep = savedSteps[savedStepIndex]
   const initialWork = timedSeconds(initialStep.reps)
 
-  const [person, setPerson] = useState(saved.person || 'connie')
-  const [dayIndex, setDayIndex] = useState(saved.dayIndex || 0)
-  const [stepIndex, setStepIndex] = useState(saved.stepIndex || 0)
+  const [person, setPerson] = useState(savedPerson)
+  const [dayIndex, setDayIndex] = useState(savedDayIndex)
+  const [stepIndex, setStepIndex] = useState(savedStepIndex)
   const [phase, setPhase] = useState('work')
   const [running, setRunning] = useState(false)
   const [seconds, setSeconds] = useState(initialWork != null ? initialWork : 0)
@@ -452,7 +478,7 @@ export default function App() {
             <span><Dumbbell size={16} /> Zuhause</span>
           </div>
         </div>
-        <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" fetchpriority="high" decoding="async" />
+        <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" fetchPriority="high" decoding="async" />
       </section>
 
       <section className="switcher" aria-label="Programm wählen">
@@ -485,7 +511,7 @@ export default function App() {
           ) : (
             <>
               <div className="sessionImageWrap">
-                <img src={imageFor(currentStep)} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
+                <img src={imageFor(currentStep, person)} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
                 <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
               </div>
 
