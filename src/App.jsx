@@ -30,6 +30,7 @@ import {
   generatePlan,
   PROGRAM_TEMPLATES,
   youtubeSearchUrl,
+  parseSets,
 } from './plans'
 import VideoPlayer from './VideoPlayer'
 import Builder from './Builder'
@@ -192,6 +193,11 @@ export default function App() {
   const [confirmKey, setConfirmKey] = useState(null)
   const [generatorOpen, setGeneratorOpen] = useState(false)
   const [updateInfo, setUpdateInfo] = useState(null)
+  const [setIndex, setSetIndex] = useState(0)
+  const [setsOverrides, setSetsOverrides] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('fitflow-sets-v1') || '{}') }
+    catch { return {} }
+  })
   const expectingRefresh = useRef(false)
 
   const wakeLockRef = useRef(null)
@@ -211,10 +217,15 @@ export default function App() {
   const stepVideo = currentStep.video || videos[videoKey(programId, dayIndex, currentStep)] || null
   const hasVideo = (item) => Boolean(item.video || videos[videoKey(programId, dayIndex, item)])
 
+  const parsed = parseSets(currentStep.reps)
+  const defaultSets = parsed.isSet ? parsed.sets : 1
+  const effectiveSets = setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || defaultSets
+
   const completedSteps = phase === 'done' ? steps.length : phase === 'rest' ? stepIndex + 1 : stepIndex
   const progress = Math.min(100, Math.round((completedSteps / steps.length) * 100))
-  const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? 'Pause' : meta.label
+  const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? (setIndex < effectiveSets - 1 ? 'Satzpause' : 'Pause') : meta.label
   const showTimer = phase === 'rest' || (phase === 'work' && isTimed)
+  const isSetRest = phase === 'rest' && setIndex < effectiveSets - 1
   const restEnded = phase === 'rest' && seconds === 0 && !running
 
   useEffect(() => {
@@ -258,10 +269,16 @@ export default function App() {
     }
   }, [videos])
 
-  function enterWork(nextStepIndex) {
+  useEffect(() => {
+    try { localStorage.setItem('fitflow-sets-v1', JSON.stringify(setsOverrides)) }
+    catch { /* noop */ }
+  }, [setsOverrides])
+
+  function enterWork(nextStepIndex, nextSetIndex = 0) {
     const target = steps[nextStepIndex]
     const work = timedSeconds(target.reps)
     setStepIndex(nextStepIndex)
+    setSetIndex(nextSetIndex)
     setPhase('work')
     setRunning(false)
     setSeconds(work != null ? work : 0)
@@ -281,8 +298,13 @@ export default function App() {
   }
 
   function advanceAfterRest() {
-    if (stepIndex < steps.length - 1) {
-      enterWork(stepIndex + 1)
+    const curParsed = parseSets(currentStep.reps)
+    const curDefault = curParsed.isSet ? curParsed.sets : 1
+    const curEffective = setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || curDefault
+    if (setIndex < curEffective - 1) {
+      enterWork(stepIndex, setIndex + 1)
+    } else if (stepIndex < steps.length - 1) {
+      enterWork(stepIndex + 1, 0)
     } else {
       setPhase('done')
       setRunning(false)
@@ -296,6 +318,7 @@ export default function App() {
     const work = timedSeconds(firstStep.reps)
     setDayIndex(index)
     setStepIndex(0)
+    setSetIndex(0)
     setPhase('work')
     setRunning(false)
     setSeconds(work != null ? work : 0)
@@ -329,6 +352,18 @@ export default function App() {
 
   function resetWorkout() {
     enterWork(0)
+  }
+
+  function adjustSets(delta) {
+    const key = `${programId}:${dayIndex}:${currentStep.name}`
+    const updated = Math.max(1, Math.min(10, effectiveSets + delta))
+    setSetsOverrides((prev) => {
+      const next = { ...prev }
+      if (updated === defaultSets) delete next[key]
+      else next[key] = updated
+      return next
+    })
+    if (updated <= setIndex) setSetIndex(updated - 1)
   }
 
   function createProgram() {
@@ -414,6 +449,7 @@ export default function App() {
     const fallback = allPlans[person] ? person : 'connie'
     setDayIndex(0)
     setStepIndex(0)
+    setSetIndex(0)
     setPhase('work')
     setRunning(false)
     const firstStep = allPlans[fallback].days[0].steps[0]
@@ -567,15 +603,27 @@ export default function App() {
                   <div className="sessionHeader">
                     <div>
                       <p className="muted">{day.title} · {day.focus}</p>
-                      <h2>{phase === 'rest' ? 'Pause' : currentStep.name}</h2>
+                      <h2>{phase === 'rest' ? (setIndex < effectiveSets - 1 ? 'Satzpause' : 'Pause') : currentStep.name}</h2>
                     </div>
-                    <span className="repBadge">{currentStep.reps}</span>
-                  </div>
+                      <span className="repBadge">{currentStep.reps}</span>
+                    </div>
 
-                  <p className="exerciseText">
+                    {phase === 'work' && effectiveSets > 1 && (
+                      <div className="setBar">
+                        <span className="setIndicator">Satz {setIndex + 1}/{effectiveSets}</span>
+                        <div className="setStepper">
+                          <button onClick={() => adjustSets(-1)} disabled={effectiveSets <= 1}>−</button>
+                          <button onClick={() => adjustSets(1)} disabled={effectiveSets >= 10}>+</button>
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="exerciseText">
                     {phase === 'rest'
                       ? restEnded
-                        ? 'Pause vorbei – tippe auf Weiter, wenn du startklar bist.'
+                      ? 'Pause vorbei – tippe auf Weiter, wenn du startklar bist.'
+                      : isSetRest
+                        ? 'Kurz erholen, dann kommt der nächste Satz.'
                         : 'Atmen, kurz trinken und bereit machen.'
                       : currentStep.detail}
                   </p>
@@ -610,7 +658,7 @@ export default function App() {
                     <div className="timerPanel" aria-label={phase === 'rest' ? 'Pausentimer' : 'Halte-Timer'}>
                       <TimerReset size={24} />
                       <strong>{fmt(seconds)}</strong>
-                      <span>{phase === 'rest' ? 'Pause' : 'Halten'}</span>
+                      <span>{phase === 'rest' ? (setIndex < effectiveSets - 1 ? 'Satzpause' : 'Pause') : 'Halten'}</span>
                     </div>
                   )}
 

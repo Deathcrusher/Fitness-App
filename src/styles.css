@@ -312,6 +312,51 @@ button { font: inherit; color: inherit; }
   line-height: 1.48;
 }
 
+.setBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+.setIndicator {
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--accent-strong);
+}
+.setStepper {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.setStepper button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 160ms ease;
+}
+.setStepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.setStepper button:not(:disabled):hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 .timerPanel {
   display: flex;
   align-items: center;

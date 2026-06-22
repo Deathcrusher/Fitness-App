@@ -208,6 +208,17 @@ export function timedSeconds(reps) {
   return match ? Number(match[1]) : null
 }
 
+export function parseSets(reps) {
+  const s = String(reps || '')
+  const range = s.match(/(\d+)\s*[-–]\s*\d+\s*x/i)
+  if (range) {
+    return { sets: Number(range[1]), per: s.replace(/^.*?x\s*/i, '').trim(), isSet: true }
+  }
+  const x = s.match(/(\d+)\s*x\s*(.+)/i)
+  if (x) return { sets: Number(x[1]), per: x[2].trim(), isSet: true }
+  return { sets: 1, per: s, isSet: false }
+}
+
 export function fmt(seconds) {
   const minutes = Math.floor(seconds / 60)
   const rest = seconds % 60
