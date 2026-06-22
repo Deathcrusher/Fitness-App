@@ -278,28 +278,33 @@ function signal(kind) {
   if (kind === 'work-done') {
     vibrate([180])
     melody([
-      [784, 0.0, 0.3],
-      [1047, 0.18, 0.3],
-      [1319, 0.36, 0.5],
+      [659, 0.0, 0.3],
+      [784, 0.16, 0.3],
+      [1047, 0.32, 0.3],
+      [1319, 0.5, 0.55],
     ])
   } else if (kind === 'rest-end') {
     vibrate([120, 60, 120])
     melody([
-      [523, 0.0, 0.28],
-      [659, 0.16, 0.28],
-      [784, 0.32, 0.28],
-      [1047, 0.48, 0.45],
+      [523, 0.0, 0.3],
+      [659, 0.16, 0.3],
+      [784, 0.32, 0.3],
+      [1047, 0.5, 0.55],
     ])
   } else if (kind === 'done') {
     vibrate([140, 80, 140, 80, 220])
     melody([
-      [784, 0.0, 0.34],
-      [880, 0.2, 0.34],
-      [1047, 0.4, 0.34],
-      [880, 0.62, 0.34],
-      [1047, 0.82, 0.34],
-      [1319, 1.04, 0.42],
-      [1568, 1.3, 0.75],
+      [784, 0.0, 0.36],
+      [880, 0.2, 0.36],
+      [1047, 0.4, 0.36],
+      [1175, 0.62, 0.36],
+      [1319, 0.82, 0.36],
+      [1568, 1.04, 0.52],
+      [1319, 1.42, 0.36],
+      [1568, 1.62, 0.36],
+      [1760, 1.84, 0.52],
+      [1568, 2.2, 0.36],
+      [2093, 2.42, 1.1],
     ], 'triangle', 0.45)
   }
 }
@@ -367,6 +372,10 @@ export default function App() {
   }
 
   function completeExercise() {
+    if (currentStep.type === 'warmup') {
+      advanceAfterRest()
+      return
+    }
     setPhase('rest')
     setSeconds(pauseSeconds)
     setRunning(true)
@@ -450,7 +459,7 @@ export default function App() {
     const id = window.setTimeout(() => {
       if (phase === 'work' && isTimed) {
         signal('work-done')
-        completeExercise()
+        setRunning(false)
       } else if (phase === 'rest') {
         signal('rest-end')
         advanceAfterRest()
