@@ -37,7 +37,7 @@ import Generator from './Generator'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = '2026-06-22'
+const APP_VERSION = 'V1.0'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
@@ -496,7 +496,7 @@ export default function App() {
   return (
     <main className={`app ${plan.accent}`}>
       <nav className="topnav" aria-label="Hauptnavigation">
-        <span className="brand"><Sparkles size={16} /> FitFlow <small className="versionTag">v {APP_VERSION}</small></span>
+        <span className="brand"><Sparkles size={16} /> FitFlow <small className="versionTag">{APP_VERSION}</small></span>
         <div className="navTabs">
           <button className={view === 'train' ? 'active' : ''} onClick={() => setView('train')}>Training</button>
           <button className={view === 'build' ? 'active' : ''} onClick={() => { setBuilderOwner(currentOwner); setView('build') }}>Programme</button>
