@@ -554,6 +554,7 @@ button.doneAction {
   .repBadge { max-width: none; justify-content: center; }
   .timerPanel strong { font-size: 48px; }
   .controls { grid-template-columns: 1fr; }
+  .workControls { grid-template-columns: 1fr; }
   .iconAction { width: 100%; }
 }
 
@@ -654,7 +655,7 @@ button.doneAction {
 }
 
 .workControls {
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1.3fr 1fr 1fr auto;
   margin-top: 12px;
 }
 

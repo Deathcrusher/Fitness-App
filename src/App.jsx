@@ -194,6 +194,10 @@ export default function App() {
   const [generatorOpen, setGeneratorOpen] = useState(false)
   const [updateInfo, setUpdateInfo] = useState(null)
   const [setIndex, setSetIndex] = useState(0)
+  const [doneSteps, setDoneSteps] = useState(() => {
+    const s = loadState()
+    return s.doneSteps || {}
+  })
   const [setsOverrides, setSetsOverrides] = useState(() => {
     try { return JSON.parse(localStorage.getItem('fitflow-sets-v1') || '{}') }
     catch { return {} }
@@ -221,8 +225,8 @@ export default function App() {
   const defaultSets = parsed.isSet ? parsed.sets : 1
   const effectiveSets = setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || defaultSets
 
-  const completedSteps = phase === 'done' ? steps.length : phase === 'rest' ? stepIndex + 1 : stepIndex
-  const progress = Math.min(100, Math.round((completedSteps / steps.length) * 100))
+  const doneCount = phase === 'done' ? steps.length : Object.values(doneSteps).filter(Boolean).length
+  const progress = Math.min(100, Math.round((doneCount / steps.length) * 100))
   const phaseLabel = phase === 'done' ? 'Fertig' : phase === 'rest' ? (setIndex < effectiveSets - 1 ? 'Satzpause' : 'Pause') : meta.label
   const showTimer = phase === 'rest' || (phase === 'work' && isTimed)
   const isSetRest = phase === 'rest' && setIndex < effectiveSets - 1
@@ -247,11 +251,11 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds, doneSteps }))
     } catch {
       /* noop */
     }
-  }, [person, dayIndex, stepIndex, pauseSeconds])
+  }, [person, dayIndex, stepIndex, pauseSeconds, doneSteps])
 
   useEffect(() => {
     try {
@@ -303,7 +307,22 @@ export default function App() {
     const curEffective = setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || curDefault
     if (setIndex < curEffective - 1) {
       enterWork(stepIndex, setIndex + 1)
-    } else if (stepIndex < steps.length - 1) {
+    } else {
+      setDoneSteps((prev) => ({ ...prev, [stepIndex]: true }))
+      if (stepIndex < steps.length - 1) {
+        enterWork(stepIndex + 1, 0)
+      } else {
+        setPhase('done')
+        setRunning(false)
+        setSeconds(0)
+        signal('done')
+      }
+    }
+  }
+
+  function skipExercise() {
+    setDoneSteps((prev) => ({ ...prev, [stepIndex]: true }))
+    if (stepIndex < steps.length - 1) {
       enterWork(stepIndex + 1, 0)
     } else {
       setPhase('done')
@@ -319,6 +338,7 @@ export default function App() {
     setDayIndex(index)
     setStepIndex(0)
     setSetIndex(0)
+    setDoneSteps({})
     setPhase('work')
     setRunning(false)
     setSeconds(work != null ? work : 0)
@@ -351,6 +371,7 @@ export default function App() {
   }
 
   function resetWorkout() {
+    setDoneSteps({})
     enterWork(0)
   }
 
@@ -450,6 +471,7 @@ export default function App() {
     setDayIndex(0)
     setStepIndex(0)
     setSetIndex(0)
+    setDoneSteps({})
     setPhase('work')
     setRunning(false)
     const firstStep = allPlans[fallback].days[0].steps[0]
@@ -699,6 +721,7 @@ export default function App() {
                           {running ? 'Pause' : 'Timer starten'}
                         </button>
                         <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                        <button onClick={skipExercise}><SkipForward size={20} /> Überspringen</button>
                         <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
                       </div>
                       <div className="restPresets" aria-label="Übungs-Dauer">
@@ -713,6 +736,7 @@ export default function App() {
                   ) : (
                     <div className="controls exerciseControls">
                       <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                      <button onClick={skipExercise}><SkipForward size={20} /> Überspringen</button>
                       <button onClick={resetWorkout}><RotateCcw size={20} /> Neustart</button>
                     </div>
                   )}
@@ -732,7 +756,7 @@ export default function App() {
               <div className="stepList">
                 {steps.map((item, index) => {
                   const ItemIcon = TYPE_META[item.type].icon
-                  const state = index === stepIndex && phase !== 'done' ? 'current' : index < completedSteps ? 'done' : ''
+                  const state = index === stepIndex && phase !== 'done' ? 'current' : doneSteps[index] ? 'done' : ''
                   const linked = hasVideo(item)
                   return (
                     <button key={`${item.name}-${index}`} className={state} onClick={() => selectStep(index)}>
