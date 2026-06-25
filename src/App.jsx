@@ -5,12 +5,14 @@ import {
   ChevronRight,
   Clock3,
   Dumbbell,
+  ListChecks,
   Pause,
   Play,
   Plus,
   RotateCcw,
   SkipForward,
   Sparkles,
+  Timer,
   TimerReset,
   Trash2,
   Trophy,
@@ -35,6 +37,8 @@ import {
 import VideoPlayer from './VideoPlayer'
 import Builder from './Builder'
 import Generator from './Generator'
+import CustomTimer from './CustomTimer'
+import { ensureAudio, tick, signal } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
@@ -80,84 +84,6 @@ function loadVideos() {
   }
 }
 
-let audioCtx = null
-function ensureAudio() {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-    if (audioCtx.state === 'suspended') audioCtx.resume()
-  } catch {
-    /* noop */
-  }
-}
-function tone(freq, dur, when = 0, type = 'sine', peak = 0.25) {
-  ensureAudio()
-  if (!audioCtx) return
-  try {
-    const start = audioCtx.currentTime + when
-    const osc = audioCtx.createOscillator()
-    const gain = audioCtx.createGain()
-    osc.type = type
-    osc.frequency.value = freq
-    osc.connect(gain)
-    gain.connect(audioCtx.destination)
-    gain.gain.setValueAtTime(0.0001, start)
-    gain.gain.exponentialRampToValueAtTime(peak, start + 0.012)
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + dur)
-    osc.start(start)
-    osc.stop(start + dur)
-  } catch {
-    /* noop */
-  }
-}
-function melody(notes, type = 'triangle', peak = 0.4) {
-  notes.forEach(([freq, when, dur]) => tone(freq, dur, when, type, peak))
-}
-function tick() {
-  tone(1100, 0.07, 0, 'sine', 0.22)
-}
-function vibrate(pattern) {
-  try {
-    navigator.vibrate?.(pattern)
-  } catch {
-    /* noop */
-  }
-}
-function signal(kind) {
-  ensureAudio()
-  if (kind === 'work-done') {
-    vibrate([180])
-    melody([
-      [659, 0.0, 0.3],
-      [784, 0.16, 0.3],
-      [1047, 0.32, 0.3],
-      [1319, 0.5, 0.55],
-    ])
-  } else if (kind === 'rest-end') {
-    vibrate([120, 60, 120])
-    melody([
-      [523, 0.0, 0.3],
-      [659, 0.16, 0.3],
-      [784, 0.32, 0.3],
-      [1047, 0.5, 0.55],
-    ])
-  } else if (kind === 'done') {
-    vibrate([140, 80, 140, 80, 220])
-    melody([
-      [784, 0.0, 0.36],
-      [880, 0.2, 0.36],
-      [1047, 0.4, 0.36],
-      [1175, 0.62, 0.36],
-      [1319, 0.82, 0.36],
-      [1568, 1.04, 0.52],
-      [1319, 1.42, 0.36],
-      [1568, 1.62, 0.36],
-      [1760, 1.84, 0.52],
-      [1568, 2.2, 0.36],
-      [2093, 2.42, 1.1],
-    ], 'triangle', 0.45)
-  }
-}
-
 export default function App() {
   const [customPlans, setCustomPlans] = useState(loadCustomPlans)
   const [videos, setVideos] = useState(loadVideos)
@@ -178,6 +104,7 @@ export default function App() {
   const initialWork = timedSeconds(initialStep.reps)
 
   const [view, setView] = useState('train')
+  const [tab, setTab] = useState('training')
   const initialOwner = builtinPlans[savedPerson] ? savedPerson : (allPlans[savedPerson]?.owner || 'connie')
   const [builderOwner, setBuilderOwner] = useState(initialOwner)
   const [person, setPerson] = useState(savedPerson)
@@ -346,8 +273,9 @@ export default function App() {
     setShowVideo(false)
   }
 
-  function selectStep(index) {
+  function pickStep(index) {
     enterWork(index)
+    setTab('training')
   }
 
   function togglePlay() {
@@ -552,7 +480,7 @@ export default function App() {
   const customEntries = Object.entries(customPlans).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
   return (
-    <main className={`app ${plan.accent}`}>
+    <main className={`app ${plan.accent}${view === 'train' ? ' withTabbar' : ''}`}>
       <nav className="topnav" aria-label="Hauptnavigation">
         <span className="brand"><Sparkles size={16} /> FitFlow <small className="versionTag">{APP_VERSION}</small></span>
         <div className="navTabs">
@@ -606,7 +534,8 @@ export default function App() {
             ))}
           </section>
 
-          <section className="dashboard">
+          {tab === 'training' && (
+          <section className="dashboard singleCol">
             <article className="sessionCard">
               {phase === 'done' ? (
                 <div className="finishState">
@@ -743,7 +672,11 @@ export default function App() {
                 </>
               )}
             </article>
+          </section>
+          )}
 
+          {tab === 'uebungen' && (
+          <section className="dashboard singleCol">
             <aside className="planPanel">
               <div className="panelHead">
                 <div>
@@ -759,7 +692,7 @@ export default function App() {
                   const state = index === stepIndex && phase !== 'done' ? 'current' : doneSteps[index] ? 'done' : ''
                   const linked = hasVideo(item)
                   return (
-                    <button key={`${item.name}-${index}`} className={state} onClick={() => selectStep(index)}>
+                    <button key={`${item.name}-${index}`} className={state} onClick={() => pickStep(index)}>
                       <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
                       <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
                       {linked ? <Video size={15} className="stepVideoIcon" /> : <ChevronRight size={18} />}
@@ -769,6 +702,25 @@ export default function App() {
               </div>
             </aside>
           </section>
+          )}
+
+          {tab === 'timer' && (
+          <section className="dashboard singleCol">
+            <CustomTimer />
+          </section>
+          )}
+
+          <nav className="bottomnav" aria-label="Bereiche">
+            <button className={tab === 'training' ? 'active' : ''} onClick={() => setTab('training')}>
+              <Dumbbell size={20} /> <span>Training</span>
+            </button>
+            <button className={tab === 'uebungen' ? 'active' : ''} onClick={() => setTab('uebungen')}>
+              <ListChecks size={20} /> <span>Übungen</span>
+            </button>
+            <button className={tab === 'timer' ? 'active' : ''} onClick={() => setTab('timer')}>
+              <Timer size={20} /> <span>Timer</span>
+            </button>
+          </nav>
         </>
       ) : (
         <section className="dashboard editorMode">

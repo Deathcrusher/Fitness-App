@@ -1142,3 +1142,83 @@ button.doneAction {
   .builder { padding: 18px; }
   .builderHead h2 { font-size: 32px; }
 }
+
+/* Bottom tab bar */
+.app.withTabbar { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
+
+.bottomnav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+}
+.bottomnav button {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 7px 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease;
+}
+.bottomnav button.active {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+/* Single-column dashboard (tab content) */
+.dashboard.singleCol { grid-template-columns: 1fr; }
+
+/* Custom timer */
+.customTimer {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 14px 34px rgba(24, 34, 31, 0.08);
+}
+.customTimerDisplay {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 20px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9fbf7;
+}
+.customTimerDisplay strong {
+  font-size: 72px;
+  line-height: 0.95;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.customTimerDisplay span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.customTimerDisplay.finished strong { color: var(--accent-strong); }
+.controls.startResetControls { grid-template-columns: 1fr auto; }
+
+@media (min-width: 720px) {
+  .customTimer { padding: 16px; }
+  .customTimerDisplay strong { font-size: 120px; }
+}
