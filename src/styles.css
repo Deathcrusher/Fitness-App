@@ -10,8 +10,6 @@
 * { box-sizing: border-box; }
 html {
   min-width: 320px;
-  max-width: 100%;
-  overflow-x: hidden;
   background: #f5f7f3;
   overscroll-behavior: none;
   touch-action: manipulation;
@@ -19,8 +17,6 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  max-width: 100%;
-  overflow-x: hidden;
   overscroll-behavior: none;
   touch-action: manipulation;
 }
@@ -48,8 +44,6 @@ button { font: inherit; color: inherit; }
   --line: #dce3dc;
   --surface: #ffffff;
   min-height: 100vh;
-  max-width: 100%;
-  overflow-x: hidden;
   padding: 14px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 247, 243, 0.96)),
