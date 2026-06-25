@@ -249,7 +249,7 @@ button { font: inherit; color: inherit; }
 .sessionImageWrap img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 2;
   object-fit: cover;
 }
 
@@ -1192,33 +1192,52 @@ button.doneAction {
   background: var(--surface);
   box-shadow: 0 14px 34px rgba(24, 34, 31, 0.08);
 }
-.customTimerDisplay {
+.timerStepper {
   display: grid;
-  justify-items: center;
-  gap: 4px;
+  grid-template-columns: 60px 1fr 60px;
+  align-items: center;
+  gap: 10px;
   margin-top: 16px;
-  padding: 20px 14px;
+  padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   background: #f9fbf7;
 }
-.customTimerDisplay strong {
-  font-size: 72px;
-  line-height: 0.95;
+.timerStepperBtn {
+  display: grid;
+  place-items: center;
+  height: 60px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--accent-strong);
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.timerStepperBtn:not(:disabled):hover { background: var(--accent); color: #ffffff; border-color: var(--accent); }
+.timerStepperBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+.timerStepperValue { text-align: center; }
+.timerStepperValue strong {
+  display: block;
+  font-size: 56px;
+  line-height: 1;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
-.customTimerDisplay span {
+.timerStepperValue span {
+  display: block;
+  margin-top: 4px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.customTimerDisplay.finished strong { color: var(--accent-strong); }
+.timerStepperValue.done strong { color: var(--accent-strong); }
 .controls.startResetControls { grid-template-columns: 1fr auto; }
 
 @media (min-width: 720px) {
   .customTimer { padding: 16px; }
-  .customTimerDisplay strong { font-size: 120px; }
+  .timerStepperValue strong { font-size: 84px; }
 }

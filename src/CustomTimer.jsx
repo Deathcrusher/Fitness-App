@@ -110,26 +110,22 @@ export default function CustomTimer() {
       </div>
       <p className="dayTone">Stell deine Minuten ein – für alles, was du außerhalb der Pläne trainieren willst.</p>
 
-      <div className={`customTimerDisplay${done && !running ? ' finished' : ''}`} aria-label="Verbleibende Zeit">
-        <strong>{fmt(secondsLeft)}</strong>
-        <span>{minutes} Minute{minutes === 1 ? '' : 'n'}</span>
+      <div className="timerStepper">
+        <button className="timerStepperBtn" onClick={() => changeMinutes(-1)} disabled={running || minutes <= 1} aria-label="1 Minute weniger"><Minus size={28} /></button>
+        <div className={`timerStepperValue${done ? ' done' : ''}`}>
+          <strong>{fmt(secondsLeft)}</strong>
+          <span>{running ? 'verbleibend' : `${minutes} Minute${minutes === 1 ? '' : 'n'}`}</span>
+        </div>
+        <button className="timerStepperBtn" onClick={() => changeMinutes(1)} disabled={running || minutes >= MAX_MINUTES} aria-label="1 Minute mehr"><Plus size={28} /></button>
       </div>
 
       <div className="restPresets" aria-label="Minuten-Presets">
-        <span>Minuten:</span>
+        <span>Schnellwahl:</span>
         {PRESETS.map((preset) => (
-          <button key={preset} className={minutes === preset ? 'active' : ''} onClick={() => setPreset(preset)}>
+          <button key={preset} className={minutes === preset ? 'active' : ''} disabled={running} onClick={() => setPreset(preset)}>
             {preset}
           </button>
         ))}
-      </div>
-
-      <div className="setBar">
-        <span className="setIndicator">Feinjustierung</span>
-        <div className="setStepper">
-          <button onClick={() => changeMinutes(-1)} disabled={minutes <= 1} aria-label="1 Minute weniger"><Minus size={18} /></button>
-          <button onClick={() => changeMinutes(1)} disabled={minutes >= MAX_MINUTES} aria-label="1 Minute mehr"><Plus size={18} /></button>
-        </div>
       </div>
 
       <div className="controls startResetControls">
