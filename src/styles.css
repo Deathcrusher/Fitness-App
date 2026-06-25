@@ -13,7 +13,6 @@ html {
   background: #f5f7f3;
   overscroll-behavior: none;
   touch-action: manipulation;
-  overflow-x: hidden;
 }
 body {
   margin: 0;
