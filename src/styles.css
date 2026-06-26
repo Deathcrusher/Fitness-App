@@ -1243,3 +1243,81 @@ button.doneAction {
   .customTimer { padding: 16px; }
   .timerStepperValue strong { font-size: 84px; }
 }
+
+
+/* Compact Android training layout */
+@media (max-width: 520px) {
+  html,
+  body {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .app {
+    width: 100%;
+    overflow-x: clip;
+    padding: 10px;
+  }
+
+  .dashboard,
+  .dashboard.singleCol,
+  .sessionCard,
+  .planPanel,
+  .customTimer {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .sessionCard,
+  .planPanel,
+  .customTimer {
+    padding: 10px;
+  }
+
+  .sessionImageWrap img {
+    object-fit: contain;
+    background: var(--accent-soft);
+  }
+
+  .sessionHeader {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .repBadge {
+    width: 100%;
+    max-width: none;
+    justify-content: center;
+  }
+
+  .controls,
+  .pauseControls,
+  .workControls,
+  .exerciseControls,
+  .controls.startResetControls {
+    grid-template-columns: 1fr;
+  }
+
+  .controls button,
+  .primaryAction,
+  .ghostBtn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .timerPanel {
+    min-width: 0;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .timerPanel strong {
+    font-size: 48px;
+  }
+
+  .bottomnav {
+    width: 100%;
+    max-width: 100%;
+  }
+}
