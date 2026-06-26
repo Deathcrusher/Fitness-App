@@ -655,7 +655,7 @@ export default function App() {
                         </button>
                         <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
                         <button onClick={skipExercise}><SkipForward size={20} /> Überspringen</button>
-                        <button className="iconAction" onClick={resetWorkout} aria-label="Neustart"><RotateCcw size={20} /></button>
+                        <button onClick={resetWorkout}><RotateCcw size={20} /> Neustart</button>
                       </div>
                       <div className="restPresets" aria-label="Übungs-Dauer">
                         <span>Dauer:</span>
