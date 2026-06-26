@@ -1291,6 +1291,32 @@ button.doneAction {
     justify-content: center;
   }
 
+  .controls {
+    gap: 6px;
+  }
+
+  .controls button,
+  .primaryAction {
+    min-width: 0;
+    padding: 10px 8px;
+  }
+
+  .workControls,
+  .exerciseControls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pauseControls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+  }
+
+  .controls.startResetControls {
+    grid-template-columns: minmax(0, 1fr) 42px;
+  }
+
+  .iconAction {
+    width: 100%;
+  }
 
   .timerPanel {
     min-width: 0;
