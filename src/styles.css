@@ -1291,20 +1291,6 @@ button.doneAction {
     justify-content: center;
   }
 
-  .controls,
-  .pauseControls,
-  .workControls,
-  .exerciseControls,
-  .controls.startResetControls {
-    grid-template-columns: 1fr;
-  }
-
-  .controls button,
-  .primaryAction,
-  .ghostBtn {
-    width: 100%;
-    min-width: 0;
-  }
 
   .timerPanel {
     min-width: 0;
