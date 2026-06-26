@@ -404,6 +404,7 @@ button { font: inherit; color: inherit; }
 .controls button,
 .primaryAction {
   display: inline-flex;
+  min-width: 0;
   align-items: center;
   justify-content: center;
   min-height: 48px;
@@ -412,6 +413,8 @@ button { font: inherit; color: inherit; }
   border-radius: 8px;
   background: #e8eee8;
   font-weight: 900;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 button.primaryAction {
@@ -422,6 +425,11 @@ button.primaryAction {
 button.doneAction {
   background: #15803d;
   color: #ffffff;
+}
+
+.controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .iconAction {
@@ -657,9 +665,20 @@ button.doneAction {
   color: #ffffff;
 }
 
-.workControls {
-  grid-template-columns: 1.3fr 1fr 1fr auto;
+.workControls,
+.exerciseControls {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 12px;
+}
+
+@media (min-width: 720px) {
+  .workControls {
+    grid-template-columns: 1.25fr repeat(4, minmax(0, 1fr));
+  }
+
+  .exerciseControls {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 /* Custom accent themes */

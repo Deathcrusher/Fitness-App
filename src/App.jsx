@@ -10,6 +10,7 @@ import {
   Play,
   Plus,
   RotateCcw,
+  SkipBack,
   SkipForward,
   Sparkles,
   Timer,
@@ -261,6 +262,17 @@ export default function App() {
       setSeconds(0)
       signal('done')
     }
+  }
+
+  function previousExercise() {
+    if (stepIndex <= 0) return
+    const previousIndex = stepIndex - 1
+    setDoneSteps((prev) => {
+      const next = { ...prev }
+      delete next[previousIndex]
+      return next
+    })
+    enterWork(previousIndex, 0)
   }
 
   function selectDay(index) {
@@ -654,6 +666,7 @@ export default function App() {
                           {running ? 'Pause' : 'Timer starten'}
                         </button>
                         <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                        <button onClick={previousExercise} disabled={stepIndex === 0}><SkipBack size={20} /> Zurück</button>
                         <button onClick={skipExercise}><SkipForward size={20} /> Überspringen</button>
                         <button onClick={resetWorkout}><RotateCcw size={20} /> Neustart</button>
                       </div>
@@ -669,6 +682,7 @@ export default function App() {
                   ) : (
                     <div className="controls exerciseControls">
                       <button className="doneAction" onClick={completeExercise}><CheckCircle2 size={20} /> Erledigt</button>
+                      <button onClick={previousExercise} disabled={stepIndex === 0}><SkipBack size={20} /> Zurück</button>
                       <button onClick={skipExercise}><SkipForward size={20} /> Überspringen</button>
                       <button onClick={resetWorkout}><RotateCcw size={20} /> Neustart</button>
                     </div>
