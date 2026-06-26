@@ -63,6 +63,27 @@ export function imageFor(step, person) {
   return slug ? `/assets/exercises/${person}/${slug}.webp` : VISUALS[step.type]
 }
 
+const IMAGE_FOCUS = {
+  '/assets/exercises/connie/bicycle-crunches.webp': '58% center',
+  '/assets/exercises/connie/glute-bridge.webp': '64% center',
+  '/assets/exercises/connie/hula-hoop.webp': '62% center',
+  '/assets/exercises/connie/kniebeugen.webp': '66% center',
+  '/assets/exercises/connie/plank.webp': '58% center',
+  '/assets/exercises/connie/russian-twists.webp': '62% center',
+  '/assets/exercises/rene/ausfallschritte.webp': '60% center',
+  '/assets/exercises/rene/kniebeugen.webp': '66% center',
+  '/assets/exercises/rene/plank.webp': '64% center',
+  '/assets/exercises/rene/russian-twists.webp': '56% center',
+  '/assets/exercises/rene/schulterdruecken.webp': '68% center',
+  '/assets/exercises/rene/warmup.webp': '64% center',
+  '/assets/lower.jpg': '62% center',
+  '/assets/upper.jpg': '66% center',
+}
+
+export function imageFocusFor(step, person) {
+  return IMAGE_FOCUS[imageFor(step, person)] || 'center center'
+}
+
 export const TYPE_META = {
   warmup: { label: 'Warm-up', icon: Footprints },
   lower: { label: 'Beine & Po', icon: Flame },

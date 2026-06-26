@@ -22,6 +22,7 @@ import {
   builtinPlans,
   TYPE_META,
   imageFor,
+  imageFocusFor,
   timedSeconds,
   fmt,
   videoKey,
@@ -144,6 +145,9 @@ export default function App() {
   const meta = TYPE_META[currentStep.type]
   const TypeIcon = meta.icon
 
+  const imagePerson = plan.builtin ? person : 'custom'
+  const currentImage = imageFor(currentStep, imagePerson)
+  const currentImageFocus = imageFocusFor(currentStep, imagePerson)
   const programId = person
   const stepVideo = currentStep.video || videos[videoKey(programId, dayIndex, currentStep)] || null
   const hasVideo = (item) => Boolean(item.video || videos[videoKey(programId, dayIndex, item)])
@@ -547,7 +551,7 @@ export default function App() {
               ) : (
                 <>
                   <div className="sessionImageWrap">
-                    <img src={imageFor(currentStep, plan.builtin ? person : 'custom')} alt={`${currentStep.name} Foto`} loading="lazy" decoding="async" />
+                    <img src={currentImage} alt={`${currentStep.name} Foto`} style={{ objectPosition: currentImageFocus }} loading="lazy" decoding="async" />
                     <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
                   </div>
 
