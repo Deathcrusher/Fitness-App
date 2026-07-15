@@ -143,6 +143,7 @@ export default function WorkoutTimer() {
         const slot = ensureSlot(dashboard, 'fitflow-workout-timer-slot', sessionCard)
         setTimerSlot((current) => (current === slot ? current : slot))
       } else {
+        document.getElementById('fitflow-workout-timer-slot')?.remove()
         setTimerSlot(null)
       }
 
@@ -152,6 +153,7 @@ export default function WorkoutTimer() {
         setResultSlot((current) => (current === slot ? current : slot))
         completeWorkout()
       } else {
+        document.getElementById('fitflow-workout-result-slot')?.remove()
         setResultSlot(null)
       }
     }
