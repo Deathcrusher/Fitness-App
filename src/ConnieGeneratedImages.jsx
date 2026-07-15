@@ -1,10 +1,28 @@
 import { useEffect } from 'react'
-import missingPart0 from './connieSpritePart0'
-import missingPart1 from './connieSpritePart1'
-import missingPart2 from './connieSpritePart2'
+import chunk00 from './connieMissingChunk00'
+import chunk01 from './connieMissingChunk01'
+import chunk02 from './connieMissingChunk02'
+import chunk03 from './connieMissingChunk03'
+import chunk04 from './connieMissingChunk04'
+import chunk05 from './connieMissingChunk05'
+import chunk06 from './connieMissingChunk06'
+import chunk07 from './connieMissingChunk07'
+import chunk08 from './connieMissingChunk08'
+import chunk09 from './connieMissingChunk09'
 
 const PRIMARY_SPRITE = '/assets/exercises/connie/generated-sprite.webp'
-const MISSING_SPRITE = `data:image/webp;base64,${missingPart0}${missingPart1}${missingPart2}`
+const MISSING_SPRITE = `data:image/webp;base64,${[
+  chunk00,
+  chunk01,
+  chunk02,
+  chunk03,
+  chunk04,
+  chunk05,
+  chunk06,
+  chunk07,
+  chunk08,
+  chunk09,
+].join('')}`
 const GENERATED_SOURCES = new Set([PRIMARY_SPRITE, MISSING_SPRITE])
 
 const PRIMARY_POSITIONS = {
