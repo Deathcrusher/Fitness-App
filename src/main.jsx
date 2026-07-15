@@ -1,9 +1,15 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
+import WorkoutTimer from './WorkoutTimer.jsx'
 import './styles.css'
 
-createRoot(document.getElementById('root')).render(<App />)
+createRoot(document.getElementById('root')).render(
+  <>
+    <App />
+    <WorkoutTimer />
+  </>,
+)
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
