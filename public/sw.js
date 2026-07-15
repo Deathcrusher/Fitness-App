@@ -1,9 +1,33 @@
-const CACHE = 'fitflow-v5'
-const PRECACHE = ['/', '/index.html', '/manifest.webmanifest']
+const CACHE = 'fitflow-v6'
+const PRECACHE = [
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  '/assets/exercises/connie/marschieren.webp',
+  '/assets/exercises/connie/arme-kreisen.webp',
+  '/assets/exercises/connie/knie-heben.webp',
+  '/assets/exercises/connie/ferse-zum-po.webp',
+  '/assets/exercises/connie/leichte-kniebeugen.webp',
+  '/assets/exercises/connie/kniebeugen.webp',
+  '/assets/exercises/connie/ausfallschritte.webp',
+  '/assets/exercises/connie/rudern-mit-hanteln.webp',
+  '/assets/exercises/connie/schulterdruecken.webp',
+  '/assets/exercises/connie/glute-bridge.webp',
+  '/assets/exercises/connie/plank.webp',
+  '/assets/exercises/connie/cardio-hometrainer.webp',
+  '/assets/exercises/connie/hula-hoop.webp',
+  '/assets/exercises/connie/russian-twists.webp',
+  '/assets/exercises/connie/bicycle-crunches.webp',
+  '/assets/exercises/connie/beinheben.webp',
+  '/assets/exercises/connie/brustdruecken-am-boden.webp',
+  '/assets/exercises/connie/seitheben.webp',
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).catch(() => {}),
+    caches.open(CACHE).then((cache) => Promise.allSettled(
+      PRECACHE.map((url) => cache.add(url)),
+    )),
   )
 })
 

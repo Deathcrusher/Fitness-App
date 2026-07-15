@@ -2,7 +2,6 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import WorkoutTimer from './WorkoutTimer.jsx'
-import ConnieGeneratedImages from './ConnieGeneratedImages.jsx'
 import { applyPlanFixes } from './planFixes'
 import './styles.css'
 
@@ -12,7 +11,6 @@ createRoot(document.getElementById('root')).render(
   <>
     <App />
     <WorkoutTimer />
-    <ConnieGeneratedImages />
   </>,
 )
 
