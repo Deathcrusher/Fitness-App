@@ -1,8 +1,13 @@
 import { useEffect } from 'react'
+import missingPart0 from './connieSpritePart0'
+import missingPart1 from './connieSpritePart1'
+import missingPart2 from './connieSpritePart2'
 
-const SPRITE_SRC = '/assets/exercises/connie/generated-sprite.webp'
+const PRIMARY_SPRITE = '/assets/exercises/connie/generated-sprite.webp'
+const MISSING_SPRITE = `data:image/webp;base64,${missingPart0}${missingPart1}${missingPart2}`
+const GENERATED_SOURCES = new Set([PRIMARY_SPRITE, MISSING_SPRITE])
 
-const EXERCISE_POSITIONS = {
+const PRIMARY_POSITIONS = {
   'Knie heben – links': '0%',
   'Knie heben – rechts': '0%',
   'Rudern mit Hanteln': '11.111%',
@@ -16,6 +21,29 @@ const EXERCISE_POSITIONS = {
   'Hula Hoop Finish': '77.778%',
   'Russian Twists': '88.889%',
   Ausfallschritte: '100%',
+}
+
+const MISSING_POSITIONS = {
+  Marschieren: '0%',
+  'Arme kreisen': '14.286%',
+  'Arme kreisen (andere Richtung)': '14.286%',
+  'Ferse zum Po – links': '28.571%',
+  'Ferse zum Po – rechts': '28.571%',
+  'Leichte Kniebeugen': '42.857%',
+  'Bicycle Crunches': '57.143%',
+  Beinheben: '71.429%',
+  'Brustdrücken am Boden': '85.714%',
+  Seitheben: '100%',
+}
+
+function generatedImageFor(exerciseName) {
+  if (PRIMARY_POSITIONS[exerciseName]) {
+    return { src: PRIMARY_SPRITE, position: PRIMARY_POSITIONS[exerciseName] }
+  }
+  if (MISSING_POSITIONS[exerciseName]) {
+    return { src: MISSING_SPRITE, position: MISSING_POSITIONS[exerciseName] }
+  }
+  return null
 }
 
 function exerciseNameFromImage(image) {
@@ -34,17 +62,17 @@ export default function ConnieGeneratedImages() {
       if (!image) return
 
       const currentSrc = image.getAttribute('src') || ''
-      if (currentSrc !== SPRITE_SRC) {
+      if (!GENERATED_SOURCES.has(currentSrc)) {
         image.dataset.fitflowOriginalSrc = currentSrc
         image.dataset.fitflowOriginalPosition = image.style.objectPosition || 'center center'
       }
 
       const exerciseName = exerciseNameFromImage(image)
-      const position = isConnieSelected() ? EXERCISE_POSITIONS[exerciseName] : null
+      const generated = isConnieSelected() ? generatedImageFor(exerciseName) : null
 
-      if (position) {
-        if (image.getAttribute('src') !== SPRITE_SRC) image.setAttribute('src', SPRITE_SRC)
-        const objectPosition = `center ${position}`
+      if (generated) {
+        if (currentSrc !== generated.src) image.setAttribute('src', generated.src)
+        const objectPosition = `center ${generated.position}`
         if (image.style.objectPosition !== objectPosition) image.style.objectPosition = objectPosition
         image.dataset.fitflowConnieGenerated = 'true'
         return
