@@ -5,6 +5,7 @@ import WorkoutTimer from './WorkoutTimer.jsx'
 import ConnieGeneratedImages from './ConnieGeneratedImages.jsx'
 import { applyPlanFixes } from './planFixes'
 import './styles.css'
+import './connieSpriteFix.css'
 
 applyPlanFixes()
 
