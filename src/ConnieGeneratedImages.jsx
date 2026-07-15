@@ -1,67 +1,31 @@
 import { useEffect } from 'react'
-import chunk00 from './connieMissingChunk00'
-import chunk01 from './connieMissingChunk01'
-import chunk02 from './connieMissingChunk02'
-import chunk03 from './connieMissingChunk03'
-import chunk04 from './connieMissingChunk04'
-import chunk05 from './connieMissingChunk05'
-import chunk06 from './connieMissingChunk06'
-import chunk07 from './connieMissingChunk07'
-import chunk08 from './connieMissingChunk08'
-import chunk09 from './connieMissingChunk09'
 
-const PRIMARY_SPRITE = '/assets/exercises/connie/generated-sprite.webp'
-const MISSING_SPRITE = `data:image/webp;base64,${[
-  chunk00,
-  chunk01,
-  chunk02,
-  chunk03,
-  chunk04,
-  chunk05,
-  chunk06,
-  chunk07,
-  chunk08,
-  chunk09,
-].join('')}`
-const GENERATED_SOURCES = new Set([PRIMARY_SPRITE, MISSING_SPRITE])
+const IMAGE_PREFIX = '/assets/exercises/connie/'
 
-const PRIMARY_POSITIONS = {
-  'Knie heben – links': '0%',
-  'Knie heben – rechts': '0%',
-  'Rudern mit Hanteln': '11.111%',
-  'Cardio Finish': '22.222%',
-  Ausfahren: '22.222%',
-  Kniebeugen: '33.333%',
-  Schulterdrücken: '44.444%',
-  'Glute Bridge': '55.556%',
-  Plank: '66.667%',
-  'Hula Hoop': '77.778%',
-  'Hula Hoop Finish': '77.778%',
-  'Russian Twists': '88.889%',
-  Ausfallschritte: '100%',
-}
-
-const MISSING_POSITIONS = {
-  Marschieren: '0%',
-  'Arme kreisen': '14.286%',
-  'Arme kreisen (andere Richtung)': '14.286%',
-  'Ferse zum Po – links': '28.571%',
-  'Ferse zum Po – rechts': '28.571%',
-  'Leichte Kniebeugen': '42.857%',
-  'Bicycle Crunches': '57.143%',
-  Beinheben: '71.429%',
-  'Brustdrücken am Boden': '85.714%',
-  Seitheben: '100%',
-}
-
-function generatedImageFor(exerciseName) {
-  if (PRIMARY_POSITIONS[exerciseName]) {
-    return { src: PRIMARY_SPRITE, position: PRIMARY_POSITIONS[exerciseName] }
-  }
-  if (MISSING_POSITIONS[exerciseName]) {
-    return { src: MISSING_SPRITE, position: MISSING_POSITIONS[exerciseName] }
-  }
-  return null
+const EXERCISE_IMAGES = {
+  Marschieren: `${IMAGE_PREFIX}marschieren.webp`,
+  'Arme kreisen': `${IMAGE_PREFIX}arme-kreisen.webp`,
+  'Arme kreisen (andere Richtung)': `${IMAGE_PREFIX}arme-kreisen.webp`,
+  'Knie heben – links': `${IMAGE_PREFIX}knie-heben.webp`,
+  'Knie heben – rechts': `${IMAGE_PREFIX}knie-heben.webp`,
+  'Ferse zum Po – links': `${IMAGE_PREFIX}ferse-zum-po.webp`,
+  'Ferse zum Po – rechts': `${IMAGE_PREFIX}ferse-zum-po.webp`,
+  'Leichte Kniebeugen': `${IMAGE_PREFIX}leichte-kniebeugen.webp`,
+  Kniebeugen: `${IMAGE_PREFIX}kniebeugen.webp`,
+  Ausfallschritte: `${IMAGE_PREFIX}ausfallschritte.webp`,
+  'Rudern mit Hanteln': `${IMAGE_PREFIX}rudern-mit-hanteln.webp`,
+  Schulterdrücken: `${IMAGE_PREFIX}schulterdruecken.webp`,
+  'Glute Bridge': `${IMAGE_PREFIX}glute-bridge.webp`,
+  Plank: `${IMAGE_PREFIX}plank.webp`,
+  'Cardio Finish': `${IMAGE_PREFIX}cardio-hometrainer.webp`,
+  Ausfahren: `${IMAGE_PREFIX}cardio-hometrainer.webp`,
+  'Hula Hoop': `${IMAGE_PREFIX}hula-hoop.webp`,
+  'Hula Hoop Finish': `${IMAGE_PREFIX}hula-hoop.webp`,
+  'Russian Twists': `${IMAGE_PREFIX}russian-twists.webp`,
+  'Bicycle Crunches': `${IMAGE_PREFIX}bicycle-crunches.webp`,
+  Beinheben: `${IMAGE_PREFIX}beinheben.webp`,
+  'Brustdrücken am Boden': `${IMAGE_PREFIX}brustdruecken-am-boden.webp`,
+  Seitheben: `${IMAGE_PREFIX}seitheben.webp`,
 }
 
 function exerciseNameFromImage(image) {
@@ -80,18 +44,17 @@ export default function ConnieGeneratedImages() {
       if (!image) return
 
       const currentSrc = image.getAttribute('src') || ''
-      if (!GENERATED_SOURCES.has(currentSrc)) {
+      if (!currentSrc.startsWith(IMAGE_PREFIX)) {
         image.dataset.fitflowOriginalSrc = currentSrc
         image.dataset.fitflowOriginalPosition = image.style.objectPosition || 'center center'
       }
 
       const exerciseName = exerciseNameFromImage(image)
-      const generated = isConnieSelected() ? generatedImageFor(exerciseName) : null
+      const generatedSrc = isConnieSelected() ? EXERCISE_IMAGES[exerciseName] : null
 
-      if (generated) {
-        if (currentSrc !== generated.src) image.setAttribute('src', generated.src)
-        const objectPosition = `center ${generated.position}`
-        if (image.style.objectPosition !== objectPosition) image.style.objectPosition = objectPosition
+      if (generatedSrc) {
+        if (currentSrc !== generatedSrc) image.setAttribute('src', generatedSrc)
+        image.style.objectPosition = 'center center'
         image.dataset.fitflowConnieGenerated = 'true'
         return
       }
