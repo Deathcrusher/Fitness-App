@@ -3,9 +3,11 @@ import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import WorkoutTimer from './WorkoutTimer.jsx'
 import { applyPlanFixes } from './planFixes'
+import { preloadConnieImages } from './preloadConnieImages'
 import './styles.css'
 
 applyPlanFixes()
+preloadConnieImages()
 
 createRoot(document.getElementById('root')).render(
   <>
