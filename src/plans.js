@@ -33,8 +33,21 @@ const CONNIE_EXERCISE_IMAGES = {
   Seitheben: 'seitheben',
 }
 
+// New URLs deliberately bypass stale browser/PWA cache entries from the old image builds.
+const CONNIE_CRITICAL_IMAGE_URLS = {
+  Marschieren: `${CONNIE_IMAGE_PREFIX}marschieren.webp?v=8`,
+  'Ferse zum Po – links': `${CONNIE_IMAGE_PREFIX}ferse-zum-po.webp?v=8`,
+  'Ferse zum Po – rechts': `${CONNIE_IMAGE_PREFIX}ferse-zum-po.webp?v=8`,
+  'Glute Bridge': `${CONNIE_IMAGE_PREFIX}glute-bridge.webp?v=8`,
+}
+
+export const CONNIE_CRITICAL_PRELOAD_URLS = [...new Set(Object.values(CONNIE_CRITICAL_IMAGE_URLS))]
+
 export function imageFor(step, person) {
   if (person === 'connie') {
+    const criticalUrl = CONNIE_CRITICAL_IMAGE_URLS[step?.name]
+    if (criticalUrl) return criticalUrl
+
     const slug = CONNIE_EXERCISE_IMAGES[step?.name]
     if (slug) return `${CONNIE_IMAGE_PREFIX}${slug}.webp`
   }
