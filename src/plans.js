@@ -33,20 +33,18 @@ const CONNIE_EXERCISE_IMAGES = {
   Seitheben: 'seitheben',
 }
 
-// New URLs deliberately bypass stale browser/PWA cache entries from the old image builds.
-const CONNIE_CRITICAL_IMAGE_URLS = {
-  Marschieren: `${CONNIE_IMAGE_PREFIX}marschieren.webp?v=8`,
-  'Ferse zum Po – links': `${CONNIE_IMAGE_PREFIX}ferse-zum-po.webp?v=8`,
-  'Ferse zum Po – rechts': `${CONNIE_IMAGE_PREFIX}ferse-zum-po.webp?v=8`,
-  'Glute Bridge': `${CONNIE_IMAGE_PREFIX}glute-bridge.webp?v=8`,
+// Neue, feste Dateinamen umgehen alle früheren Browser- und PWA-Cache-Einträge.
+const CONNIE_DIRECT_IMAGES = {
+  Marschieren: 'marschieren-photo.webp',
+  'Ferse zum Po – links': 'ferse-zum-po-photo.webp',
+  'Ferse zum Po – rechts': 'ferse-zum-po-photo.webp',
+  'Glute Bridge': 'glute-bridge-photo.webp',
 }
-
-export const CONNIE_CRITICAL_PRELOAD_URLS = [...new Set(Object.values(CONNIE_CRITICAL_IMAGE_URLS))]
 
 export function imageFor(step, person) {
   if (person === 'connie') {
-    const criticalUrl = CONNIE_CRITICAL_IMAGE_URLS[step?.name]
-    if (criticalUrl) return criticalUrl
+    const directFile = CONNIE_DIRECT_IMAGES[step?.name]
+    if (directFile) return `${CONNIE_IMAGE_PREFIX}${directFile}`
 
     const slug = CONNIE_EXERCISE_IMAGES[step?.name]
     if (slug) return `${CONNIE_IMAGE_PREFIX}${slug}.webp`
