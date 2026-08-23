@@ -1338,54 +1338,151 @@ button.doneAction {
   background: var(--surface);
   box-shadow: 0 14px 34px rgba(24, 34, 31, 0.08);
 }
-.timerStepper {
+.timerDialWrap {
   display: grid;
-  grid-template-columns: 60px 1fr 60px;
+  grid-template-columns: 52px minmax(220px, 340px) 52px;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: clamp(4px, 2vw, 16px);
   margin-top: 16px;
-  padding: 16px;
+  padding: 20px 8px 8px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #f9fbf7;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(180, 216, 72, 0.16), transparent 38%),
+    linear-gradient(145deg, #fbfdf8, #f1f5ed);
 }
 .timerStepperBtn {
   display: grid;
   place-items: center;
-  height: 60px;
+  width: 52px;
+  height: 52px;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #ffffff;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
   color: var(--accent-strong);
   cursor: pointer;
-  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+  box-shadow: 0 8px 20px rgba(24, 34, 31, 0.09);
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
 }
-.timerStepperBtn:not(:disabled):hover { background: var(--accent); color: #ffffff; border-color: var(--accent); }
+.timerStepperBtn:not(:disabled):hover { transform: translateY(-2px); background: var(--accent); color: #ffffff; border-color: var(--accent); }
 .timerStepperBtn:disabled { opacity: 0.35; cursor: not-allowed; }
-.timerStepperValue { text-align: center; }
-.timerStepperValue strong {
+.timerDial {
+  --dial-progress: 0deg;
+  --dial-angle: -135deg;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 340px;
+  margin-inline: auto;
+  border-radius: 50%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+}
+.timerDial:active { cursor: grabbing; }
+.timerDial[aria-disabled="true"] { cursor: default; }
+.timerDial:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 5%;
+  border: 3px solid var(--accent-strong);
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px rgba(180, 216, 72, 0.22);
+}
+.timerDialTicks,
+.timerDialTrack {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+}
+.timerDialTicks {
+  background: repeating-conic-gradient(from 225deg, rgba(41, 67, 59, 0.38) 0deg 1deg, transparent 1deg 9deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+  opacity: 0.56;
+}
+.timerDialTrack {
+  inset: 9%;
+  background: conic-gradient(from 225deg, var(--accent) 0deg var(--dial-progress), rgba(41, 67, 59, 0.12) var(--dial-progress) 270deg, transparent 270deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 15px), #000 calc(100% - 14px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 15px), #000 calc(100% - 14px));
+  filter: drop-shadow(0 4px 7px rgba(126, 164, 28, 0.24));
+}
+.timerDialHandle {
+  position: absolute;
+  inset: 9%;
+  z-index: 3;
+  transform: rotate(var(--dial-angle));
+  pointer-events: none;
+}
+.timerDialHandle span {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  border: 5px solid #fff;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 4px 12px rgba(24, 34, 31, 0.24);
+  transform: translateX(-50%);
+}
+.timerDialFace {
+  position: absolute;
+  inset: 20%;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ffffff, #eef3e9);
+  box-shadow: 0 18px 36px rgba(24, 34, 31, 0.13), inset 0 1px 1px #fff;
+  pointer-events: none;
+}
+.timerDialFace strong {
   display: block;
-  font-size: 56px;
+  margin-block: 6px 2px;
+  font-size: clamp(36px, 9vw, 58px);
   line-height: 1;
-  letter-spacing: 0;
+  letter-spacing: -0.055em;
   font-variant-numeric: tabular-nums;
 }
-.timerStepperValue span {
-  display: block;
-  margin-top: 4px;
+.timerDialEyebrow,
+.timerDialCaption {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.12em;
 }
-.timerStepperValue.done strong { color: var(--accent-strong); }
+.timerDialCaption { letter-spacing: 0.05em; }
+.timerDial.done .timerDialFace strong { color: var(--accent-strong); }
+.timerDial.running .timerDialTrack { filter: drop-shadow(0 0 9px rgba(180, 216, 72, 0.52)); }
+.timerDialMin,
+.timerDialMax {
+  position: absolute;
+  bottom: 5%;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  pointer-events: none;
+}
+.timerDialMin { left: 14%; }
+.timerDialMax { right: 11%; }
 .controls.startResetControls { grid-template-columns: 1fr auto; }
 
 @media (min-width: 720px) {
   .customTimer { padding: 16px; }
-  .timerStepperValue strong { font-size: 84px; }
+}
+
+@media (max-width: 390px) {
+  .timerDialWrap { grid-template-columns: 42px minmax(0, 1fr) 42px; padding-inline: 4px; }
+  .timerStepperBtn { width: 42px; height: 42px; }
+  .timerDialFace strong { font-size: 34px; }
 }
 
 

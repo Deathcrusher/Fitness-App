@@ -6,6 +6,8 @@ import { ensureAudio, tick, signal } from './audio'
 const PRESETS = [1, 3, 5, 10]
 const MAX_MINUTES = 180
 const STORAGE_KEY = 'fitflow-custom-timer-v1'
+const DIAL_START = -135
+const DIAL_SWEEP = 270
 
 function loadMinutes() {
   const v = Number(localStorage.getItem(STORAGE_KEY))
@@ -17,6 +19,7 @@ export default function CustomTimer() {
   const [secondsLeft, setSecondsLeft] = useState(loadMinutes() * 60)
   const [running, setRunning] = useState(false)
   const wakeLockRef = useRef(null)
+  const draggingRef = useRef(false)
 
   useEffect(() => {
     if (!running) setSecondsLeft(minutes * 60)
@@ -83,6 +86,49 @@ export default function CustomTimer() {
     setRunning(false)
     setMinutes((m) => Math.max(1, Math.min(MAX_MINUTES, m + delta)))
   }
+  function minutesFromPointer(event) {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - (rect.left + rect.width / 2)
+    const y = event.clientY - (rect.top + rect.height / 2)
+    let angle = Math.atan2(y, x) * (180 / Math.PI) + 90
+    if (angle < 0) angle += 360
+
+    let position = (angle - 225 + 360) % 360
+    if (position > DIAL_SWEEP) position = angle < 180 ? DIAL_SWEEP : 0
+    return 1 + Math.round((position / DIAL_SWEEP) * (MAX_MINUTES - 1))
+  }
+  function updateFromPointer(event) {
+    if (running) return
+    setMinutes(minutesFromPointer(event))
+  }
+  function beginDial(event) {
+    if (running) return
+    draggingRef.current = true
+    event.currentTarget.setPointerCapture(event.pointerId)
+    updateFromPointer(event)
+  }
+  function moveDial(event) {
+    if (draggingRef.current) updateFromPointer(event)
+  }
+  function endDial(event) {
+    draggingRef.current = false
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+  function handleDialKey(event) {
+    const steps = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -5, PageUp: 5 }
+    if (steps[event.key] && !running) {
+      event.preventDefault()
+      changeMinutes(steps[event.key])
+    } else if (event.key === 'Home' && !running) {
+      event.preventDefault()
+      setMinutes(1)
+    } else if (event.key === 'End' && !running) {
+      event.preventDefault()
+      setMinutes(MAX_MINUTES)
+    }
+  }
   function setPreset(value) {
     setRunning(false)
     setMinutes(value)
@@ -98,6 +144,11 @@ export default function CustomTimer() {
   }
 
   const done = secondsLeft === 0
+  const settingProgress = (minutes - 1) / (MAX_MINUTES - 1)
+  const countdownProgress = secondsLeft / (minutes * 60)
+  const dialProgress = running || done || secondsLeft !== minutes * 60 ? countdownProgress : settingProgress
+  const dialAngle = DIAL_START + settingProgress * DIAL_SWEEP
+  const fresh = !done && secondsLeft === minutes * 60
 
   return (
     <article className="customTimer">
@@ -110,13 +161,37 @@ export default function CustomTimer() {
       </div>
       <p className="dayTone">Stell deine Minuten ein – für alles, was du außerhalb der Pläne trainieren willst.</p>
 
-      <div className="timerStepper">
-        <button className="timerStepperBtn" onClick={() => changeMinutes(-1)} disabled={running || minutes <= 1} aria-label="1 Minute weniger"><Minus size={28} /></button>
-        <div className={`timerStepperValue${done ? ' done' : ''}`}>
-          <strong>{fmt(secondsLeft)}</strong>
-          <span>{running ? 'verbleibend' : `${minutes} Minute${minutes === 1 ? '' : 'n'}`}</span>
+      <div className="timerDialWrap">
+        <button className="timerStepperBtn" onClick={() => changeMinutes(-1)} disabled={running || minutes <= 1} aria-label="1 Minute weniger"><Minus size={24} /></button>
+        <div
+          className={`timerDial${running ? ' running' : ''}${done ? ' done' : ''}`}
+          style={{ '--dial-progress': `${dialProgress * 270}deg`, '--dial-angle': `${dialAngle}deg` }}
+          role="slider"
+          tabIndex={running ? -1 : 0}
+          aria-label="Timerdauer in Minuten"
+          aria-valuemin="1"
+          aria-valuemax={MAX_MINUTES}
+          aria-valuenow={minutes}
+          aria-valuetext={`${minutes} Minute${minutes === 1 ? '' : 'n'}`}
+          aria-disabled={running}
+          onPointerDown={beginDial}
+          onPointerMove={moveDial}
+          onPointerUp={endDial}
+          onPointerCancel={endDial}
+          onKeyDown={handleDialKey}
+        >
+          <div className="timerDialTicks" aria-hidden="true" />
+          <div className="timerDialTrack" aria-hidden="true" />
+          {!running && <div className="timerDialHandle" aria-hidden="true"><span /></div>}
+          <div className="timerDialFace">
+            <span className="timerDialEyebrow">{running ? 'Noch' : done ? 'Fertig' : 'Drehen'}</span>
+            <strong>{fmt(secondsLeft)}</strong>
+            <span className="timerDialCaption">{running ? 'verbleibend' : `${minutes} Minute${minutes === 1 ? '' : 'n'}`}</span>
+          </div>
+          <span className="timerDialMin" aria-hidden="true">1</span>
+          <span className="timerDialMax" aria-hidden="true">180</span>
         </div>
-        <button className="timerStepperBtn" onClick={() => changeMinutes(1)} disabled={running || minutes >= MAX_MINUTES} aria-label="1 Minute mehr"><Plus size={28} /></button>
+        <button className="timerStepperBtn" onClick={() => changeMinutes(1)} disabled={running || minutes >= MAX_MINUTES} aria-label="1 Minute mehr"><Plus size={24} /></button>
       </div>
 
       <div className="restPresets" aria-label="Minuten-Presets">
@@ -131,7 +206,7 @@ export default function CustomTimer() {
       <div className="controls startResetControls">
         <button className="primaryAction" onClick={toggle}>
           {running ? <Pause size={20} /> : <Play size={20} />}
-          {running ? 'Pause' : done ? 'Starten' : 'Weiterlaufen'}
+          {running ? 'Pause' : fresh || done ? 'Starten' : 'Weiterlaufen'}
         </button>
         <button className="iconAction" onClick={reset} aria-label="Zurücksetzen"><RotateCcw size={20} /></button>
       </div>
