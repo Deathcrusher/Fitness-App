@@ -44,7 +44,7 @@ import { ensureAudio, tick, signal } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.0'
+const APP_VERSION = 'V1.1'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'

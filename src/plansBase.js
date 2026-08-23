@@ -37,13 +37,22 @@ const EXERCISE_IMG = {
     'Seitheben': 'seitheben',
   },
   rene: {
+    'Marschieren': 'warmup',
+    'Arme kreisen': 'arme-kreisen',
+    'Arme kreisen (andere Richtung)': 'arme-kreisen',
+    'Knie heben – links': 'knie-heben',
+    'Knie heben – rechts': 'knie-heben',
+    'Ferse zum Po – links': 'ferse-zum-po',
+    'Ferse zum Po – rechts': 'ferse-zum-po',
+    'Leichte Kniebeugen': 'kniebeugen',
     'Aufwärmen': 'warmup',
     'Kniebeugen': 'kniebeugen',
     'Ausfallschritte': 'ausfallschritte',
     'Rudern': 'rudern',
     'Rudern mit Hanteln': 'rudern',
-    'Einarmiges Rudern': 'rudern',
+    'Einarmiges Rudern': 'einarmiges-rudern',
     'Brustdrücken am Boden': 'brustdruecken',
+    'Trizeps-Brustdrücken am Boden (liegend)': 'brustdruecken',
     'Schulterdrücken': 'schulterdruecken',
     'Bizeps-Curls': 'bizeps-curls',
     'Plank': 'plank',
@@ -53,14 +62,16 @@ const EXERCISE_IMG = {
     'Russian Twists': 'russian-twists',
     'Trizepsdrücken': 'trizeps',
     'Laufband Gehen': 'laufband',
-    'Cooldown': 'warmup',
+    'Cooldown': 'cooldown',
   },
 }
 
 export function imageFor(step, person) {
   const slug = EXERCISE_IMG[person]?.[step.name]
   if (slug?.startsWith('/')) return slug
-  return slug ? `/assets/exercises/${person}/${slug}.webp` : VISUALS[step.type]
+  if (!slug) return VISUALS[step.type]
+  const src = `/assets/exercises/${person}/${slug}.webp`
+  return person === 'rene' ? `${src}?v=2` : src
 }
 
 const IMAGE_FOCUS = {
@@ -81,7 +92,8 @@ const IMAGE_FOCUS = {
 }
 
 export function imageFocusFor(step, person) {
-  return IMAGE_FOCUS[imageFor(step, person)] || 'center center'
+  const src = imageFor(step, person).split('?')[0]
+  return IMAGE_FOCUS[src] || 'center center'
 }
 
 export const TYPE_META = {
@@ -214,7 +226,7 @@ export const builtinPlans = {
           step('upper', 'Rudern mit Hanteln', 'Rücken gerade, Schulterblätter zusammenführen.', '3 x 10-12'),
           step('upper', 'Brustdrücken am Boden', 'Saubere Wiederholungen, stabil in den Schultern.', '3 x 10-12'),
           step('upper', 'Schulterdrücken', 'Bauch fest, kontrolliert nach oben drücken.', '3 x 8-10'),
-          step('upper', 'Trizepsdrücken', 'Ellbogen nah am Körper, langsam führen.', '2 x 12'),
+          step('upper', 'Trizeps-Brustdrücken am Boden (liegend)', 'Hanteln eng über der Brust drücken, Ellbogen bleiben nah am Körper.', '2 x 12'),
           step('core', 'Plank', 'Spannung halten, ruhig atmen.', '3 x 30-45 Sek'),
           step('cardio', 'Laufband Gehen', '5 Min langsam, danach zügig gehen. Nicht rennen.', '10-15 Min'),
           step('recovery', 'Cooldown', 'Kurz dehnen, Wasser trinken und Puls senken.', '5 Min'),
