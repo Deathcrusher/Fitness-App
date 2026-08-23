@@ -8,6 +8,7 @@ lizenzierten Bildern unter Creative Commons. Jede Übung hat ein eigenes Bild.
 - `fitflow-logo.svg`: eigens erstelltes FitFlow-Logo
 - `exercises/connie/*-v3.webp`: einheitliche, KI-generierte Connie-Serie
 - `exercises/rene/*.webp`: einheitliche, KI-generierte René-Serie
+- `exercises/{connie,rene}/*-guide-v1.webp`: KI-generierte Start-/Enddarstellungen
 
 ## Kategorie-Bilder (Pexels/Unsplash)
 

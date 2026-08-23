@@ -24,6 +24,7 @@ import {
   TYPE_META,
   imageFor,
   imageFocusFor,
+  movementGuideFor,
   timedSeconds,
   fmt,
   videoKey,
@@ -40,14 +41,16 @@ import VideoPlayer from './VideoPlayer'
 import Builder from './Builder'
 import Generator from './Generator'
 import CustomTimer from './CustomTimer'
+import ProgressCalendar, { dateKey } from './ProgressCalendar'
 import { ensureAudio, tick, signal } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.2.0'
+const APP_VERSION = 'V1.3.0'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
+const HISTORY_KEY = 'fitflow-history-v1'
 
 function loadState() {
   try {
@@ -86,9 +89,19 @@ function loadVideos() {
   }
 }
 
+function loadHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export default function App() {
   const [customPlans, setCustomPlans] = useState(loadCustomPlans)
   const [videos, setVideos] = useState(loadVideos)
+  const [history, setHistory] = useState(loadHistory)
   const allPlans = { ...builtinPlans, ...customPlans }
 
   const saved = loadState()
@@ -118,6 +131,7 @@ export default function App() {
   const [workSeconds, setWorkSeconds] = useState(initialWork != null ? initialWork : 0)
   const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
   const [showVideo, setShowVideo] = useState(false)
+  const [showGuide, setShowGuide] = useState(true)
   const [linkTarget, setLinkTarget] = useState(null)
   const [confirmKey, setConfirmKey] = useState(null)
   const [generatorOpen, setGeneratorOpen] = useState(false)
@@ -150,6 +164,7 @@ export default function App() {
   const imagePerson = plan.builtin ? person : 'custom'
   const currentImage = imageFor(currentStep, imagePerson)
   const currentImageFocus = imageFocusFor(currentStep, imagePerson)
+  const currentGuide = movementGuideFor(currentStep, imagePerson)
   const programId = person
   const stepVideo = currentStep.video || videos[videoKey(programId, dayIndex, currentStep)] || null
   const hasVideo = (item) => Boolean(item.video || videos[videoKey(programId, dayIndex, item)])
@@ -229,6 +244,14 @@ export default function App() {
   }, [videos])
 
   useEffect(() => {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+    } catch {
+      /* noop */
+    }
+  }, [history])
+
+  useEffect(() => {
     try { localStorage.setItem('fitflow-sets-v1', JSON.stringify(setsOverrides)) }
     catch { /* noop */ }
   }, [setsOverrides])
@@ -243,6 +266,7 @@ export default function App() {
     setSeconds(work != null ? work : 0)
     setWorkSeconds(work != null ? work : 0)
     setShowVideo(false)
+    setShowGuide(true)
   }
 
   function completeExercise() {
@@ -256,6 +280,27 @@ export default function App() {
     setShowVideo(false)
   }
 
+  function finishWorkout() {
+    const completedDate = dateKey()
+    const completionKey = `${completedDate}:${person}:${dayIndex}`
+    setHistory((previous) => {
+      if (previous.some((entry) => entry.key === completionKey)) return previous
+      return [...previous, {
+        key: completionKey,
+        date: completedDate,
+        completedAt: new Date().toISOString(),
+        programId: person,
+        programName: plan.name,
+        dayIndex,
+        dayName: day.title,
+      }]
+    })
+    setPhase('done')
+    setRunning(false)
+    setSeconds(0)
+    signal('done')
+  }
+
   function advanceAfterRest() {
     const curParsed = parseSets(currentStep.reps)
     const curDefault = curParsed.isSet ? curParsed.sets : 1
@@ -267,10 +312,7 @@ export default function App() {
       if (stepIndex < steps.length - 1) {
         enterWork(stepIndex + 1, 0)
       } else {
-        setPhase('done')
-        setRunning(false)
-        setSeconds(0)
-        signal('done')
+        finishWorkout()
       }
     }
   }
@@ -280,10 +322,7 @@ export default function App() {
     if (stepIndex < steps.length - 1) {
       enterWork(stepIndex + 1, 0)
     } else {
-      setPhase('done')
-      setRunning(false)
-      setSeconds(0)
-      signal('done')
+      finishWorkout()
     }
   }
 
@@ -581,14 +620,35 @@ export default function App() {
                   <Trophy size={76} />
                   <h2>Training fertig</h2>
                   <p>{day.title}: {day.focus}</p>
+                  <span className="savedSuccess"><CalendarDays size={16} /> Im Fortschritt gespeichert</span>
                   <button className="primaryAction" onClick={resetWorkout}><RotateCcw size={20} /> Neu starten</button>
                 </div>
               ) : (
                 <>
                   <div className="sessionImageWrap">
-                    <img src={currentImage} alt={`${currentStep.name} Foto`} style={{ objectPosition: currentImageFocus }} loading="lazy" decoding="async" />
+                    <img
+                      className={phase === 'work' && showGuide && currentGuide ? 'guideImage' : ''}
+                      src={phase === 'work' && showGuide && currentGuide ? currentGuide : currentImage}
+                      alt={phase === 'work' && showGuide && currentGuide ? `${currentStep.name}: Start- und Endposition` : `${currentStep.name} Foto`}
+                      style={{ objectPosition: phase === 'work' && showGuide && currentGuide ? 'center center' : currentImageFocus }}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    {phase === 'work' && showGuide && currentGuide && (
+                      <>
+                        <span className="guidePosition start">Start</span>
+                        <span className="guidePosition end">Ende</span>
+                      </>
+                    )}
                     <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
                   </div>
+
+                  {phase === 'work' && currentGuide && (
+                    <div className="imageModeSwitch" aria-label="Übungsdarstellung">
+                      <button className={!showGuide ? 'active' : ''} onClick={() => setShowGuide(false)}>Einzelbild</button>
+                      <button className={showGuide ? 'active' : ''} onClick={() => setShowGuide(true)}>Start &amp; Ende</button>
+                    </div>
+                  )}
 
                   <div className="sessionHeader">
                     <div>
@@ -751,6 +811,8 @@ export default function App() {
           </section>
           )}
 
+          {tab === 'fortschritt' && <ProgressCalendar history={history} />}
+
           <nav className="bottomnav" aria-label="Bereiche">
             <button className={tab === 'training' ? 'active' : ''} onClick={() => setTab('training')}>
               <Dumbbell size={20} /> <span>Training</span>
@@ -760,6 +822,9 @@ export default function App() {
             </button>
             <button className={tab === 'timer' ? 'active' : ''} onClick={() => setTab('timer')}>
               <Timer size={20} /> <span>Timer</span>
+            </button>
+            <button className={tab === 'fortschritt' ? 'active' : ''} onClick={() => setTab('fortschritt')}>
+              <CalendarDays size={20} /> <span>Fortschritt</span>
             </button>
           </nav>
         </>

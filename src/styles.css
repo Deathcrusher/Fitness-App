@@ -533,6 +533,58 @@ button.doneAction {
 .finishState svg { color: var(--accent); }
 .finishState h2 { margin-top: 10px; font-size: 36px; }
 .finishState p { margin: 8px 0 18px; color: var(--muted); }
+.savedSuccess {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: -4px 0 18px;
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.sessionImageWrap img.guideImage {
+  object-fit: contain;
+  background: #f5f3ee;
+}
+
+.guidePosition {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  min-width: 54px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+.guidePosition.end { left: calc(50% + 10px); }
+
+.imageModeSwitch {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.imageModeSwitch button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.imageModeSwitch button.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
 
 @media (hover: hover) {
   .switcher button:hover,
@@ -1180,7 +1232,7 @@ button.doneAction {
   bottom: 0;
   z-index: 40;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   max-width: 1160px;
   margin: 0 auto;
@@ -1188,6 +1240,73 @@ button.doneAction {
   border-top: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(10px);
+}
+
+/* Progress calendar */
+.progressDashboard {
+  display: grid;
+  gap: 12px;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding-bottom: 18px;
+}
+.progressIntro,
+.progressStats article,
+.calendarCard,
+.progressEmpty {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 14px 34px rgba(24, 34, 31, 0.08);
+}
+.progressIntro { padding: 20px; }
+.progressIntro h2 { margin: 8px 0 6px; font-size: 30px; }
+.progressIntro p:last-child { margin: 0; color: var(--muted); }
+.progressStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.progressStats article {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 16px 8px;
+  text-align: center;
+}
+.progressStats svg { color: var(--accent-strong); }
+.progressStats strong { font-size: 30px; line-height: 1; }
+.progressStats span { color: var(--muted); font-size: 12px; font-weight: 800; }
+.calendarCard { padding: 14px; }
+.calendarHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.calendarHead h3 { margin: 0; font-size: 20px; text-transform: capitalize; }
+.calendarHead > span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 800; }
+.calendarHead i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.calendarGrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.calendarWeekdays { margin-bottom: 5px; }
+.calendarWeekdays span { padding: 3px; color: var(--muted); font-size: 11px; font-weight: 900; text-align: center; }
+.calendarGrid > div {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #f9fbf7;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+.calendarGrid > div.outside { opacity: 0.3; }
+.calendarGrid > div.today { border-color: var(--accent); }
+.calendarGrid > div.completed { background: var(--accent-soft); color: var(--accent-strong); }
+.calendarCheck { position: absolute; right: 4px; bottom: 2px; font-size: 11px; font-weight: 1000; }
+.progressEmpty { margin: 0; padding: 16px; color: var(--muted); text-align: center; }
+
+@media (max-width: 520px) {
+  .progressIntro { padding: 16px; }
+  .progressIntro h2 { font-size: 25px; }
+  .progressStats strong { font-size: 25px; }
+  .progressStats span { font-size: 10px; }
+  .calendarHead { align-items: flex-start; flex-direction: column; }
+  .calendarGrid > div { min-height: 38px; }
+  .bottomnav button { font-size: 10px; }
 }
 .bottomnav button {
   display: grid;

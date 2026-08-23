@@ -75,12 +75,6 @@ export function imageFor(step, person) {
 }
 
 const IMAGE_FOCUS = {
-  '/assets/exercises/connie/bicycle-crunches.webp': '58% center',
-  '/assets/exercises/connie/glute-bridge.webp': '64% center',
-  '/assets/exercises/connie/hula-hoop.webp': '62% center',
-  '/assets/exercises/connie/kniebeugen.webp': '66% center',
-  '/assets/exercises/connie/plank.webp': '58% center',
-  '/assets/exercises/connie/russian-twists.webp': '62% center',
   '/assets/exercises/rene/ausfallschritte.webp': '60% center',
   '/assets/exercises/rene/kniebeugen.webp': '66% center',
   '/assets/exercises/rene/plank.webp': '64% center',
