@@ -33,21 +33,10 @@ const CONNIE_EXERCISE_IMAGES = {
   Seitheben: 'seitheben',
 }
 
-// Neue, feste Dateinamen umgehen alle früheren Browser- und PWA-Cache-Einträge.
-const CONNIE_DIRECT_IMAGES = {
-  Marschieren: 'marschieren-photo.webp',
-  'Ferse zum Po – links': 'ferse-zum-po-photo.webp',
-  'Ferse zum Po – rechts': 'ferse-zum-po-photo.webp',
-  'Glute Bridge': 'glute-bridge-photo.webp',
-}
-
 export function imageFor(step, person) {
   if (person === 'connie') {
-    const directFile = CONNIE_DIRECT_IMAGES[step?.name]
-    if (directFile) return `${CONNIE_IMAGE_PREFIX}${directFile}`
-
     const slug = CONNIE_EXERCISE_IMAGES[step?.name]
-    if (slug) return `${CONNIE_IMAGE_PREFIX}${slug}.webp`
+    if (slug) return `${CONNIE_IMAGE_PREFIX}${slug}-v3.webp?v=3`
   }
   return baseImageFor(step, person)
 }

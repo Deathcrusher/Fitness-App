@@ -44,7 +44,7 @@ import { ensureAudio, tick, signal } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.1.1'
+const APP_VERSION = 'V1.2.0'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
@@ -541,7 +541,7 @@ export default function App() {
                 <span><Video size={16} /> {Object.keys(videos).length} Videos</span>
               </div>
             </div>
-            <img className="heroImage" src="/assets/hero.jpg" alt="Helles Home-Workout mit Matte und Hanteln" fetchPriority="high" decoding="async" />
+            <img className="heroImage heroLogo" src="/assets/fitflow-logo.svg?v=1" alt="FitFlow Logo" fetchPriority="high" decoding="async" />
           </section>
 
           <section className="switcher grouped" aria-label="Programm wählen">

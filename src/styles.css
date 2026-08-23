@@ -138,6 +138,12 @@ button { font: inherit; color: inherit; }
   object-fit: cover;
 }
 
+.heroLogo {
+  object-fit: contain;
+  padding: 18px;
+  background: linear-gradient(145deg, #eef6ed, #fff3ef);
+}
+
 .switcher,
 .dayRail,
 .dashboard {

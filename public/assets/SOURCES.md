@@ -1,10 +1,17 @@
 # Bildquellen (Image Sources)
 
-Die App nutzt lizenzierte Bilder unter Creative Commons. Jede Übung hat ein eigenes Bild.
+Die App nutzt eine Mischung aus eigens für FitFlow generierten Motiven und
+lizenzierten Bildern unter Creative Commons. Jede Übung hat ein eigenes Bild.
+
+## Eigene FitFlow-Motive
+
+- `fitflow-logo.svg`: eigens erstelltes FitFlow-Logo
+- `exercises/connie/*-v3.webp`: einheitliche, KI-generierte Connie-Serie
+- `exercises/rene/*.webp`: einheitliche, KI-generierte René-Serie
 
 ## Kategorie-Bilder (Pexels/Unsplash)
 
-- hero.jpg, warmup.jpg, lower.jpg, upper.jpg, core.jpg, cardio.jpg, recovery.jpg
+- warmup.jpg, lower.jpg, upper.jpg, core.jpg, cardio.jpg, recovery.jpg
 
 ## Übungs-Bilder (CC-lizenziert)
 
