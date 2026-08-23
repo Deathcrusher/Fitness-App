@@ -44,7 +44,7 @@ import { ensureAudio, tick, signal } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.1'
+const APP_VERSION = 'V1.1.1'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
@@ -122,6 +122,7 @@ export default function App() {
   const [confirmKey, setConfirmKey] = useState(null)
   const [generatorOpen, setGeneratorOpen] = useState(false)
   const [updateInfo, setUpdateInfo] = useState(null)
+  const [updating, setUpdating] = useState(false)
   const [setIndex, setSetIndex] = useState(0)
   const [doneSteps, setDoneSteps] = useState(() => {
     const s = loadState()
@@ -168,7 +169,11 @@ export default function App() {
     function onUpdate(e) { setUpdateInfo(e.detail) }
     window.addEventListener('sw-update', onUpdate)
     const sw = navigator.serviceWorker
-    function onCtrl() { if (expectingRefresh.current) window.location.reload() }
+    function onCtrl() {
+      if (!expectingRefresh.current) return
+      expectingRefresh.current = false
+      window.location.reload()
+    }
     sw?.addEventListener('controllerchange', onCtrl)
     return () => {
       window.removeEventListener('sw-update', onUpdate)
@@ -176,9 +181,27 @@ export default function App() {
     }
   }, [])
 
-  function applyUpdate() {
+  async function applyUpdate() {
+    if (updating) return
+    setUpdating(true)
+
+    const registration = updateInfo?.registration
+      || await navigator.serviceWorker?.getRegistration()
+    const waiting = registration?.waiting
+
+    if (!waiting) {
+      window.location.reload()
+      return
+    }
+
     expectingRefresh.current = true
-    updateInfo?.registration?.waiting?.postMessage('SKIP_WAITING')
+    waiting.postMessage('SKIP_WAITING')
+
+    // Manche Browser liefern controllerchange verzögert oder gar nicht.
+    // Der normale Reload greift dann trotzdem auf die neue index.html zu.
+    window.setTimeout(() => {
+      if (expectingRefresh.current) window.location.reload()
+    }, 2500)
   }
 
   useEffect(() => {
@@ -809,8 +832,10 @@ export default function App() {
 
       {updateInfo && (
         <div className="updateBanner" role="status">
-          <span>Neue Version verfügbar.</span>
-          <button className="primaryAction" onClick={applyUpdate}>Neu laden</button>
+          <span>{updating ? 'Update wird installiert …' : 'Neue Version verfügbar.'}</span>
+          <button className="primaryAction" onClick={applyUpdate} disabled={updating}>
+            {updating ? 'Aktualisiere …' : 'Jetzt aktualisieren'}
+          </button>
         </div>
       )}
     </main>

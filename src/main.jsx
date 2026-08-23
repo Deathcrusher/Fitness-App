@@ -18,7 +18,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then((reg) => {
       const notify = () => {
-        if (reg.waiting) {
+        if (navigator.serviceWorker.controller && reg.waiting) {
           window.dispatchEvent(new CustomEvent('sw-update', { detail: { registration: reg } }))
         }
       }
