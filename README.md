@@ -4,6 +4,12 @@ Mobile-first Web-App fuer persoenliche Trainingsprogramme mit Tagesauswahl, gene
 
 ## Features
 
+- Satz-Log: Gewicht und Wiederholungen pro Satz, vorbefuellt mit dem letzten Mal
+- Steigerungs-Vorschlag (doppelte Progression) und automatische Rekord-Erkennung
+- Uebungs-Verlauf mit Diagramm, Bestwerten und letzten Einheiten
+- Trainingsuebersicht vor dem Start mit geschaetzter Dauer und letzten Werten
+- Wochenziel, Volumen-Statistik, Backup speichern/laden
+
 - Auswahl zwischen Connie und Rene
 - Drei Trainingstage pro Programm
 - Mobile optimierte Trainingsansicht

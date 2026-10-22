@@ -64,6 +64,14 @@ export function signal(kind) {
       [784, 0.32, 0.3],
       [1047, 0.5, 0.55],
     ])
+  } else if (kind === 'record') {
+    vibrate([60, 40, 60, 40, 160])
+    melody([
+      [784, 0.0, 0.18],
+      [988, 0.12, 0.18],
+      [1175, 0.24, 0.18],
+      [1568, 0.38, 0.45],
+    ], 'triangle', 0.35)
   } else if (kind === 'done') {
     vibrate([140, 80, 140, 80, 220])
     melody([

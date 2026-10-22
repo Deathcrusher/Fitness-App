@@ -41,7 +41,10 @@ const METRICS = {
   count: { label: 'Trainings', unit: (v) => (v === 1 ? 'Training' : 'Trainings'), value: (list) => list.length },
   minutes: { label: 'Minuten', unit: () => 'Min', value: (list) => Math.round(list.reduce((n, e) => n + (e.durationSec || 0), 0) / 60) },
   sets: { label: 'Sätze', unit: (v) => (v === 1 ? 'Satz' : 'Sätze'), value: (list) => list.reduce((n, e) => n + (e.sets || 0), 0) },
+  volume: { label: 'Volumen', unit: () => 'kg', value: (list) => list.reduce((n, e) => n + (e.volume || 0), 0) },
 }
+
+const compact = (v) => (v >= 1000 ? `${String(Math.round(v / 100) / 10).replace('.', ',')}k` : String(Math.round(v * 10) / 10).replace('.', ','))
 const WEEKS = 8
 
 function niceMax(value) {
@@ -80,7 +83,7 @@ function WeeklyChart({ history, today }) {
         <div>
           <h3>Letzte 8 Wochen</h3>
           <p>
-            <strong className="num">{pick}</strong> {m.unit(pick)}
+            <strong className="num">{pick.toLocaleString('de-DE')}</strong> {m.unit(pick)}
             <span> in der Woche ab {fmtDay(weeks[selected].start)}</span>
           </p>
         </div>
@@ -94,8 +97,8 @@ function WeeklyChart({ history, today }) {
       </div>
       <div className="barChart" role="group" aria-label={`${m.label} pro Woche`}>
         <div className="barGrid" aria-hidden="true">
-          <span data-value={max} />
-          <span data-value={max / 2} />
+          <span data-value={compact(max)} />
+          <span data-value={compact(max / 2)} />
           <span data-value={0} />
         </div>
         <div className="bars">
@@ -109,7 +112,7 @@ function WeeklyChart({ history, today }) {
               aria-pressed={i === selected}
             >
               <span className="barTrack" style={{ '--h': `${(values[i] / max) * 100}%` }}>
-                {i === selected && <em className="num">{values[i]}</em>}
+                {i === selected && <em className="num">{compact(values[i])}</em>}
                 <span className="bar" style={{ height: `${(values[i] / max) * 100}%` }} />
               </span>
               <small>{i === WEEKS - 1 ? 'Jetzt' : fmtDay(w.start)}</small>
@@ -117,7 +120,10 @@ function WeeklyChart({ history, today }) {
           ))}
         </div>
       </div>
-      {metric !== 'count' && history.some((e) => e.durationSec == null) && (
+      {metric === 'volume' && !history.some((e) => e.volume) && (
+        <p className="chartNote">Volumen = Gewicht × Wiederholungen. Es wird erfasst, sobald du beim Training Gewichte einträgst.</p>
+      )}
+      {(metric === 'minutes' || metric === 'sets') && history.some((e) => e.durationSec == null) && (
         <p className="chartNote">Zeit und Sätze werden seit Version 1.5 erfasst. Ältere Trainings zählen hier mit 0.</p>
       )}
     </article>
@@ -145,7 +151,8 @@ function RecentList({ history }) {
               </span>
               <span className="recentMeta">
                 {entry.durationSec ? <span><Clock3 size={13} /> {Math.max(1, Math.round(entry.durationSec / 60))} Min</span> : null}
-                {entry.sets ? <span>{entry.sets} Sätze</span> : null}
+                {entry.volume ? <span>{entry.volume.toLocaleString('de-DE')} kg</span> : entry.sets ? <span>{entry.sets} Sätze</span> : null}
+                {entry.records ? <span className="recentRecord">{entry.records === 1 ? '1 Rekord' : `${entry.records} Rekorde`}</span> : null}
               </span>
             </li>
           )
@@ -155,7 +162,7 @@ function RecentList({ history }) {
   )
 }
 
-export default function ProgressCalendar({ history }) {
+export default function ProgressCalendar({ history, goal = 3 }) {
   const today = new Date()
   const todayKey = dateKey(today)
   const completedDates = new Set(history.map((entry) => entry.date))
@@ -193,8 +200,9 @@ export default function ProgressCalendar({ history }) {
         </article>
         <article>
           <CalendarCheck2 size={18} />
-          <strong>{thisWeek}</strong>
-          <span>Diese Woche</span>
+          <strong>{thisWeek}<small>/{goal}</small></strong>
+          <span>Wochenziel</span>
+          <i className="goalBar" aria-hidden="true"><b style={{ width: `${Math.min(100, (thisWeek / goal) * 100)}%` }} /></i>
         </article>
         <article>
           <Flame size={18} />

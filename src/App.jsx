@@ -7,14 +7,17 @@ import {
   Clock3,
   Dumbbell,
   Flame,
+  History,
   Hourglass,
   ListChecks,
+  Medal,
   Monitor,
   Moon,
   Pause,
   Play,
   Plus,
   RotateCcw,
+  Settings,
   SkipBack,
   SkipForward,
   Sun,
@@ -43,6 +46,25 @@ import {
 } from './plans'
 import VideoPlayer from './VideoPlayer'
 import ExerciseFigure, { animationFor } from './ExerciseFigure'
+import SetLogger from './SetLogger'
+import ExerciseSheet from './ExerciseSheet'
+import WorkoutOverview from './WorkoutOverview'
+import SettingsSheet from './SettingsSheet'
+import {
+  draftFor,
+  entriesFor,
+  fmtSet,
+  isLoggable,
+  isRecord,
+  lastEntry,
+  loadLog,
+  saveLog,
+  suggestion,
+  targetRange,
+  upsertEntry,
+  usesWeight,
+  volumeOf,
+} from './logStore'
 import Builder from './Builder'
 import Generator from './Generator'
 import CustomTimer from './CustomTimer'
@@ -51,13 +73,32 @@ import { ensureAudio, tick, signal, vibrate } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.8.0'
+const APP_VERSION = 'V2.0.0'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
 const HISTORY_KEY = 'fitflow-history-v1'
 const SESSION_KEY = 'fitflow-session-v1'
 const THEME_KEY = 'fitflow-theme-v1'
+const GOAL_KEY = 'fitflow-goal-v1'
+
+function loadGoal() {
+  try {
+    const n = Number(localStorage.getItem(GOAL_KEY))
+    return n >= 1 && n <= 7 ? n : 3
+  } catch {
+    return 3
+  }
+}
+
+function weekCountOf(history) {
+  const start = new Date()
+  start.setHours(0, 0, 0, 0)
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+  return history.filter((e) => new Date(`${e.date}T12:00:00`) >= start).length
+}
+
+const fmtVolume = (kg) => (kg >= 1000 ? `${(kg / 1000).toFixed(1).replace('.', ',')} t` : `${Math.round(kg)} kg`)
 const THEME_ORDER = ['system', 'light', 'dark']
 const THEME_META = {
   system: { icon: Monitor, label: 'Design: automatisch' },
@@ -241,6 +282,17 @@ export default function App() {
   const [session, setSession] = useState(loadSession)
   const [nowMs, setNowMs] = useState(() => Date.now())
   const [confirmRestart, setConfirmRestart] = useState(false)
+  const [log, setLog] = useState(loadLog)
+  const [sessionLog, setSessionLog] = useState(() => loadState().sessionLog || {})
+  const [prs, setPrs] = useState(() => loadState().prs || [])
+  const [draft, setDraft] = useState(null)
+  const [overview, setOverview] = useState(() => {
+    const st = loadState()
+    return !(Number(st.stepIndex) > 0 || Object.keys(st.doneSteps || {}).length > 0 || st.overview === false)
+  })
+  const [sheetStep, setSheetStep] = useState(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [goal, setGoal] = useState(loadGoal)
   const expectingRefresh = useRef(false)
   const endsAtRef = useRef(null)
 
@@ -287,7 +339,17 @@ export default function App() {
         ? { kind: 'step', label: steps[stepIndex + 1].name, step: steps[stepIndex + 1] }
         : { kind: 'finish', label: 'Training abschließen' }
   const lastWorkout = history[history.length - 1]
-  const ThemeIcon = THEME_META[theme].icon
+  const today = dateKey()
+  const loggable = phase === 'work' && isLoggable(currentStep)
+  const weighted = usesWeight(currentStep)
+  const lastLog = loggable ? lastEntry(log, currentOwner, currentStep.name, today) : null
+  const sug = loggable ? suggestion(lastLog, targetRange(currentStep.reps), currentStep) : null
+  const draftKey = `${sessionKey}:${stepIndex}:${setIndex}`
+  const currentDraft = draft?.key === draftKey
+    ? draft
+    : { key: draftKey, ...draftFor({ log, owner: currentOwner, step: currentStep, setIndex, today, sessionSets: sessionLog[stepIndex] }) }
+  const sessionVolume = Object.values(sessionLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
+  const weekCount = weekCountOf(history)
 
   useEffect(() => {
     function onUpdate(e) { setUpdateInfo(e.detail) }
@@ -330,11 +392,17 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview }))
     } catch {
       /* noop */
     }
-  }, [person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone])
+  }, [person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview])
+
+  useEffect(() => { saveLog(log) }, [log])
+
+  useEffect(() => {
+    try { localStorage.setItem(GOAL_KEY, String(goal)) } catch { /* noop */ }
+  }, [goal])
 
   useEffect(() => {
     try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)) }
@@ -416,11 +484,36 @@ export default function App() {
   function resetSession() {
     setSession({ key: null, startedAt: null, elapsedMs: 0, running: false })
     setSetsDone(0)
+    setSessionLog({})
+    setPrs([])
+    setDraft(null)
+    setOverview(true)
   }
 
-  function cycleTheme() {
-    setTheme((value) => THEME_ORDER[(THEME_ORDER.indexOf(value) + 1) % THEME_ORDER.length])
+  function startWorkout() {
+    ensureAudio()
+    setOverview(false)
+    startSession()
+    enterWork(0)
   }
+
+  function recordSet() {
+    const set = { w: currentDraft.w, r: currentDraft.r }
+    const sets = [...(sessionLog[stepIndex] || [])]
+    sets[setIndex] = set
+    const nextSessionLog = { ...sessionLog, [stepIndex]: sets }
+    setSessionLog(nextSessionLog)
+    const previous = entriesFor(log, currentOwner, currentStep.name).filter((e) => e.date !== today)
+    const earlierToday = sets.slice(0, setIndex).filter(Boolean)
+    const beatsToday = earlierToday.every((s) => (set.w > 0 ? set.w > s.w || (set.w === s.w && set.r > s.r) : set.r > s.r))
+    if (isRecord(previous, set) && beatsToday) {
+      setPrs((list) => [...list.filter((p) => p.name !== currentStep.name), { name: currentStep.name, text: fmtSet(set) }])
+      signal('record')
+    }
+    setLog((prev) => upsertEntry(prev, currentOwner, currentStep.name, today, sets, plan.name))
+    return nextSessionLog
+  }
+
 
   function enterWork(nextStepIndex, nextSetIndex = 0) {
     const target = steps[nextStepIndex]
@@ -444,10 +537,11 @@ export default function App() {
       return
     }
     setSetsDone((value) => value + 1)
+    const nextSessionLog = loggable ? recordSet() : sessionLog
     const isLastSetOfWorkout = stepIndex === steps.length - 1 && setIndex >= effectiveSets - 1
     if (isLastSetOfWorkout) {
       setDoneSteps((prev) => ({ ...prev, [stepIndex]: true }))
-      finishWorkout(1)
+      finishWorkout(1, nextSessionLog)
       return
     }
     setPhase('rest')
@@ -456,8 +550,9 @@ export default function App() {
     setShowVideo(false)
   }
 
-  function finishWorkout(extraSets = 0) {
+  function finishWorkout(extraSets = 0, finalLog = sessionLog) {
     const durationMs = stopSession()
+    const volume = Object.values(finalLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
     const completedDate = dateKey()
     const completionKey = `${completedDate}:${person}:${dayIndex}`
     setHistory((previous) => {
@@ -472,6 +567,8 @@ export default function App() {
         dayName: day.title,
         durationSec: Math.round(durationMs / 1000),
         sets: setsDone + extraSets,
+        volume: Math.round(volume),
+        records: prs.length,
       }]
     })
     setPhase('done')
@@ -533,8 +630,11 @@ export default function App() {
   }
 
   function pickStep(index) {
+    setOverview(false)
+    startSession()
     enterWork(index)
     setTab('training')
+    setSheetStep(null)
   }
 
   function togglePlay() {
@@ -768,9 +868,8 @@ export default function App() {
       <nav className="topnav" aria-label="Hauptnavigation">
         <span className="brand"><BrandMark /> FitFlow</span>
         <div className="topActions">
-          <small className="versionTag">{APP_VERSION}</small>
-          <button className="themeToggle" onClick={cycleTheme} aria-label={THEME_META[theme].label} title={THEME_META[theme].label}>
-            <ThemeIcon size={19} />
+          <button className="themeToggle" onClick={() => setSettingsOpen(true)} aria-label="Einstellungen" title="Einstellungen">
+            <Settings size={19} />
           </button>
         </div>
       </nav>
@@ -809,6 +908,26 @@ export default function App() {
 
           {tab === 'training' && (
           <section className="dashboard singleCol">
+            {overview && phase !== 'done' ? (
+              <article className="sessionCard overviewCard">
+                <WorkoutOverview
+                  programKey={person}
+                  plan={plan}
+                  day={day}
+                  dayIndex={dayIndex}
+                  steps={steps}
+                  imagePerson={imagePerson}
+                  owner={currentOwner}
+                  log={log}
+                  history={history}
+                  pauseSeconds={pauseSeconds}
+                  goal={goal}
+                  weekCount={weekCount}
+                  onStart={startWorkout}
+                  onOpenExercise={(i) => setSheetStep(i)}
+                />
+              </article>
+            ) : (
             <article className="sessionCard">
               {phase === 'done' ? (
                 <div className="finishState">
@@ -817,10 +936,20 @@ export default function App() {
                   <p>{day.title} · {day.focus}</p>
                   <div className="summaryGrid">
                     <div><Clock3 size={18} /><strong>{humanDuration(lastWorkout?.durationSec ? lastWorkout.durationSec * 1000 : elapsedMs)}</strong><span>Dauer</span></div>
-                    <div><ListChecks size={18} /><strong>{completedExercises}/{steps.length}</strong><span>Übungen</span></div>
-                    <div><Dumbbell size={18} /><strong>{lastWorkout?.sets ?? setsDone}</strong><span>Sätze</span></div>
-                    <div><Flame size={18} /><strong>{weekStreak(history)}</strong><span>{weekStreak(history) === 1 ? 'Woche in Folge' : 'Wochen in Folge'}</span></div>
+                    {sessionVolume > 0
+                      ? <div><Dumbbell size={18} /><strong>{fmtVolume(sessionVolume)}</strong><span>Volumen</span></div>
+                      : <div><ListChecks size={18} /><strong>{completedExercises}/{steps.length}</strong><span>Übungen</span></div>}
+                    <div><CheckCircle2 size={18} /><strong>{lastWorkout?.sets ?? setsDone}</strong><span>Sätze</span></div>
+                    <div><Flame size={18} /><strong>{weekCount}/{goal}</strong><span>Wochenziel</span></div>
                   </div>
+                  {prs.length > 0 && (
+                    <div className="recordList">
+                      <h3><Medal size={18} /> {prs.length === 1 ? 'Neuer Rekord' : `${prs.length} neue Rekorde`}</h3>
+                      <ul>
+                        {prs.map((p) => <li key={p.name}><span>{p.name}</span><strong className="num">{p.text}</strong></li>)}
+                      </ul>
+                    </div>
+                  )}
                   <span className="savedSuccess"><CheckCircle2 size={16} /> Im Kalender gespeichert</span>
                   <div className="finishActions">
                     <button className="primaryAction" onClick={() => setTab('fortschritt')}><CalendarDays size={20} /> Fortschritt</button>
@@ -887,6 +1016,23 @@ export default function App() {
                     </div>
                   )}
 
+                  {loggable && (
+                    <SetLogger
+                      key={draftKey}
+                      draft={currentDraft}
+                      onDraft={(d) => setDraft({ ...d, key: draftKey })}
+                      weighted={weighted}
+                      last={lastLog}
+                      sug={setIndex === 0 && !(sessionLog[stepIndex] || []).some(Boolean) ? sug : null}
+                      doneSets={sessionLog[stepIndex] || []}
+                      setIndex={setIndex}
+                    />
+                  )}
+
+                  {phase === 'rest' && prs.some((p) => p.name === currentStep.name) && (sessionLog[stepIndex] || []).length > 0 && (
+                    <p className="recordToast"><Medal size={18} /> Neuer Rekord: {prs.find((p) => p.name === currentStep.name).text}</p>
+                  )}
+
                   <p className="exerciseText">
                     {phase === 'rest'
                       ? restEnded
@@ -897,8 +1043,13 @@ export default function App() {
                       : currentStep.detail}
                   </p>
 
-                  {phase === 'work' && (stepVideo || plan.builtin) && (
+                  {phase === 'work' && (stepVideo || plan.builtin || loggable) && (
                     <div className="videoActions">
+                      {loggable && (
+                        <button className="ghostBtn" onClick={() => setSheetStep(stepIndex)}>
+                          <History size={16} /> Verlauf
+                        </button>
+                      )}
                       {stepVideo && (
                         <button className="ghostBtn" onClick={() => setShowVideo((v) => !v)}>
                           <Video size={16} /> {showVideo ? 'Video ausblenden' : 'Video anzeigen'}
@@ -1003,6 +1154,7 @@ export default function App() {
                 </>
               )}
             </article>
+            )}
           </section>
           )}
 
@@ -1023,11 +1175,16 @@ export default function App() {
                   const state = index === stepIndex && phase !== 'done' ? 'current' : doneSteps[index] ? 'done' : ''
                   const linked = hasVideo(item)
                   return (
-                    <button key={`${item.name}-${index}`} className={state} onClick={() => pickStep(index)}>
-                      <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
-                      <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
-                      {linked ? <Video size={15} className="stepVideoIcon" /> : <ChevronRight size={18} />}
-                    </button>
+                    <div key={`${item.name}-${index}`} className={`stepRow ${state}`}>
+                      <button className="stepMain" onClick={() => pickStep(index)}>
+                        <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
+                        <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
+                        {linked && <Video size={15} className="stepVideoIcon" />}
+                      </button>
+                      <button className="stepInfo" onClick={() => setSheetStep(index)} aria-label={`${item.name}: Details und Verlauf`}>
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
                   )
                 })}
               </div>
@@ -1041,7 +1198,7 @@ export default function App() {
           </section>
           )}
 
-          {tab === 'fortschritt' && <ProgressCalendar history={history} />}
+          {tab === 'fortschritt' && <ProgressCalendar history={history} goal={goal} />}
 
         </>
       ) : (
@@ -1106,6 +1263,27 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {sheetStep != null && steps[sheetStep] && (
+        <ExerciseSheet
+          step={steps[sheetStep]}
+          owner={currentOwner}
+          log={log}
+          onClose={() => setSheetStep(null)}
+          onStart={sheetStep !== stepIndex || overview ? () => pickStep(sheetStep) : null}
+        />
+      )}
+
+      {settingsOpen && (
+        <SettingsSheet
+          theme={theme}
+          onTheme={setTheme}
+          goal={goal}
+          onGoal={setGoal}
+          version={APP_VERSION}
+          onClose={() => setSettingsOpen(false)}
+        />
       )}
 
       {confirmRestart && (
