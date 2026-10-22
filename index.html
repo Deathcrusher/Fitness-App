@@ -12,6 +12,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="FitFlow" />
     <title>FitFlow</title>
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('fitflow-theme-v1') || 'system'
+          var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+          if (dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f1513')
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

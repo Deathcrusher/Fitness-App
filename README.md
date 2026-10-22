@@ -13,6 +13,10 @@ Mobile-first Web-App fuer persoenliche Trainingsprogramme mit Tagesauswahl, gene
 - Uebungen werden manuell als erledigt markiert
 - Einstellbare Satz- und Uebungstimer mit Tonsignalen
 - Eigene Programme und Videoverknuepfungen
+- Dark Mode (automatisch, hell oder dunkel umschaltbar)
+- Trainingsansicht mit Timer-Ring, Satzanzeige und Vorschau auf die naechste Uebung
+- Gesamtzeit laeuft automatisch mit, Zusammenfassung nach dem Training
+- Timer laufen auch korrekt weiter, wenn das Handy kurz gesperrt ist
 - Vite/React Deployment fuer Vercel
 
 ## Start

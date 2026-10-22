@@ -1,17 +1,13 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
-import WorkoutTimer from './WorkoutTimer.jsx'
 import { applyPlanFixes } from './planFixes'
 import './styles.css'
 
 applyPlanFixes()
 
 createRoot(document.getElementById('root')).render(
-  <>
-    <App />
-    <WorkoutTimer />
-  </>,
+  <App />,
 )
 
 if ('serviceWorker' in navigator) {
