@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
   CalendarDays,
+  ChartColumn,
   CheckCircle2,
   ChevronRight,
   Clock3,
@@ -44,12 +45,12 @@ import VideoPlayer from './VideoPlayer'
 import Builder from './Builder'
 import Generator from './Generator'
 import CustomTimer from './CustomTimer'
-import ProgressCalendar, { dateKey } from './ProgressCalendar'
+import ProgressCalendar, { dateKey, weekStreak } from './ProgressCalendar'
 import { ensureAudio, tick, signal, vibrate } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.6.0'
+const APP_VERSION = 'V1.7.0'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
@@ -106,17 +107,27 @@ function humanDuration(milliseconds) {
   return `${Math.floor(minutes / 60)} h ${minutes % 60} Min`
 }
 
-function streakFor(history) {
-  const completed = new Set(history.map((entry) => entry.date))
-  const cursor = new Date()
-  cursor.setHours(0, 0, 0, 0)
-  if (!completed.has(dateKey(cursor))) cursor.setDate(cursor.getDate() - 1)
-  let streak = 0
-  while (completed.has(dateKey(cursor))) {
-    streak += 1
-    cursor.setDate(cursor.getDate() - 1)
-  }
-  return streak
+
+function MovementAnimation({ src, name, tempo }) {
+  return (
+    <div
+      className="moveAnim"
+      style={{ '--anim-src': `url("${src}")`, '--tempo': `${tempo}s` }}
+      role="img"
+      aria-label={`${name}: Bewegung von Start- zur Endposition`}
+    >
+      <div className="moveBackdrop" aria-hidden="true" />
+      <div className="moveStage" aria-hidden="true">
+        <span className="moveFrame from" />
+        <span className="moveFrame to" />
+      </div>
+      <div className="moveCue" aria-hidden="true">
+        <span className="cueA">Start</span>
+        <span className="cueB">Ende</span>
+        <i />
+      </div>
+    </div>
+  )
 }
 
 function TimerRing({ seconds, total, label, running }) {
@@ -215,7 +226,7 @@ export default function App() {
   const [workSeconds, setWorkSeconds] = useState(initialWork != null ? initialWork : 0)
   const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
   const [showVideo, setShowVideo] = useState(false)
-  const [showGuide, setShowGuide] = useState(true)
+  const [imageMode, setImageMode] = useState('anim')
   const [linkTarget, setLinkTarget] = useState(null)
   const [confirmKey, setConfirmKey] = useState(null)
   const [generatorOpen, setGeneratorOpen] = useState(false)
@@ -425,7 +436,7 @@ export default function App() {
     setClock(work != null ? work : 0, false)
     setWorkSeconds(work != null ? work : 0)
     setShowVideo(false)
-    setShowGuide(true)
+    setImageMode('anim')
   }
 
   function completeExercise() {
@@ -808,7 +819,7 @@ export default function App() {
                     <div><Clock3 size={18} /><strong>{humanDuration(lastWorkout?.durationSec ? lastWorkout.durationSec * 1000 : elapsedMs)}</strong><span>Dauer</span></div>
                     <div><ListChecks size={18} /><strong>{completedExercises}/{steps.length}</strong><span>Übungen</span></div>
                     <div><Dumbbell size={18} /><strong>{lastWorkout?.sets ?? setsDone}</strong><span>Sätze</span></div>
-                    <div><Flame size={18} /><strong>{streakFor(history)}</strong><span>{streakFor(history) === 1 ? 'Tag Serie' : 'Tage Serie'}</span></div>
+                    <div><Flame size={18} /><strong>{weekStreak(history)}</strong><span>{weekStreak(history) === 1 ? 'Woche in Folge' : 'Wochen in Folge'}</span></div>
                   </div>
                   <span className="savedSuccess"><CheckCircle2 size={16} /> Im Kalender gespeichert</span>
                   <div className="finishActions">
@@ -827,15 +838,19 @@ export default function App() {
                   <div className="progressLine" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
 
                   <div className={`sessionImageWrap${phase === 'rest' ? ' resting' : ''}`}>
-                    <img
-                      className={phase === 'work' && showGuide && currentGuide ? 'guideImage' : ''}
-                      src={phase === 'work' && showGuide && currentGuide ? currentGuide : currentImage}
-                      alt={phase === 'work' && showGuide && currentGuide ? `${currentStep.name}: Start- und Endposition` : `${currentStep.name} Foto`}
-                      style={{ objectPosition: phase === 'work' && showGuide && currentGuide ? 'center center' : currentImageFocus }}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    {phase === 'work' && showGuide && currentGuide && (
+                    {phase === 'work' && currentGuide && imageMode === 'anim' ? (
+                      <MovementAnimation src={currentGuide} name={currentStep.name} tempo={currentStep.type === 'core' ? 2.6 : 3.2} />
+                    ) : (
+                      <img
+                        className={phase === 'work' && imageMode === 'guide' && currentGuide ? 'guideImage' : ''}
+                        src={phase === 'work' && imageMode === 'guide' && currentGuide ? currentGuide : currentImage}
+                        alt={phase === 'work' && imageMode === 'guide' && currentGuide ? `${currentStep.name}: Start- und Endposition` : `${currentStep.name} Foto`}
+                        style={{ objectPosition: phase === 'work' && imageMode === 'guide' && currentGuide ? 'center center' : currentImageFocus }}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
+                    {phase === 'work' && imageMode === 'guide' && currentGuide && (
                       <>
                         <span className="guidePosition start">Start</span>
                         <span className="guidePosition end">Ende</span>
@@ -844,8 +859,9 @@ export default function App() {
                     <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
                     {phase === 'work' && currentGuide && (
                       <div className="imageModeSwitch" aria-label="Übungsdarstellung">
-                        <button className={!showGuide ? 'active' : ''} onClick={() => setShowGuide(false)}>Foto</button>
-                        <button className={showGuide ? 'active' : ''} onClick={() => setShowGuide(true)}>Start &amp; Ende</button>
+                        <button className={imageMode === 'anim' ? 'active' : ''} onClick={() => setImageMode('anim')}>Bewegung</button>
+                        <button className={imageMode === 'guide' ? 'active' : ''} onClick={() => setImageMode('guide')}>Start &amp; Ende</button>
+                        <button className={imageMode === 'photo' ? 'active' : ''} onClick={() => setImageMode('photo')}>Foto</button>
                       </div>
                     )}
                   </div>
@@ -1051,7 +1067,7 @@ export default function App() {
           ['training', Dumbbell, 'Training'],
           ['uebungen', ListChecks, 'Übungen'],
           ['timer', Timer, 'Timer'],
-          ['fortschritt', CalendarDays, 'Verlauf'],
+          ['fortschritt', ChartColumn, 'Statistik'],
         ].map(([key, Icon, label]) => (
           <button key={key} className={view === 'train' && tab === key ? 'active' : ''} onClick={() => { setView('train'); setTab(key) }}>
             <Icon size={21} strokeWidth={view === 'train' && tab === key ? 2.3 : 1.8} /> <span>{label}</span>
