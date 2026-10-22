@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Minus, Plus, TrendingUp } from 'lucide-react'
-import { fmtKg, fmtSet } from './logStore'
+import { fmtKg, fmtSet } from '../lib/logStore'
 
 function Stepper({ label, value, unit, step, min = 0, max = 500, onChange, decimals }) {
   const [text, setText] = useState(null)

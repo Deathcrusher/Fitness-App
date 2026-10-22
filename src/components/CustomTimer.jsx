@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Minus, Pause, Play, Plus, RotateCcw, Timer as TimerIcon } from 'lucide-react'
-import { fmt } from './plans'
-import { ensureAudio, tick, signal } from './audio'
+import { fmt } from '../lib/plans'
+import { ensureAudio, tick, signal } from '../lib/audio'
 
 const PRESETS = [1, 3, 5, 10]
 const MAX_MINUTES = 180

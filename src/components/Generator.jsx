@@ -5,7 +5,7 @@ import {
   GENERATOR_EQUIP,
   GENERATOR_LENGTH,
   scanGoalText,
-} from './plans'
+} from '../lib/plans'
 
 const DEFAULTS = { focus: 'ganzkoerper', equipment: 'koerpergewicht', length: 'mittel', days: 1 }
 

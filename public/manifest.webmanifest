@@ -28,5 +28,50 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Training starten",
+      "short_name": "Training",
+      "description": "Den heute fälligen Trainingstag öffnen",
+      "url": "/?action=train",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Timer",
+      "short_name": "Timer",
+      "url": "/?tab=timer",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Statistik",
+      "short_name": "Statistik",
+      "url": "/?tab=fortschritt",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "id": "/",
+  "categories": [
+    "health",
+    "fitness",
+    "sports"
   ]
 }

@@ -1,7 +1,8 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
-import { applyPlanFixes } from './planFixes'
+import ErrorBoundary from './components/ErrorBoundary'
+import { applyPlanFixes } from './lib/planFixes'
 import '@fontsource-variable/archivo/wdth.css'
 import './styles.css'
 
@@ -9,9 +10,13 @@ applyPlanFixes()
 
 const root = createRoot(document.getElementById('root'))
 if (window.location.search.includes('figures')) {
-  import('./FigureDebug.jsx').then(({ default: FigureDebug }) => root.render(<FigureDebug />))
+  import('./components/FigureDebug.jsx').then(({ default: FigureDebug }) => root.render(<FigureDebug />))
 } else {
-  root.render(<App />)
+  root.render(
+    <ErrorBoundary version={__APP_VERSION__}>
+      <App />
+    </ErrorBoundary>,
+  )
 }
 
 if ('serviceWorker' in navigator) {

@@ -1,18 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
-  CalendarDays,
   ChartColumn,
   CheckCircle2,
-  ChevronRight,
-  Clock3,
   Dumbbell,
-  Flame,
   History,
   Hourglass,
   ListChecks,
   Medal,
-  Monitor,
-  Moon,
   Pause,
   Play,
   Plus,
@@ -20,11 +14,12 @@ import {
   Settings,
   SkipBack,
   SkipForward,
-  Sun,
   Timer,
   Trash2,
   Trophy,
   Video,
+  Volume2,
+  VolumeX,
 } from 'lucide-react'
 import {
   builtinPlans,
@@ -33,23 +28,21 @@ import {
   imageFocusFor,
   movementGuideFor,
   timedSeconds,
-  fmt,
   videoKey,
   emptyPlan,
   duplicatePlan,
-  examplePlans,
   makeId,
   generatePlan,
   PROGRAM_TEMPLATES,
   youtubeSearchUrl,
   parseSets,
-} from './plans'
-import VideoPlayer from './VideoPlayer'
-import ExerciseFigure, { animationFor } from './ExerciseFigure'
-import SetLogger from './SetLogger'
-import ExerciseSheet from './ExerciseSheet'
-import WorkoutOverview from './WorkoutOverview'
-import SettingsSheet from './SettingsSheet'
+} from './lib/plans'
+import VideoPlayer from './components/VideoPlayer'
+import { animationFor } from './components/ExerciseFigure'
+import SetLogger from './components/SetLogger'
+import ExerciseSheet from './components/ExerciseSheet'
+import WorkoutOverview from './components/WorkoutOverview'
+import SettingsSheet from './components/SettingsSheet'
 import {
   draftFor,
   entriesFor,
@@ -64,171 +57,47 @@ import {
   upsertEntry,
   usesWeight,
   volumeOf,
-} from './logStore'
-import Builder from './Builder'
-import Generator from './Generator'
-import CustomTimer from './CustomTimer'
-import ProgressCalendar, { dateKey, weekStreak } from './ProgressCalendar'
-import { ensureAudio, tick, signal, vibrate } from './audio'
+} from './lib/logStore'
+import Builder from './components/Builder'
+import Generator from './components/Generator'
+import CustomTimer from './components/CustomTimer'
+import ProgressCalendar, { dateKey } from './components/ProgressCalendar'
+import { ensureAudio, tick, signal, vibrate } from './lib/audio'
+import BrandMark from './components/BrandMark'
+import TimerRing from './components/TimerRing'
+import FinishSummary from './components/FinishSummary'
+import SessionMedia from './components/SessionMedia'
+import ExerciseList from './components/ExerciseList'
+import ProgramPicker from './components/ProgramPicker'
+import { nextDueDay } from './lib/schedule'
+import { coachEnabled, introText, say, setCoachEnabled, setText, unlockCoach } from './lib/coach'
+import { newlyUnlocked } from './lib/achievements'
+import { prefetchMedia } from './lib/backup'
+import {
+  STORAGE_KEY,
+  CUSTOM_KEY,
+  VIDEOS_KEY,
+  HISTORY_KEY,
+  SESSION_KEY,
+  THEME_KEY,
+  GOAL_KEY,
+  loadGoal,
+  weekCountOf,
+  loadTheme,
+  loadSession,
+  sessionElapsed,
+  formatDuration,
+  loadState,
+  loadCustomPlans,
+  loadVideos,
+  loadHistory,
+  persist,
+  SETS_KEY,
+} from './lib/storage'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V2.0.0'
-const STORAGE_KEY = 'fitflow-state-v2'
-const CUSTOM_KEY = 'fitflow-custom-plans-v1'
-const VIDEOS_KEY = 'fitflow-videos-v1'
-const HISTORY_KEY = 'fitflow-history-v1'
-const SESSION_KEY = 'fitflow-session-v1'
-const THEME_KEY = 'fitflow-theme-v1'
-const GOAL_KEY = 'fitflow-goal-v1'
-
-function loadGoal() {
-  try {
-    const n = Number(localStorage.getItem(GOAL_KEY))
-    return n >= 1 && n <= 7 ? n : 3
-  } catch {
-    return 3
-  }
-}
-
-function weekCountOf(history) {
-  const start = new Date()
-  start.setHours(0, 0, 0, 0)
-  start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
-  return history.filter((e) => new Date(`${e.date}T12:00:00`) >= start).length
-}
-
-const fmtVolume = (kg) => (kg >= 1000 ? `${(kg / 1000).toFixed(1).replace('.', ',')} t` : `${Math.round(kg)} kg`)
-const THEME_ORDER = ['system', 'light', 'dark']
-const THEME_META = {
-  system: { icon: Monitor, label: 'Design: automatisch' },
-  light: { icon: Sun, label: 'Design: hell' },
-  dark: { icon: Moon, label: 'Design: dunkel' },
-}
-
-function loadTheme() {
-  try {
-    const value = localStorage.getItem(THEME_KEY)
-    return THEME_ORDER.includes(value) ? value : 'system'
-  } catch {
-    return 'system'
-  }
-}
-
-function loadSession() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}')
-    return {
-      key: typeof parsed.key === 'string' ? parsed.key : null,
-      startedAt: Number(parsed.startedAt) || null,
-      elapsedMs: Math.max(0, Number(parsed.elapsedMs) || 0),
-      running: Boolean(parsed.running && parsed.startedAt),
-    }
-  } catch {
-    return { key: null, startedAt: null, elapsedMs: 0, running: false }
-  }
-}
-
-function sessionElapsed(session, now = Date.now()) {
-  return session.elapsedMs + (session.running && session.startedAt ? now - session.startedAt : 0)
-}
-
-function formatDuration(milliseconds) {
-  const total = Math.max(0, Math.floor(milliseconds / 1000))
-  const h = Math.floor(total / 3600)
-  const m = Math.floor((total % 3600) / 60)
-  const sec = total % 60
-  const pad = (n) => String(n).padStart(2, '0')
-  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`
-}
-
-function humanDuration(milliseconds) {
-  const minutes = Math.round(milliseconds / 60000)
-  if (minutes < 1) return '< 1 Min'
-  if (minutes < 60) return `${minutes} Min`
-  return `${Math.floor(minutes / 60)} h ${minutes % 60} Min`
-}
-
-
-function BrandMark() {
-  return (
-    <svg className="brandMark" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true">
-      <rect width="64" height="64" rx="15" />
-      <g transform="translate(0 -5) rotate(-24 32 32)">
-        <rect x="18" y="29" width="28" height="6" rx="3" />
-        <rect x="14.5" y="20" width="7" height="24" rx="3" />
-        <rect x="9" y="24.5" width="5" height="15" rx="2.5" />
-        <rect x="42.5" y="20" width="7" height="24" rx="3" />
-        <rect x="50" y="24.5" width="5" height="15" rx="2.5" />
-      </g>
-      <path d="M14 51c6 0 8-5 13-5s7 5 12 5 7-5 11-5" />
-    </svg>
-  )
-}
-
-function TimerRing({ seconds, total, label, running }) {
-  const ratio = total > 0 ? Math.max(0, Math.min(1, seconds / total)) : 0
-  return (
-    <div
-      className={`timerRing${running ? ' running' : ''}${seconds === 0 ? ' ended' : ''}`}
-      style={{ '--ring': `${ratio * 360}deg` }}
-      role="timer"
-      aria-label={`${label}: ${fmt(seconds)}`}
-    >
-      <div className="timerRingFace">
-        <strong>{fmt(seconds)}</strong>
-        <span>{label}</span>
-      </div>
-    </div>
-  )
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return {}
-    return JSON.parse(raw)
-  } catch {
-    return {}
-  }
-}
-function loadCustomPlans() {
-  try {
-    const raw = localStorage.getItem(CUSTOM_KEY)
-    if (raw === null) {
-      const seeded = {}
-      for (const p of examplePlans()) seeded[p.id] = p
-      return seeded
-    }
-    const parsed = JSON.parse(raw)
-    const out = {}
-    for (const [k, v] of Object.entries(parsed)) {
-      out[k] = { ...v, owner: v.owner || 'connie' }
-    }
-    return out
-  } catch {
-    return {}
-  }
-}
-function loadVideos() {
-  try {
-    const raw = localStorage.getItem(VIDEOS_KEY)
-    if (!raw) return {}
-    return JSON.parse(raw)
-  } catch {
-    return {}
-  }
-}
-
-function loadHistory() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
+const APP_VERSION = __APP_VERSION__
 export default function App() {
   const [customPlans, setCustomPlans] = useState(loadCustomPlans)
   const [videos, setVideos] = useState(loadVideos)
@@ -250,7 +119,14 @@ export default function App() {
   const initialWork = timedSeconds(initialStep.reps)
 
   const [view, setView] = useState('train')
-  const [tab, setTab] = useState('training')
+  const [tab, setTab] = useState(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get('tab')
+      return ['training', 'uebungen', 'timer', 'fortschritt'].includes(t) ? t : 'training'
+    } catch {
+      return 'training'
+    }
+  })
   const initialOwner = builtinPlans[savedPerson] ? savedPerson : (allPlans[savedPerson]?.owner || 'connie')
   const [builderOwner, setBuilderOwner] = useState(initialOwner)
   const [person, setPerson] = useState(savedPerson)
@@ -274,7 +150,7 @@ export default function App() {
     return s.doneSteps || {}
   })
   const [setsOverrides, setSetsOverrides] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('fitflow-sets-v1') || '{}') }
+    try { return JSON.parse(localStorage.getItem(SETS_KEY) || '{}') }
     catch { return {} }
   })
   const [setsDone, setSetsDone] = useState(() => Number(loadState().setsDone) || 0)
@@ -293,6 +169,9 @@ export default function App() {
   const [sheetStep, setSheetStep] = useState(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [goal, setGoal] = useState(loadGoal)
+  const [voiceOn, setVoiceOn] = useState(coachEnabled)
+  const [newBadges, setNewBadges] = useState([])
+  const announcedRef = useRef('')
   const expectingRefresh = useRef(false)
   const endsAtRef = useRef(null)
 
@@ -350,6 +229,18 @@ export default function App() {
     : { key: draftKey, ...draftFor({ log, owner: currentOwner, step: currentStep, setIndex, today, sessionSets: sessionLog[stepIndex] }) }
   const sessionVolume = Object.values(sessionLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
   const weekCount = weekCountOf(history)
+  const dueDay = nextDueDay(history, person, plan.days.length)
+
+  // Kurzbefehle vom Homescreen: Parameter nach dem Start wieder aus der Adresse entfernen
+  useEffect(() => {
+    if (window.location.search) window.history.replaceState(null, '', window.location.pathname)
+  }, [])
+
+  // Bilder des aktuellen Tages vorab laden, damit das Training auch offline klappt
+  useEffect(() => {
+    prefetchMedia(steps.flatMap((step) => [imageFor(step, imagePerson), movementGuideFor(step, imagePerson)]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [person, dayIndex])
 
   useEffect(() => {
     function onUpdate(e) { setUpdateInfo(e.detail) }
@@ -391,23 +282,15 @@ export default function App() {
   }
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview }))
-    } catch {
-      /* noop */
-    }
+    persist(STORAGE_KEY, { person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview })
   }, [person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview])
-
   useEffect(() => { saveLog(log) }, [log])
-
-  useEffect(() => {
-    try { localStorage.setItem(GOAL_KEY, String(goal)) } catch { /* noop */ }
-  }, [goal])
-
-  useEffect(() => {
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)) }
-    catch { /* noop */ }
-  }, [session])
+  useEffect(() => { persist(GOAL_KEY, String(goal)) }, [goal])
+  useEffect(() => { persist(SESSION_KEY, session) }, [session])
+  useEffect(() => { persist(CUSTOM_KEY, customPlans) }, [customPlans])
+  useEffect(() => { persist(VIDEOS_KEY, videos) }, [videos])
+  useEffect(() => { persist(HISTORY_KEY, history) }, [history])
+  useEffect(() => { persist(SETS_KEY, setsOverrides) }, [setsOverrides])
 
   useEffect(() => {
     if (!session.running) return undefined
@@ -423,40 +306,12 @@ export default function App() {
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', resolved === 'dark' ? '#0f1513' : '#2f7667')
     }
     apply()
-    try { localStorage.setItem(THEME_KEY, theme) } catch { /* noop */ }
+    persist(THEME_KEY, theme)
     if (theme !== 'system' || !media) return undefined
     media.addEventListener?.('change', apply)
     return () => media.removeEventListener?.('change', apply)
   }, [theme])
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(CUSTOM_KEY, JSON.stringify(customPlans))
-    } catch {
-      /* noop */
-    }
-  }, [customPlans])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(VIDEOS_KEY, JSON.stringify(videos))
-    } catch {
-      /* noop */
-    }
-  }, [videos])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
-    } catch {
-      /* noop */
-    }
-  }, [history])
-
-  useEffect(() => {
-    try { localStorage.setItem('fitflow-sets-v1', JSON.stringify(setsOverrides)) }
-    catch { /* noop */ }
-  }, [setsOverrides])
 
   function setClock(value, run) {
     setSeconds(value)
@@ -488,10 +343,22 @@ export default function App() {
     setPrs([])
     setDraft(null)
     setOverview(true)
+    setNewBadges([])
+    announcedRef.current = ''
+  }
+
+  function toggleVoice(value = !voiceOn) {
+    setCoachEnabled(value)
+    setVoiceOn(value)
+    if (value) {
+      unlockCoach()
+      say('Sprach-Coach ist an.', { interrupt: true })
+    }
   }
 
   function startWorkout() {
     ensureAudio()
+    unlockCoach()
     setOverview(false)
     startSession()
     enterWork(0)
@@ -509,6 +376,7 @@ export default function App() {
     if (isRecord(previous, set) && beatsToday) {
       setPrs((list) => [...list.filter((p) => p.name !== currentStep.name), { name: currentStep.name, text: fmtSet(set) }])
       signal('record')
+      say('Stark – neuer Rekord!', { interrupt: true })
     }
     setLog((prev) => upsertEntry(prev, currentOwner, currentStep.name, today, sets, plan.name))
     return nextSessionLog
@@ -548,6 +416,7 @@ export default function App() {
     setClock(pauseSeconds, true)
     setRunning(true)
     setShowVideo(false)
+    say(`Gut gemacht. ${pauseSeconds} Sekunden Pause.`)
   }
 
   function finishWorkout(extraSets = 0, finalLog = sessionLog) {
@@ -555,22 +424,25 @@ export default function App() {
     const volume = Object.values(finalLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
     const completedDate = dateKey()
     const completionKey = `${completedDate}:${person}:${dayIndex}`
+    const entry = {
+      key: completionKey,
+      date: completedDate,
+      completedAt: new Date().toISOString(),
+      programId: person,
+      programName: plan.name,
+      dayIndex,
+      dayName: day.title,
+      durationSec: Math.round(durationMs / 1000),
+      sets: setsDone + extraSets,
+      volume: Math.round(volume),
+      records: prs.length,
+    }
+    if (!history.some((e) => e.key === completionKey)) setNewBadges(newlyUnlocked(history, [...history, entry], goal))
     setHistory((previous) => {
-      if (previous.some((entry) => entry.key === completionKey)) return previous
-      return [...previous, {
-        key: completionKey,
-        date: completedDate,
-        completedAt: new Date().toISOString(),
-        programId: person,
-        programName: plan.name,
-        dayIndex,
-        dayName: day.title,
-        durationSec: Math.round(durationMs / 1000),
-        sets: setsDone + extraSets,
-        volume: Math.round(volume),
-        records: prs.length,
-      }]
+      if (previous.some((e) => e.key === completionKey)) return previous
+      return [...previous, entry]
     })
+    say('Training geschafft. Stark gemacht!', { interrupt: true })
     setPhase('done')
     setRunning(false)
     setClock(0, false)
@@ -630,6 +502,7 @@ export default function App() {
   }
 
   function pickStep(index) {
+    unlockCoach()
     setOverview(false)
     startSession()
     enterWork(index)
@@ -645,9 +518,11 @@ export default function App() {
       return
     }
     const start = seconds > 0 ? seconds : (phase === 'rest' ? pauseSeconds : workSeconds)
+    unlockCoach()
     startSession()
     setClock(start, true)
     setRunning(true)
+    if (phase === 'work') say('Los!', { interrupt: true })
   }
 
   function changePause(value) {
@@ -762,17 +637,20 @@ export default function App() {
   useEffect(() => {
     if (skipPersonReset.current) {
       skipPersonReset.current = false
+      // Beim Öffnen ohne laufendes Training direkt den fälligen Tag zeigen
+      if (overview && phase === 'work' && stepIndex === 0 && dueDay !== dayIndex) selectDay(dueDay)
       return
     }
     const fallback = allPlans[person] ? person : 'connie'
-    setDayIndex(0)
+    const due = nextDueDay(history, fallback, allPlans[fallback].days.length)
+    setDayIndex(due)
     setStepIndex(0)
     setSetIndex(0)
     setDoneSteps({})
     resetSession()
     setPhase('work')
     setRunning(false)
-    const firstStep = allPlans[fallback].days[0].steps[0]
+    const firstStep = allPlans[fallback].days[due].steps[0]
     const work = timedSeconds(firstStep.reps)
     setClock(work != null ? work : 0, false)
     setWorkSeconds(work != null ? work : 0)
@@ -797,6 +675,21 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, phase])
 
+  // Sprach-Coach: neue Übung oder neuer Satz
+  useEffect(() => {
+    if (overview || phase !== 'work' || !session.running || session.key !== sessionKey) return
+    const key = `${sessionKey}:${stepIndex}:${setIndex}`
+    if (announcedRef.current === key) return
+    announcedRef.current = key
+    const target = loggable ? currentDraft : null
+    if (setIndex === 0) {
+      say(introText(currentStep, { sets: effectiveSets, draft: target, weighted, first: stepIndex === 0 }), { interrupt: true })
+    } else {
+      say(setText(setIndex, effectiveSets, target), { interrupt: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overview, phase, stepIndex, setIndex, session.running, sessionKey])
+
   useEffect(() => {
     if (!running || phase === 'done') return
     if (phase !== 'rest' && !(phase === 'work' && isTimed)) return
@@ -804,16 +697,20 @@ export default function App() {
       tick()
       vibrate(25)
     }
+    if (seconds === 10 && (phase === 'rest' ? pauseSeconds : workSeconds) > 20) say('Noch zehn Sekunden.')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seconds, running, phase, isTimed])
 
   useEffect(() => {
     if (seconds !== 0 || !running) return
     const id = window.setTimeout(() => {
       if (phase === 'work' && isTimed) {
+        say('Geschafft.', { interrupt: true })
         signal('work-done')
         setRunning(false)
         endsAtRef.current = null
       } else if (phase === 'rest') {
+        say('Pause vorbei.', { interrupt: true })
         signal('rest-end')
         setRunning(false)
         endsAtRef.current = null
@@ -876,35 +773,18 @@ export default function App() {
 
       {view === 'train' ? (
         <>
-          <header className="pageHead">
-            <h1>{plan.name}</h1>
-            <p>{plan.title}</p>
-          </header>
-
-          <div className="segmented personSeg" role="tablist" aria-label="Person wählen">
-            {builtinEntries.map(([key, item]) => (
-              <button key={key} role="tab" aria-selected={currentOwner === key} className={currentOwner === key ? 'active' : ''} onClick={() => setPerson(key)}>
-                {item.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="programChips" aria-label="Programm wählen">
-            <button className={plan.builtin ? 'active' : ''} onClick={() => setPerson(currentOwner)} aria-pressed={plan.builtin}>Grundtraining</button>
-            {customEntries.map(([key, item]) => (
-              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)} aria-pressed={person === key}>{item.name}</button>
-            ))}
-            <button className="chipAdd" onClick={createProgram} aria-label="Neues Programm"><Plus size={16} /> Neu</button>
-          </div>
-
-          <nav className="dayTabsRail" aria-label="Trainingstag wählen">
-            {plan.days.map((item, index) => (
-              <button key={`${item.title}-${index}`} className={dayIndex === index ? 'active' : ''} onClick={() => selectDay(index)} aria-current={dayIndex === index ? 'page' : undefined}>
-                <strong>{item.title}</strong>
-                <span>{item.focus}</span>
-              </button>
-            ))}
-          </nav>
+          <ProgramPicker
+            plan={plan}
+            person={person}
+            owner={currentOwner}
+            builtinEntries={builtinEntries}
+            customEntries={customEntries}
+            dayIndex={dayIndex}
+            dueDay={dueDay}
+            onPerson={setPerson}
+            onNewProgram={createProgram}
+            onDay={selectDay}
+          />
 
           {tab === 'training' && (
           <section className="dashboard singleCol">
@@ -930,70 +810,47 @@ export default function App() {
             ) : (
             <article className="sessionCard">
               {phase === 'done' ? (
-                <div className="finishState">
-                  <div className="finishBurst"><Trophy size={56} /></div>
-                  <h2>Stark gemacht!</h2>
-                  <p>{day.title} · {day.focus}</p>
-                  <div className="summaryGrid">
-                    <div><Clock3 size={18} /><strong>{humanDuration(lastWorkout?.durationSec ? lastWorkout.durationSec * 1000 : elapsedMs)}</strong><span>Dauer</span></div>
-                    {sessionVolume > 0
-                      ? <div><Dumbbell size={18} /><strong>{fmtVolume(sessionVolume)}</strong><span>Volumen</span></div>
-                      : <div><ListChecks size={18} /><strong>{completedExercises}/{steps.length}</strong><span>Übungen</span></div>}
-                    <div><CheckCircle2 size={18} /><strong>{lastWorkout?.sets ?? setsDone}</strong><span>Sätze</span></div>
-                    <div><Flame size={18} /><strong>{weekCount}/{goal}</strong><span>Wochenziel</span></div>
-                  </div>
-                  {prs.length > 0 && (
-                    <div className="recordList">
-                      <h3><Medal size={18} /> {prs.length === 1 ? 'Neuer Rekord' : `${prs.length} neue Rekorde`}</h3>
-                      <ul>
-                        {prs.map((p) => <li key={p.name}><span>{p.name}</span><strong className="num">{p.text}</strong></li>)}
-                      </ul>
-                    </div>
-                  )}
-                  <span className="savedSuccess"><CheckCircle2 size={16} /> Im Kalender gespeichert</span>
-                  <div className="finishActions">
-                    <button className="primaryAction" onClick={() => setTab('fortschritt')}><CalendarDays size={20} /> Fortschritt</button>
-                    <button className="ghostBtn" onClick={resetWorkout}><RotateCcw size={18} /> Nochmal</button>
-                  </div>
-                </div>
+                <FinishSummary
+                  day={day}
+                  durationMs={lastWorkout?.durationSec ? lastWorkout.durationSec * 1000 : elapsedMs}
+                  volume={sessionVolume}
+                  completed={completedExercises}
+                  total={steps.length}
+                  sets={lastWorkout?.sets ?? setsDone}
+                  weekCount={weekCount}
+                  goal={goal}
+                  prs={prs}
+                  badges={newBadges}
+                  onStats={() => setTab('fortschritt')}
+                  onRestart={resetWorkout}
+                />
               ) : (
                 <>
                   <div className="sessionTop">
                     <span className={`sessionClock${session.running && session.key === sessionKey ? ' live' : ''}`}>
                       <Hourglass size={15} /> {elapsedMs > 0 ? formatDuration(elapsedMs) : '00:00'}
                     </span>
-                    <span className="sessionCount">{stepIndex + 1} von {steps.length}</span>
+                    <span className="sessionCount">
+                      {stepIndex + 1} von {steps.length}
+                      <button className="voiceBtn" onClick={() => toggleVoice()} aria-pressed={voiceOn} aria-label={voiceOn ? 'Sprach-Coach ausschalten' : 'Sprach-Coach einschalten'}>
+                        {voiceOn ? <Volume2 size={17} /> : <VolumeX size={17} />}
+                      </button>
+                    </span>
                   </div>
                   <div className="progressLine" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
 
-                  <div className={`sessionImageWrap${phase === 'rest' ? ' resting' : ''}`}>
-                    {phase === 'work' && hasAnim && imageMode === 'anim' ? (
-                      <ExerciseFigure key={`${programId}-${dayIndex}-${stepIndex}`} step={currentStep} label={`${currentStep.name}: Bewegungsablauf`} />
-                    ) : (
-                      <img
-                        className={phase === 'work' && imageMode === 'guide' && currentGuide ? 'guideImage' : ''}
-                        src={phase === 'work' && imageMode === 'guide' && currentGuide ? currentGuide : currentImage}
-                        alt={phase === 'work' && imageMode === 'guide' && currentGuide ? `${currentStep.name}: Start- und Endposition` : `${currentStep.name} Foto`}
-                        style={{ objectPosition: phase === 'work' && imageMode === 'guide' && currentGuide ? 'center center' : currentImageFocus }}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    )}
-                    {phase === 'work' && imageMode === 'guide' && currentGuide && (
-                      <>
-                        <span className="guidePosition start">Start</span>
-                        <span className="guidePosition end">Ende</span>
-                      </>
-                    )}
-                    <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
-                    {phase === 'work' && (hasAnim || currentGuide) && (
-                      <div className="imageModeSwitch" aria-label="Übungsdarstellung">
-                        {hasAnim && <button className={imageMode === 'anim' ? 'active' : ''} onClick={() => setImageMode('anim')}>Animation</button>}
-                        {currentGuide && <button className={imageMode === 'guide' ? 'active' : ''} onClick={() => setImageMode('guide')}>Start &amp; Ende</button>}
-                        <button className={imageMode === 'photo' || (!hasAnim && imageMode === 'anim') ? 'active' : ''} onClick={() => setImageMode('photo')}>Foto</button>
-                      </div>
-                    )}
-                  </div>
+                  <SessionMedia
+                    phase={phase}
+                    step={currentStep}
+                    stepKey={`${programId}-${dayIndex}-${stepIndex}`}
+                    imageMode={imageMode}
+                    onImageMode={setImageMode}
+                    image={currentImage}
+                    imageFocus={currentImageFocus}
+                    guide={currentGuide}
+                    hasAnim={hasAnim}
+                    badge={<><TypeIcon size={16} /> {phaseLabel}</>}
+                  />
 
                   <div className="sessionBody">
                   <div className="sessionHeader">
@@ -1160,35 +1017,18 @@ export default function App() {
 
           {tab === 'uebungen' && (
           <section className="dashboard singleCol">
-            <aside className="planPanel">
-              <div className="panelHead">
-                <div>
-                  <p className="muted">{plan.equipment}</p>
-                  <h2>{day.focus}</h2>
-                </div>
-                <span>{progress}%</span>
-              </div>
-              <p className="dayTone">{day.tone}</p>
-              <div className="stepList">
-                {steps.map((item, index) => {
-                  const ItemIcon = TYPE_META[item.type].icon
-                  const state = index === stepIndex && phase !== 'done' ? 'current' : doneSteps[index] ? 'done' : ''
-                  const linked = hasVideo(item)
-                  return (
-                    <div key={`${item.name}-${index}`} className={`stepRow ${state}`}>
-                      <button className="stepMain" onClick={() => pickStep(index)}>
-                        <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
-                        <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
-                        {linked && <Video size={15} className="stepVideoIcon" />}
-                      </button>
-                      <button className="stepInfo" onClick={() => setSheetStep(index)} aria-label={`${item.name}: Details und Verlauf`}>
-                        <ChevronRight size={18} />
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            </aside>
+            <ExerciseList
+              plan={plan}
+              day={day}
+              steps={steps}
+              progress={progress}
+              stepIndex={stepIndex}
+              phase={phase}
+              doneSteps={doneSteps}
+              hasVideo={hasVideo}
+              onPick={pickStep}
+              onInfo={setSheetStep}
+            />
           </section>
           )}
 
@@ -1282,6 +1122,8 @@ export default function App() {
           goal={goal}
           onGoal={setGoal}
           version={APP_VERSION}
+          voiceOn={voiceOn}
+          onVoice={toggleVoice}
           onClose={() => setSettingsOpen(false)}
         />
       )}

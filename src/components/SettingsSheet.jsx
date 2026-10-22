@@ -1,27 +1,11 @@
 import React, { useRef, useState } from 'react'
 import { Download, Minus, Plus, Upload, X } from 'lucide-react'
+import { exportData } from '../lib/backup'
+import { coachSupported, say } from '../lib/coach'
 
 const THEMES = [['system', 'Automatisch'], ['light', 'Hell'], ['dark', 'Dunkel']]
 
-function exportData(version) {
-  const data = {}
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key && key.startsWith('fitflow-')) data[key] = localStorage.getItem(key)
-  }
-  const payload = { app: 'FitFlow', version, exportedAt: new Date().toISOString(), data }
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `fitflow-backup-${new Date().toISOString().slice(0, 10)}.json`
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
-export default function SettingsSheet({ theme, onTheme, goal, onGoal, version, onClose }) {
+export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, onVoice, version, onClose }) {
   const fileRef = useRef(null)
   const [status, setStatus] = useState(null)
   const [pending, setPending] = useState(null)
@@ -70,6 +54,21 @@ export default function SettingsSheet({ theme, onTheme, goal, onGoal, version, o
               <button key={key} role="radio" aria-checked={theme === key} className={theme === key ? 'active' : ''} onClick={() => onTheme(key)}>{label}</button>
             ))}
           </div>
+        </section>
+
+        <section className="setSection">
+          <h4>Sprach-Coach</h4>
+          {coachSupported() ? (
+            <div className="switchRow">
+              <p>Sagt Übungen, Sätze, Gewichte und Pausen an – du musst nicht aufs Handy schauen.</p>
+              <button role="switch" aria-checked={voiceOn} className={`switch${voiceOn ? ' on' : ''}`} onClick={() => onVoice(!voiceOn)} aria-label="Sprach-Coach"><span /></button>
+            </div>
+          ) : (
+            <p className="setHint">Dein Browser unterstützt keine Sprachausgabe.</p>
+          )}
+          {voiceOn && coachSupported() && (
+            <button className="ghostBtn testVoice" onClick={() => say('Satz 2 von 3. 12 mal 10 Kilo.', { interrupt: true })}>Probehören</button>
+          )}
         </section>
 
         <section className="setSection">

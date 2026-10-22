@@ -1,8 +1,8 @@
 import React from 'react'
 import { CalendarCheck2, Clock3, ListChecks, Play, Target } from 'lucide-react'
 import { FigureFrame, MOVES, animationFor } from './ExerciseFigure'
-import { imageFor } from './plans'
-import { estimateMinutes, isLoggable, lastEntry } from './logStore'
+import { imageFor } from '../lib/plans'
+import { estimateMinutes, isLoggable, lastEntry } from '../lib/logStore'
 
 function Thumb({ step, imagePerson }) {
   const key = animationFor(step)

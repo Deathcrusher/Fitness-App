@@ -6,7 +6,7 @@ import {
   Trash2,
   Video,
 } from 'lucide-react'
-import { ACCENTS, EXERCISE_LIBRARY, TYPE_META, TYPE_KEYS, emptyStep, emptyDay, youtubeSearchUrl } from './plans'
+import { ACCENTS, EXERCISE_LIBRARY, TYPE_META, TYPE_KEYS, emptyStep, emptyDay, youtubeSearchUrl } from '../lib/plans'
 
 export default function Editor({ plan, onChange }) {
   const [dayIndex, setDayIndex] = useState(0)

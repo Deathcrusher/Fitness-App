@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { GROUND, LEN, R, A, VB_H, VB_W, cycleLength, rotate, sample, solve } from './figure/rig'
-import { MOVES, moveFor } from './figure/moves'
+import { GROUND, LEN, R, A, VB_H, VB_W, cycleLength, rotate, sample, solve } from '../lib/figure/rig'
+import { MOVES, moveFor } from '../lib/figure/moves'
 
 export function animationFor(step) {
   return moveFor(step)

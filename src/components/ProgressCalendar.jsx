@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { CalendarCheck2, Clock3, Flame, Trophy } from 'lucide-react'
+import Achievements, { WeekCompare } from './Achievements'
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
@@ -216,6 +217,7 @@ export default function ProgressCalendar({ history, goal = 3 }) {
         </article>
       </div>
 
+      {history.length > 0 && <WeekCompare history={history} />}
       {history.length > 0 && <WeeklyChart history={history} today={today} />}
 
       <article className="calendarCard">
@@ -245,6 +247,7 @@ export default function ProgressCalendar({ history, goal = 3 }) {
         </div>
       </article>
 
+      <Achievements history={history} goal={goal} />
       <RecentList history={history} />
 
       {history.length === 0 && (

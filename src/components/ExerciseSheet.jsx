@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Medal, X } from 'lucide-react'
 import ExerciseFigure, { animationFor } from './ExerciseFigure'
-import { bests, entriesFor, fmtKg, fmtSet } from './logStore'
+import { bests, entriesFor, fmtKg, fmtSet } from '../lib/logStore'
 
 const fmtDate = (key, opts = { day: 'numeric', month: 'short' }) =>
   new Date(`${key}T12:00:00`).toLocaleDateString('de-DE', opts)

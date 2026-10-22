@@ -1,6 +1,6 @@
 import React from 'react'
 import { X } from 'lucide-react'
-import { parseVideo } from './plans'
+import { parseVideo } from '../lib/plans'
 
 export default function VideoPlayer({ url, onClose }) {
   const parsed = parseVideo(url)
