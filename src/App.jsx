@@ -42,6 +42,7 @@ import {
   parseSets,
 } from './plans'
 import VideoPlayer from './VideoPlayer'
+import ExerciseFigure, { animationFor } from './ExerciseFigure'
 import Builder from './Builder'
 import Generator from './Generator'
 import CustomTimer from './CustomTimer'
@@ -50,7 +51,7 @@ import { ensureAudio, tick, signal, vibrate } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.7.0'
+const APP_VERSION = 'V1.8.0'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
@@ -108,25 +109,19 @@ function humanDuration(milliseconds) {
 }
 
 
-function MovementAnimation({ src, name, tempo }) {
+function BrandMark() {
   return (
-    <div
-      className="moveAnim"
-      style={{ '--anim-src': `url("${src}")`, '--tempo': `${tempo}s` }}
-      role="img"
-      aria-label={`${name}: Bewegung von Start- zur Endposition`}
-    >
-      <div className="moveBackdrop" aria-hidden="true" />
-      <div className="moveStage" aria-hidden="true">
-        <span className="moveFrame from" />
-        <span className="moveFrame to" />
-      </div>
-      <div className="moveCue" aria-hidden="true">
-        <span className="cueA">Start</span>
-        <span className="cueB">Ende</span>
-        <i />
-      </div>
-    </div>
+    <svg className="brandMark" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true">
+      <rect width="64" height="64" rx="15" />
+      <g transform="translate(0 -5) rotate(-24 32 32)">
+        <rect x="18" y="29" width="28" height="6" rx="3" />
+        <rect x="14.5" y="20" width="7" height="24" rx="3" />
+        <rect x="9" y="24.5" width="5" height="15" rx="2.5" />
+        <rect x="42.5" y="20" width="7" height="24" rx="3" />
+        <rect x="50" y="24.5" width="5" height="15" rx="2.5" />
+      </g>
+      <path d="M14 51c6 0 8-5 13-5s7 5 12 5 7-5 11-5" />
+    </svg>
   )
 }
 
@@ -266,6 +261,7 @@ export default function App() {
   const currentImage = imageFor(currentStep, imagePerson)
   const currentImageFocus = imageFocusFor(currentStep, imagePerson)
   const currentGuide = movementGuideFor(currentStep, imagePerson)
+  const hasAnim = Boolean(animationFor(currentStep))
   const programId = person
   const stepVideo = currentStep.video || videos[videoKey(programId, dayIndex, currentStep)] || null
   const hasVideo = (item) => Boolean(item.video || videos[videoKey(programId, dayIndex, item)])
@@ -770,7 +766,7 @@ export default function App() {
   return (
     <main className={`app ${plan.accent} withTabbar`}>
       <nav className="topnav" aria-label="Hauptnavigation">
-        <span className="brand"><img src="/icon-192.png" alt="" width="28" height="28" /> FitFlow</span>
+        <span className="brand"><BrandMark /> FitFlow</span>
         <div className="topActions">
           <small className="versionTag">{APP_VERSION}</small>
           <button className="themeToggle" onClick={cycleTheme} aria-label={THEME_META[theme].label} title={THEME_META[theme].label}>
@@ -786,17 +782,21 @@ export default function App() {
             <p>{plan.title}</p>
           </header>
 
-          <section className="personRail" aria-label="Programm wählen">
-            {[...builtinEntries, ...customEntries].map(([key, item]) => (
-              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)} aria-pressed={person === key}>
-                <span className="avatar">{item.name.slice(0, 1)}</span>
-                <span>{item.name}</span>
+          <div className="segmented personSeg" role="tablist" aria-label="Person wählen">
+            {builtinEntries.map(([key, item]) => (
+              <button key={key} role="tab" aria-selected={currentOwner === key} className={currentOwner === key ? 'active' : ''} onClick={() => setPerson(key)}>
+                {item.name}
               </button>
             ))}
-            <button className="addProgram" onClick={createProgram} aria-label="Neues Programm">
-              <Plus size={18} />
-            </button>
-          </section>
+          </div>
+
+          <div className="programChips" aria-label="Programm wählen">
+            <button className={plan.builtin ? 'active' : ''} onClick={() => setPerson(currentOwner)} aria-pressed={plan.builtin}>Grundtraining</button>
+            {customEntries.map(([key, item]) => (
+              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)} aria-pressed={person === key}>{item.name}</button>
+            ))}
+            <button className="chipAdd" onClick={createProgram} aria-label="Neues Programm"><Plus size={16} /> Neu</button>
+          </div>
 
           <nav className="dayTabsRail" aria-label="Trainingstag wählen">
             {plan.days.map((item, index) => (
@@ -838,8 +838,8 @@ export default function App() {
                   <div className="progressLine" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
 
                   <div className={`sessionImageWrap${phase === 'rest' ? ' resting' : ''}`}>
-                    {phase === 'work' && currentGuide && imageMode === 'anim' ? (
-                      <MovementAnimation src={currentGuide} name={currentStep.name} tempo={currentStep.type === 'core' ? 2.6 : 3.2} />
+                    {phase === 'work' && hasAnim && imageMode === 'anim' ? (
+                      <ExerciseFigure key={`${programId}-${dayIndex}-${stepIndex}`} step={currentStep} label={`${currentStep.name}: Bewegungsablauf`} />
                     ) : (
                       <img
                         className={phase === 'work' && imageMode === 'guide' && currentGuide ? 'guideImage' : ''}
@@ -857,15 +857,16 @@ export default function App() {
                       </>
                     )}
                     <div className="phaseBadge"><TypeIcon size={16} /> {phaseLabel}</div>
-                    {phase === 'work' && currentGuide && (
+                    {phase === 'work' && (hasAnim || currentGuide) && (
                       <div className="imageModeSwitch" aria-label="Übungsdarstellung">
-                        <button className={imageMode === 'anim' ? 'active' : ''} onClick={() => setImageMode('anim')}>Bewegung</button>
-                        <button className={imageMode === 'guide' ? 'active' : ''} onClick={() => setImageMode('guide')}>Start &amp; Ende</button>
-                        <button className={imageMode === 'photo' ? 'active' : ''} onClick={() => setImageMode('photo')}>Foto</button>
+                        {hasAnim && <button className={imageMode === 'anim' ? 'active' : ''} onClick={() => setImageMode('anim')}>Animation</button>}
+                        {currentGuide && <button className={imageMode === 'guide' ? 'active' : ''} onClick={() => setImageMode('guide')}>Start &amp; Ende</button>}
+                        <button className={imageMode === 'photo' || (!hasAnim && imageMode === 'anim') ? 'active' : ''} onClick={() => setImageMode('photo')}>Foto</button>
                       </div>
                     )}
                   </div>
 
+                  <div className="sessionBody">
                   <div className="sessionHeader">
                     <h2>{phase === 'rest' ? (isSetRest ? 'Satzpause' : 'Pause') : currentStep.name}</h2>
                     {phase === 'work' && <span className="repFigure">{currentStep.reps.replace(/(\d)\s*[x×]\s*(\d)/i, '$1 × $2')}</span>}
@@ -982,6 +983,8 @@ export default function App() {
                       </div>
                     </>
                   )}
+
+                  </div>
 
                   {nextUp && (
                     <div className="upNext">

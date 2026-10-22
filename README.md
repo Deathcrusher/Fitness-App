@@ -14,7 +14,8 @@ Mobile-first Web-App fuer persoenliche Trainingsprogramme mit Tagesauswahl, gene
 - Einstellbare Satz- und Uebungstimer mit Tonsignalen
 - Eigene Programme und Videoverknuepfungen
 - Ruhiges Design mit Archivo-Schrift (selbst gehostet, offline verfuegbar)
-- Bewegungsanimation aus den eigenen Start-/Endbildern im Wiederholungstempo
+- Fluessige Uebungsanimationen (Vektor-Figur mit IK, 60 fps) fuer alle Uebungen, mit Atem-/Bewegungshinweisen und markierter Muskulatur
+- Pruefansicht aller Animationen unter /?figures
 - Statistik: Wochendiagramm (Trainings, Minuten, Saetze), Wochen in Folge, letzte Trainings
 - Dark Mode (automatisch, hell oder dunkel umschaltbar)
 - Trainingsansicht mit Timer-Ring, Satzanzeige und Vorschau auf die naechste Uebung

@@ -199,7 +199,7 @@ export default function ProgressCalendar({ history }) {
         <article>
           <Flame size={18} />
           <strong>{weekStreak(history, today)}</strong>
-          <span>Wochen in Folge</span>
+          <span>Wochen-Serie</span>
         </article>
         <article>
           <Clock3 size={18} />

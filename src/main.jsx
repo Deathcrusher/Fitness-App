@@ -7,9 +7,12 @@ import './styles.css'
 
 applyPlanFixes()
 
-createRoot(document.getElementById('root')).render(
-  <App />,
-)
+const root = createRoot(document.getElementById('root'))
+if (window.location.search.includes('figures')) {
+  import('./FigureDebug.jsx').then(({ default: FigureDebug }) => root.render(<FigureDebug />))
+} else {
+  root.render(<App />)
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

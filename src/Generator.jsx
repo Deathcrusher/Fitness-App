@@ -34,7 +34,7 @@ export default function Generator({ open, onClose, onGenerate }) {
       <div className="modal generatorModal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Programm generieren">
         <div className="generatorHead">
           <h3><Sparkles size={18} /> Programm generieren</h3>
-          <button className="iconAction" onClick={onClose} aria-label="Schließen"><X size={20} /></button>
+          <button className="closeBtn" onClick={onClose} aria-label="Schließen"><X size={20} /></button>
         </div>
         <p className="muted">Beschreib dein Ziel – die App baut daraus ein fertiges Programm.</p>
 

@@ -2694,3 +2694,247 @@ html[data-theme="dark"] .moveFrame { filter: brightness(0.92); }
 .recentCopy small { color: var(--muted); font-size: 13px; }
 .recentMeta { display: grid; justify-items: end; gap: 2px; color: var(--muted); font-size: 12.5px; }
 .recentMeta span { display: inline-flex; align-items: center; gap: 4px; }
+
+/* ============================================================
+   V1.8 – Übungsanimation (Piktogramm-Figur)
+   ============================================================ */
+.figureStage,
+.exerciseFigure {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+}
+.exerciseFigure {
+  --fig-ink: var(--ink);
+  --fig-far: color-mix(in srgb, var(--ink) 30%, var(--surface-2));
+  --fig-work: var(--accent);
+  --fig-work-far: color-mix(in srgb, var(--accent) 45%, var(--surface-2));
+  --fig-prop: color-mix(in srgb, var(--ink) 9%, var(--surface-2));
+  --fig-prop-line: color-mix(in srgb, var(--ink) 22%, var(--surface-2));
+  --fig-bell: color-mix(in srgb, var(--ink) 78%, var(--surface-2));
+  background: var(--surface-2);
+}
+.exerciseFigure svg { display: block; width: 100%; height: 100%; }
+.exerciseFigure line { stroke-linecap: round; }
+.figInk { stroke: var(--fig-ink); }
+.figFar { stroke: var(--fig-far); }
+.figWork { stroke: var(--fig-work); }
+.figWorkFar { stroke: var(--fig-work-far); }
+.figWorkFill { fill: var(--fig-work); }
+.figHead { fill: var(--fig-ink); }
+.figGround { stroke: var(--line); stroke-width: 1.5; }
+.figShadow { fill: color-mix(in srgb, var(--ink) 8%, transparent); }
+.figProp,
+.figProp rect { fill: var(--fig-prop); }
+.figPropLine,
+.figPropLines path,
+.figPropLines circle {
+  fill: none;
+  stroke: var(--fig-prop-line);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.figPropLines.thin path { stroke-width: 3.5; stroke: var(--fig-far); }
+.figPropLines .figWheel { stroke-width: 7; }
+.figPropLines .figSeat { fill: var(--fig-prop-line); stroke: none; }
+.figBell { fill: var(--fig-bell); }
+.figBellCore { fill: var(--surface-2); }
+.figHoop { fill: none; stroke: var(--accent); stroke-width: 4.5; stroke-linecap: round; }
+.figHoop.back { stroke: color-mix(in srgb, var(--accent) 45%, var(--surface-2)); }
+.figRope { fill: none; stroke: var(--accent); stroke-width: 2.2; }
+.figCue {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: cueIn 260ms ease both;
+}
+@keyframes cueIn {
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.figDebug { padding: 16px; background: var(--bg); }
+.figDebug h2 { margin: 18px 0 6px; font-size: 16px; }
+.figDebug section > div { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.figDebug .exerciseFigure { border-radius: 10px; overflow: hidden; }
+.figGap { stroke: var(--surface-2); }
+
+/* ============================================================
+   V1.8 – Feinschliff & Bugfixes
+   ============================================================ */
+.brandMark { flex: none; border-radius: 8px; }
+.brandMark > rect { fill: var(--accent); }
+.brandMark g rect { fill: #fff; }
+.brandMark path { fill: none; stroke: rgba(255, 255, 255, 0.72); stroke-width: 3.2; stroke-linecap: round; }
+
+/* Person + Programm */
+.personSeg { max-width: 720px; margin: 0 auto 10px; }
+.personSeg button { min-height: 40px; }
+.programChips {
+  display: flex;
+  gap: 6px;
+  max-width: 720px;
+  margin: 0 auto 10px;
+  padding: 2px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.programChips::-webkit-scrollbar { display: none; }
+.programChips button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.programChips button.active { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.programChips .chipAdd { border-style: dashed; background: transparent; color: var(--muted); }
+
+/* Bild/Animation */
+.sessionImageWrap .exerciseFigure { border-radius: inherit; }
+.sessionImageWrap.resting .exerciseFigure { opacity: 0.5; }
+
+/* Presets in einer Zeile */
+.restPresets { flex-wrap: nowrap; gap: 4px; }
+.restPresets > span { margin-right: 4px; }
+.restPresets button { min-height: 30px; padding: 4px 10px; font-size: 13px; }
+
+/* Schließen-Knopf in Dialogen */
+.closeBtn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--ink);
+  cursor: pointer;
+}
+.generatorHead { gap: 12px; margin-bottom: 4px; }
+.generatorHead h3 { font-size: 20px; line-height: 1.15; }
+
+/* Programme bearbeiten: Kopf bleibt einzeilig */
+.editHead { flex-wrap: nowrap; align-items: center; }
+.editHead h2 { flex: 1 1 auto; min-width: 0; font-size: 18px; line-height: 1.2; }
+.editHead .builderActions { flex: none; flex-wrap: nowrap; }
+
+/* Statistik-Beschriftungen */
+.progressStats span { font-size: 11px; white-space: nowrap; }
+
+/* Update-Hinweis über der Navigation */
+.updateBanner {
+  left: 50%;
+  right: auto;
+  bottom: calc(78px + env(safe-area-inset-bottom));
+  width: min(calc(100% - 24px), 520px);
+  border-radius: var(--r-md);
+  transform: translateX(-50%);
+}
+
+/* Desktop: Medien links, Steuerung rechts */
+@media (min-width: 960px) {
+  .topnav,
+  .pageHead,
+  .personSeg,
+  .programChips,
+  .dayTabsRail,
+  .dashboard,
+  .progressDashboard,
+  .builder { max-width: 1040px; }
+  .personSeg { width: fit-content; min-width: 340px; margin-left: max(0px, calc((100% - 1040px) / 2)); margin-right: auto; }
+  .personSeg button { padding: 0 28px; }
+  .sessionCard {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    column-gap: 28px;
+    align-items: start;
+    padding: 20px;
+  }
+  .sessionCard > .sessionTop,
+  .sessionCard > .progressLine,
+  .sessionCard > .upNext,
+  .sessionCard > .finishState { grid-column: 1 / -1; }
+  .sessionCard > .sessionImageWrap { grid-column: 1; }
+  .sessionCard > .sessionBody { grid-column: 2; }
+  .sessionBody .sessionHeader { margin-top: 0; }
+  .sessionCard .upNext { margin: 20px -20px -20px; padding: 12px 20px; }
+  .sessionBody .timerRing { width: 200px; margin-top: 14px; }
+  .progressDashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .progressDashboard > .progressStats,
+  .progressDashboard > .progressEmpty { grid-column: 1 / -1; }
+}
+
+.figCue { left: 10px; transform: none; }
+@keyframes cueIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+.calendarGrid > div { width: 100%; max-width: 46px; justify-self: center; }
+
+@media (min-width: 960px) {
+  .bottomnav {
+    left: 50%;
+    right: auto;
+    bottom: 16px;
+    width: 560px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    transform: translateX(-50%);
+    box-shadow: 0 10px 30px rgba(16, 24, 20, 0.08);
+  }
+  .app.withTabbar { padding-bottom: 110px; }
+  .updateBanner { bottom: 96px; }
+}
+
+/* Medienkarte: Hinweise oben, Umschalter als Fußleiste */
+.sessionImageWrap .phaseBadge { top: 10px; right: 10px; bottom: auto; left: auto; }
+.sessionImageWrap .imageModeSwitch {
+  position: static;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin: 0;
+  padding: 6px;
+  border-radius: 0;
+  background: var(--surface-2);
+  backdrop-filter: none;
+  border-top: 1px solid var(--line);
+}
+.sessionImageWrap .imageModeSwitch button { min-height: 30px; padding: 4px 14px; border-radius: 999px; }
+.sessionImageWrap .guidePosition.start,
+.sessionImageWrap .guidePosition.end { top: auto; bottom: 52px; }
+
+/* Übungsname und Wiederholungen: lieber umbrechen als Wort trennen */
+.sessionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 14px;
+  row-gap: 4px;
+}
+.sessionHeader h2 { overflow-wrap: normal; word-break: normal; hyphens: manual; }
