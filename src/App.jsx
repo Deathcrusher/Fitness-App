@@ -49,7 +49,7 @@ import { ensureAudio, tick, signal, vibrate } from './audio'
 
 const PAUSE_PRESETS = [30, 60, 90]
 const WORK_PRESETS = [20, 30, 45, 60, 90]
-const APP_VERSION = 'V1.5.0'
+const APP_VERSION = 'V1.6.0'
 const STORAGE_KEY = 'fitflow-state-v2'
 const CUSTOM_KEY = 'fitflow-custom-plans-v1'
 const VIDEOS_KEY = 'fitflow-videos-v1'
@@ -757,62 +757,44 @@ export default function App() {
   const customEntries = Object.entries(customPlans).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
   return (
-    <main className={`app ${plan.accent}${view === 'train' ? ' withTabbar' : ''}`}>
+    <main className={`app ${plan.accent} withTabbar`}>
       <nav className="topnav" aria-label="Hauptnavigation">
-        <span className="brand"><img src="/icon-192.png" alt="" width="26" height="26" /> FitFlow <small className="versionTag">{APP_VERSION}</small></span>
-        <div className="navTabs">
-          <button className={view === 'train' ? 'active' : ''} onClick={() => setView('train')}>Training</button>
-          <button className={view === 'build' ? 'active' : ''} onClick={() => { setBuilderOwner(currentOwner); setView('build') }}>Programme</button>
+        <span className="brand"><img src="/icon-192.png" alt="" width="28" height="28" /> FitFlow</span>
+        <div className="topActions">
+          <small className="versionTag">{APP_VERSION}</small>
           <button className="themeToggle" onClick={cycleTheme} aria-label={THEME_META[theme].label} title={THEME_META[theme].label}>
-            <ThemeIcon size={18} />
+            <ThemeIcon size={19} />
           </button>
         </div>
       </nav>
 
       {view === 'train' ? (
         <>
-          <section className="hero" aria-label="Trainingsübersicht">
-            <div className="heroCopy">
-              <span className="eyebrow"><Dumbbell size={16} /> {plan.builtin ? 'Grundtraining' : 'Eigenes Programm'}</span>
-              <h1>{plan.name}</h1>
-              <p>{plan.title}</p>
-              <div className="quickStats" aria-label="Trainingsdaten">
-                <span><CalendarDays size={16} /> {plan.days.length} Tage</span>
-                <span><Clock3 size={16} /> {pauseSeconds}s Pause</span>
-                <span><Video size={16} /> {Object.keys(videos).length} Videos</span>
-              </div>
-            </div>
-            <img className="heroImage heroLogo" src="/assets/fitflow-logo.svg?v=1" alt="FitFlow Logo" fetchPriority="high" decoding="async" />
-          </section>
+          <header className="pageHead">
+            <h1>{plan.name}</h1>
+            <p>{plan.title}</p>
+          </header>
 
-          <section className="switcher grouped" aria-label="Programm wählen">
-            <span className="groupLabel">Grundtraining</span>
-            {builtinEntries.map(([key, item]) => (
-              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)}>
+          <section className="personRail" aria-label="Programm wählen">
+            {[...builtinEntries, ...customEntries].map(([key, item]) => (
+              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)} aria-pressed={person === key}>
                 <span className="avatar">{item.name.slice(0, 1)}</span>
-                <span className="switchCopy"><strong>{item.name}</strong><small>{item.title}</small></span>
+                <span>{item.name}</span>
               </button>
             ))}
-            {customEntries.length > 0 && <span className="groupLabel">Eigene Programme</span>}
-            {customEntries.map(([key, item]) => (
-              <button key={key} className={person === key ? 'active' : ''} onClick={() => setPerson(key)}>
-                <span className="avatar">{item.name.slice(0, 1)}</span>
-                <span className="switchCopy"><strong>{item.name}</strong><small>{item.title}</small></span>
-              </button>
-            ))}
-            <button className="addProgram" onClick={createProgram}>
-              <Plus size={20} /> <span>Neues Programm</span>
+            <button className="addProgram" onClick={createProgram} aria-label="Neues Programm">
+              <Plus size={18} />
             </button>
           </section>
 
-          <section className="dayRail" aria-label="Trainingstag wählen">
+          <nav className="dayTabsRail" aria-label="Trainingstag wählen">
             {plan.days.map((item, index) => (
-              <button key={`${item.title}-${index}`} className={dayIndex === index ? 'active' : ''} onClick={() => selectDay(index)}>
+              <button key={`${item.title}-${index}`} className={dayIndex === index ? 'active' : ''} onClick={() => selectDay(index)} aria-current={dayIndex === index ? 'page' : undefined}>
                 <strong>{item.title}</strong>
                 <span>{item.focus}</span>
               </button>
             ))}
-          </section>
+          </nav>
 
           {tab === 'training' && (
           <section className="dashboard singleCol">
@@ -838,9 +820,9 @@ export default function App() {
                 <>
                   <div className="sessionTop">
                     <span className={`sessionClock${session.running && session.key === sessionKey ? ' live' : ''}`}>
-                      <Hourglass size={15} /> {elapsedMs > 0 ? formatDuration(elapsedMs) : 'Bereit'}
+                      <Hourglass size={15} /> {elapsedMs > 0 ? formatDuration(elapsedMs) : '00:00'}
                     </span>
-                    <span className="sessionCount">Übung {stepIndex + 1}/{steps.length}</span>
+                    <span className="sessionCount">{stepIndex + 1} von {steps.length}</span>
                   </div>
                   <div className="progressLine" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
 
@@ -869,11 +851,8 @@ export default function App() {
                   </div>
 
                   <div className="sessionHeader">
-                    <div>
-                      <p className="muted">{day.title} · {day.focus}</p>
-                      <h2>{phase === 'rest' ? (isSetRest ? 'Satzpause' : 'Pause') : currentStep.name}</h2>
-                    </div>
-                    {phase === 'work' && <span className="repBadge">{currentStep.reps}</span>}
+                    <h2>{phase === 'rest' ? (isSetRest ? 'Satzpause' : 'Pause') : currentStep.name}</h2>
+                    {phase === 'work' && <span className="repFigure">{currentStep.reps.replace(/(\d)\s*[x×]\s*(\d)/i, '$1 × $2')}</span>}
                   </div>
 
                   {phase === 'work' && effectiveSets > 1 && (
@@ -1045,20 +1024,6 @@ export default function App() {
 
           {tab === 'fortschritt' && <ProgressCalendar history={history} />}
 
-          <nav className="bottomnav" aria-label="Bereiche">
-            <button className={tab === 'training' ? 'active' : ''} onClick={() => setTab('training')}>
-              <Dumbbell size={20} /> <span>Training</span>
-            </button>
-            <button className={tab === 'uebungen' ? 'active' : ''} onClick={() => setTab('uebungen')}>
-              <ListChecks size={20} /> <span>Übungen</span>
-            </button>
-            <button className={tab === 'timer' ? 'active' : ''} onClick={() => setTab('timer')}>
-              <Timer size={20} /> <span>Timer</span>
-            </button>
-            <button className={tab === 'fortschritt' ? 'active' : ''} onClick={() => setTab('fortschritt')}>
-              <CalendarDays size={20} /> <span>Fortschritt</span>
-            </button>
-          </nav>
         </>
       ) : (
         <section className="dashboard editorMode">
@@ -1080,6 +1045,22 @@ export default function App() {
           />
         </section>
       )}
+
+      <nav className="bottomnav" aria-label="Bereiche">
+        {[
+          ['training', Dumbbell, 'Training'],
+          ['uebungen', ListChecks, 'Übungen'],
+          ['timer', Timer, 'Timer'],
+          ['fortschritt', CalendarDays, 'Verlauf'],
+        ].map(([key, Icon, label]) => (
+          <button key={key} className={view === 'train' && tab === key ? 'active' : ''} onClick={() => { setView('train'); setTab(key) }}>
+            <Icon size={21} strokeWidth={view === 'train' && tab === key ? 2.3 : 1.8} /> <span>{label}</span>
+          </button>
+        ))}
+        <button className={view === 'build' ? 'active' : ''} onClick={() => { setBuilderOwner(currentOwner); setView('build') }}>
+          <Plus size={21} strokeWidth={view === 'build' ? 2.3 : 1.8} /> <span>Programme</span>
+        </button>
+      </nav>
 
       {linkTarget && (
         <div className="modalOverlay" onClick={() => setLinkTarget(null)}>

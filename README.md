@@ -13,6 +13,7 @@ Mobile-first Web-App fuer persoenliche Trainingsprogramme mit Tagesauswahl, gene
 - Uebungen werden manuell als erledigt markiert
 - Einstellbare Satz- und Uebungstimer mit Tonsignalen
 - Eigene Programme und Videoverknuepfungen
+- Ruhiges Design mit Archivo-Schrift (selbst gehostet, offline verfuegbar)
 - Dark Mode (automatisch, hell oder dunkel umschaltbar)
 - Trainingsansicht mit Timer-Ring, Satzanzeige und Vorschau auf die naechste Uebung
 - Gesamtzeit laeuft automatisch mit, Zusammenfassung nach dem Training

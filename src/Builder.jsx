@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ArrowLeft, Copy, Play, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Copy, Play, Plus, Sparkles, Trash2 } from 'lucide-react'
 import Editor from './Editor'
 
 export default function Builder({
@@ -42,66 +42,78 @@ export default function Builder({
 
   return (
     <div className="builder">
-      <div className="builderHead">
-        <button className="ghostBtn" onClick={onBack}><ArrowLeft size={16} /> Zum Training</button>
-        <h2>Meine Programme</h2>
+      <header className="pageHead builderTitle">
+        <h1>Programme</h1>
+        <p>Eigene Trainings anlegen und bearbeiten.</p>
+      </header>
+
+      <div className="segmented" role="tablist" aria-label="Programme für">
+        <button role="tab" aria-selected={owner === 'connie'} className={owner === 'connie' ? 'active' : ''} onClick={() => onOwner('connie')}>Connie</button>
+        <button role="tab" aria-selected={owner === 'rene'} className={owner === 'rene' ? 'active' : ''} onClick={() => onOwner('rene')}>René</button>
       </div>
 
-      <div className="ownerToggle" role="tablist" aria-label="Programme für">
-        <span>Für:</span>
-        <button className={owner === 'connie' ? 'active' : ''} onClick={() => onOwner('connie')}>Connie</button>
-        <button className={owner === 'rene' ? 'active' : ''} onClick={() => onOwner('rene')}>René</button>
-      </div>
+      <section className="builderSection">
+        <h2>Deine Programme</h2>
+        {ownedEntries.length > 0 ? (
+          <div className="programList">
+            {ownedEntries.map(([key, p]) => (
+              <button
+                key={key}
+                className={`programRow${validKey === key ? ' active' : ''}`}
+                onClick={() => setEditingKey(key)}
+                aria-pressed={validKey === key}
+              >
+                <span className="programInitial">{p.name.slice(0, 1)}</span>
+                <span className="programCopy">
+                  <strong>{p.name}</strong>
+                  <small>{p.days.length} {p.days.length === 1 ? 'Tag' : 'Tage'}, {stepTotal(p)} Übungen</small>
+                </span>
+                <span className="programPlay" onClick={(e) => { e.stopPropagation(); onRun(key) }} role="button" aria-label={`${p.name} starten`}>
+                  <Play size={16} />
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="muted builderEmpty">Noch kein eigenes Programm. Leg eins an oder starte mit einer Vorlage.</p>
+        )}
+        <div className="createRow">
+          <button className="primaryAction" onClick={onGenerate}><Sparkles size={17} /> Generieren</button>
+          <button className="ghostBtn" onClick={onNew}><Plus size={17} /> Neu anlegen</button>
+        </div>
+      </section>
 
-      <button className="primaryAction block generatorCta" onClick={onGenerate}>
-        <Sparkles size={18} /> Auto-Programm erstellen
-      </button>
-
-      <div className="builderGrid">
-        {ownedEntries.map(([key, p]) => {
-          return (
-            <button
-              key={key}
-              className={`programCard${validKey === key ? ' active' : ''}`}
-              onClick={() => setEditingKey(key)}
-            >
+      <section className="builderSection">
+        <h2>Vorlagen</h2>
+        <div className="templateRail">
+          {templates.map((t, i) => (
+            <button key={i} className="templateCard" onClick={() => onAddTemplate(t)}>
+              <strong>{t.name}</strong>
+              <small>{t.title}</small>
+              <span><Plus size={14} /> Hinzufügen</span>
+            </button>
+          ))}
+          {Object.entries(builtinPlans).map(([k, p]) => (
+            <button key={k} className="templateCard" onClick={() => onDuplicateBuiltin(k)}>
               <strong>{p.name}</strong>
-              <small>{p.title}</small>
-              <span className="cardMeta">{p.days.length} Tage · {stepTotal(p)} Übungen</span>
+              <small>Grundtraining kopieren</small>
+              <span><Copy size={14} /> Kopieren</span>
             </button>
-          )
-        })}
-        <button className="programCard add" onClick={onNew}>
-          <Plus size={20} /> <span>Neues Programm</span>
-        </button>
-      </div>
+          ))}
+        </div>
+      </section>
 
-      <div className="templates">
-        <span>Vorlage hinzufügen:</span>
-        {templates.map((t, i) => (
-          <button key={i} className="ghostBtn" onClick={() => onAddTemplate(t)}><Plus size={15} /> {t.name}</button>
-        ))}
-        {Object.entries(builtinPlans).map(([k, p]) => (
-          <button key={k} className="ghostBtn" onClick={() => onDuplicateBuiltin(k)}>
-            <Copy size={15} /> {p.name}
-          </button>
-        ))}
-      </div>
-
-      {plan ? (
-        <>
-          <div className="builderActions">
-            <button className="primaryAction" onClick={() => onRun(validKey)}>
-              <Play size={18} /> Programm starten
-            </button>
-            <button className="ghostBtn danger" onClick={() => onDelete(validKey)}>
-              <Trash2 size={16} /> Löschen
-            </button>
+      {plan && (
+        <section className="builderSection">
+          <div className="editHead">
+            <h2>{plan.name} bearbeiten</h2>
+            <div className="builderActions">
+              <button className="primaryAction" onClick={() => onRun(validKey)}><Play size={17} /> Starten</button>
+              <button className="iconAction sm danger" onClick={() => onDelete(validKey)} aria-label="Programm löschen"><Trash2 size={16} /></button>
+            </div>
           </div>
           <Editor key={validKey} plan={plan} onChange={(updated) => onChange(updated, validKey)} />
-        </>
-      ) : (
-        <p className="muted builderEmpty">Noch kein Programm – leg eines an oder kopiere eine Vorlage.</p>
+        </section>
       )}
     </div>
   )

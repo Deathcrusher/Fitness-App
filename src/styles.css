@@ -1,26 +1,29 @@
 :root {
-  --bg: #f5f7f3;
+  --bg: #f4f6f5;
   --surface: #ffffff;
-  --surface-2: #f9fbf7;
-  --surface-3: #e8eee8;
-  --ink: #19221f;
-  --ink-soft: #3c4b45;
+  --surface-2: #f4f6f5;
+  --surface-3: #e9edeb;
+  --ink: #18201c;
+  --ink-soft: #46524c;
   --muted: #68756f;
-  --line: #dce3dc;
+  --line: #e3e8e5;
   --glass: rgba(255, 255, 255, 0.9);
   --nav-bg: rgba(255, 255, 255, 0.94);
   --chip-strong: #19221f;
-  --shadow: 0 14px 34px rgba(24, 34, 31, 0.08);
+  --shadow: 0 1px 2px rgba(16, 24, 20, 0.04);
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 22px;
   --logo-bg: linear-gradient(145deg, #eef6ed, #fff3ef);
   --dial-bg: linear-gradient(145deg, #fbfdf8, #f1f5ed);
   --dial-face: linear-gradient(145deg, #ffffff, #eef3e9);
   --danger: #b42318;
   --danger-line: #f3c9c5;
-  --success: #15803d;
+  --success: var(--accent, #2f7667);
   --track: rgba(41, 67, 59, 0.12);
   --dial-tick: rgba(41, 67, 59, 0.38);
   color-scheme: light;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Archivo Variable", "Archivo", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
   background: var(--bg);
   font-synthesis: none;
@@ -82,7 +85,7 @@ button { font: inherit; color: inherit; }
 .switcher,
 .dayRail button {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -109,7 +112,7 @@ button { font: inherit; color: inherit; }
 .eyebrow {
   color: var(--accent-strong);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .hero h1 {
@@ -143,7 +146,7 @@ button { font: inherit; color: inherit; }
   background: var(--surface-2);
   color: var(--ink-soft);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .heroImage {
@@ -191,7 +194,7 @@ button { font: inherit; color: inherit; }
   min-width: 0;
   gap: 10px;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: transparent;
   text-align: left;
 }
@@ -207,11 +210,11 @@ button { font: inherit; color: inherit; }
   flex: 0 0 40px;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--chip-strong);
   color: #ffffff;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .switcher strong,
@@ -266,7 +269,7 @@ button { font: inherit; color: inherit; }
 .sessionImageWrap {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--accent-soft);
 }
 
@@ -287,7 +290,7 @@ button { font: inherit; color: inherit; }
   background: var(--glass);
   color: var(--accent-strong);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 650;
   backdrop-filter: blur(10px);
 }
 
@@ -322,11 +325,11 @@ button { font: inherit; color: inherit; }
 .repBadge {
   max-width: 112px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -344,11 +347,11 @@ button { font: inherit; color: inherit; }
   margin-top: 8px;
   padding: 8px 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--accent-soft);
 }
 .setIndicator {
-  font-weight: 900;
+  font-weight: 650;
   font-size: 14px;
   color: var(--accent-strong);
 }
@@ -366,7 +369,7 @@ button { font: inherit; color: inherit; }
   background: var(--surface);
   color: var(--ink);
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -389,7 +392,7 @@ button { font: inherit; color: inherit; }
   margin-top: 16px;
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-2);
   color: var(--ink);
 }
@@ -432,9 +435,9 @@ button { font: inherit; color: inherit; }
   min-height: 48px;
   gap: 8px;
   padding: 12px 14px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-3);
-  font-weight: 900;
+  font-weight: 650;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
@@ -472,11 +475,11 @@ button.doneAction {
   place-items: center;
   width: 58px;
   height: 58px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--chip-strong);
   color: #ffffff;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .dayTone {
@@ -499,7 +502,7 @@ button.doneAction {
   min-height: 58px;
   padding: 9px 10px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   text-align: left;
 }
@@ -518,7 +521,7 @@ button.doneAction {
   place-items: center;
   width: 38px;
   height: 38px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-3);
   color: var(--accent-strong);
 }
@@ -556,7 +559,7 @@ button.doneAction {
   margin: -4px 0 18px;
   color: var(--accent-strong);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .sessionImageWrap img.guideImage {
@@ -574,7 +577,7 @@ button.doneAction {
   background: var(--glass);
   color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
   text-align: center;
   backdrop-filter: blur(8px);
 }
@@ -593,7 +596,7 @@ button.doneAction {
   background: var(--surface);
   color: var(--muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
 }
 .imageModeSwitch button.active {
@@ -651,7 +654,7 @@ button.doneAction {
   margin-top: 16px;
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-2);
   color: var(--ink-soft);
 }
@@ -662,7 +665,7 @@ button.doneAction {
   width: 42px;
   height: 42px;
   padding: 9px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--accent-soft);
   color: var(--accent-strong);
 }
@@ -686,8 +689,7 @@ button.doneAction {
 .timerPanel span {
   color: var(--muted);
   font-size: 14px;
-  font-weight: 900;
-  text-transform: uppercase;
+  font-weight: 650;
 }
 
 .workControls {
@@ -715,20 +717,18 @@ button.doneAction {
 .restPresets > span {
   font-size: 12px;
   color: var(--muted);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 650;
 }
 
 .restPresets button {
   min-height: 34px;
   padding: 6px 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink-soft);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
   transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
 }
@@ -769,8 +769,7 @@ button.doneAction {
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
+  font-weight: 650;
 }
 .addProgram {
   display: flex;
@@ -779,10 +778,10 @@ button.doneAction {
   gap: 8px;
   min-height: 64px;
   border: 2px dashed var(--line) !important;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: transparent;
   color: var(--muted);
-  font-weight: 900;
+  font-weight: 650;
 }
 
 /* Program action toolbar */
@@ -801,10 +800,10 @@ button.doneAction {
   min-height: 40px;
   padding: 9px 14px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink);
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
@@ -854,7 +853,7 @@ button.doneAction {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: #000;
 }
 .videoFrame iframe,
@@ -880,7 +879,7 @@ button.doneAction {
   width: 100%;
   max-width: 460px;
   padding: 18px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: var(--surface);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
 }
@@ -890,7 +889,7 @@ button.doneAction {
   margin-top: 10px;
   padding: 11px 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font: inherit;
 }
 .modalActions {
@@ -905,7 +904,7 @@ button.doneAction {
   margin-top: 8px;
   color: var(--accent-strong);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none;
 }
 .searchLink:hover { text-decoration: underline; }
@@ -921,10 +920,10 @@ button.doneAction {
   justify-content: space-between;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   background: var(--chip-strong);
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 600;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
 }
 .updateBanner .primaryAction { background: var(--accent); }
@@ -934,7 +933,7 @@ button.doneAction {
 .editor {
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -950,7 +949,7 @@ button.doneAction {
   border-top: 1px solid var(--line);
 }
 .editorSection:first-of-type { border-top: 0; padding-top: 0; }
-.editorSection h3 { margin: 0 0 10px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.editorSection h3 { margin: 0 0 10px; font-size: 15px; color: var(--muted); }
 .editorRow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .editorRow h3 { margin: 0; }
 
@@ -960,9 +959,7 @@ button.doneAction {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 650;
   color: var(--muted);
 }
 .field input,
@@ -971,7 +968,7 @@ button.doneAction {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font: inherit;
   background: var(--surface);
   color: var(--ink);
@@ -987,7 +984,7 @@ button.doneAction {
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
 }
 .dayTabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -996,7 +993,7 @@ button.doneAction {
 .stepEditor {
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-2);
 }
 .stepEditorTop {
@@ -1013,7 +1010,7 @@ button.doneAction {
   min-height: 34px;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
@@ -1027,10 +1024,10 @@ button.doneAction {
   gap: 8px;
   padding: 9px 12px;
   border: 1px solid var(--danger-line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--danger);
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
 }
 .editorSection.dangerZone { display: flex; }
@@ -1054,13 +1051,13 @@ button.doneAction {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-weight: 900;
+  font-weight: 650;
   font-size: 18px;
   color: var(--accent-strong);
 }
 .versionTag {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--muted);
   padding: 2px 7px;
   border: 1px solid var(--line);
@@ -1075,7 +1072,7 @@ button.doneAction {
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
@@ -1092,9 +1089,7 @@ button.doneAction {
   grid-column: 1 / -1;
   margin-top: 6px;
   font-size: 12px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 650;
   color: var(--muted);
 }
 .switcher .groupLabel:first-child { margin-top: 0; }
@@ -1103,7 +1098,7 @@ button.doneAction {
 .builder {
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -1129,7 +1124,7 @@ button.doneAction {
   padding: 12px;
   text-align: left;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
@@ -1137,7 +1132,7 @@ button.doneAction {
 .programCard.active { border-color: var(--accent); background: var(--accent-soft); }
 .programCard strong { font-size: 15px; }
 .programCard small { color: var(--muted); font-size: 12px; }
-.cardMeta { margin-top: auto; font-size: 12px; color: var(--muted); font-weight: 800; }
+.cardMeta { margin-top: auto; font-size: 12px; color: var(--muted); font-weight: 600; }
 .programCard.add {
   flex-direction: row;
   align-items: center;
@@ -1145,7 +1140,7 @@ button.doneAction {
   gap: 8px;
   border-style: dashed;
   color: var(--muted);
-  font-weight: 900;
+  font-weight: 650;
 }
 @media (hover: hover) { .programCard:hover { transform: translateY(-1px); } }
 
@@ -1158,9 +1153,7 @@ button.doneAction {
 .templates > span {
   font-size: 12px;
   color: var(--muted);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 650;
 }
 .builderActions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .builderEmpty { padding: 24px 0; }
@@ -1169,9 +1162,7 @@ button.doneAction {
 .ownerToggle > span {
   font-size: 12px;
   color: var(--muted);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 650;
   margin-right: 4px;
 }
 .ownerToggle button {
@@ -1181,7 +1172,7 @@ button.doneAction {
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease;
 }
@@ -1197,9 +1188,7 @@ button.doneAction {
   display: block;
   margin-bottom: 6px;
   font-size: 12px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 650;
   color: var(--muted);
 }
 .generatorModal .blockFilter button { font-size: 13px; }
@@ -1213,7 +1202,7 @@ button.doneAction {
   border-radius: 999px;
   background: var(--surface);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease;
 }
@@ -1223,11 +1212,11 @@ button.doneAction {
   min-height: 34px;
   padding: 6px 12px;
   border: 1px dashed var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-2);
   color: var(--ink);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
@@ -1271,7 +1260,7 @@ button.doneAction {
 .calendarCard,
 .progressEmpty {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -1288,31 +1277,31 @@ button.doneAction {
 }
 .progressStats svg { color: var(--accent-strong); }
 .progressStats strong { font-size: 30px; line-height: 1; }
-.progressStats span { color: var(--muted); font-size: 12px; font-weight: 800; }
+.progressStats span { color: var(--muted); font-size: 12px; font-weight: 600; }
 .calendarCard { padding: 14px; }
 .calendarHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .calendarHead h3 { margin: 0; font-size: 20px; text-transform: capitalize; }
-.calendarHead > span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 800; }
+.calendarHead > span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 600; }
 .calendarHead i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
 .calendarGrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .calendarWeekdays { margin-bottom: 5px; }
-.calendarWeekdays span { padding: 3px; color: var(--muted); font-size: 11px; font-weight: 900; text-align: center; }
+.calendarWeekdays span { padding: 3px; color: var(--muted); font-size: 11px; font-weight: 650; text-align: center; }
 .calendarGrid > div {
   position: relative;
   display: grid;
   place-items: center;
   min-height: 44px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-2);
   color: var(--ink);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 }
 .calendarGrid > div.outside { opacity: 0.3; }
 .calendarGrid > div.today { border-color: var(--accent); }
 .calendarGrid > div.completed { background: var(--accent-soft); color: var(--accent-strong); }
-.calendarCheck { position: absolute; right: 4px; bottom: 2px; font-size: 11px; font-weight: 1000; }
+.calendarCheck { position: absolute; right: 4px; bottom: 2px; font-size: 11px; font-weight: 700; }
 .progressEmpty { margin: 0; padding: 16px; color: var(--muted); text-align: center; }
 
 @media (max-width: 520px) {
@@ -1330,11 +1319,11 @@ button.doneAction {
   gap: 3px;
   padding: 7px 4px;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   background: transparent;
   color: var(--muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
   transition: color 160ms ease, background 160ms ease;
 }
@@ -1350,7 +1339,7 @@ button.doneAction {
 .customTimer {
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -1363,7 +1352,7 @@ button.doneAction {
   margin-top: 16px;
   padding: 20px 8px 8px;
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: var(--r-lg);
   background:
     radial-gradient(circle at 50% 36%, rgba(180, 216, 72, 0.16), transparent 38%),
     var(--dial-bg);
@@ -1471,11 +1460,9 @@ button.doneAction {
 .timerDialCaption {
   color: var(--muted);
   font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-weight: 650;
 }
-.timerDialCaption { letter-spacing: 0.05em; }
+.timerDialCaption { }
 .timerDial.done .timerDialFace strong { color: var(--accent-strong); }
 .timerDial.running .timerDialTrack { filter: drop-shadow(0 0 9px rgba(180, 216, 72, 0.52)); }
 .timerDialMin,
@@ -1484,7 +1471,7 @@ button.doneAction {
   bottom: 5%;
   color: var(--muted);
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 650;
   pointer-events: none;
 }
 .timerDialMin { left: 14%; }
@@ -1606,13 +1593,13 @@ html[data-theme="dark"] {
   --glass: rgba(15, 21, 19, 0.78);
   --nav-bg: rgba(15, 21, 19, 0.92);
   --chip-strong: #2c3a33;
-  --shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  --shadow: none;
   --logo-bg: linear-gradient(145deg, #1b2620, #241e1c);
   --dial-bg: linear-gradient(145deg, #19221d, #141b17);
   --dial-face: linear-gradient(145deg, #1f2924, #172019);
   --danger: #ff8a7a;
   --danger-line: #5a2a25;
-  --success: #1f9d55;
+  --success: var(--accent);
   --track: rgba(233, 239, 235, 0.1);
   --dial-tick: rgba(233, 239, 235, 0.3);
   color-scheme: dark;
@@ -1691,7 +1678,7 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
   border: 1px solid var(--line);
   color: var(--muted);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .sessionClock.live {
@@ -1706,7 +1693,7 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
 }
 .sessionCard .progressLine { height: 6px; margin: 10px 0 12px; background: var(--surface-3); }
 
-.sessionImageWrap { border-radius: 14px; }
+.sessionImageWrap { border-radius: var(--r-md); }
 .sessionImageWrap.resting img { filter: grayscale(0.6) brightness(0.9); opacity: 0.55; }
 .sessionImageWrap .imageModeSwitch {
   position: absolute;
@@ -1799,9 +1786,7 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
 .timerRingFace span {
   color: var(--muted);
   font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-weight: 650;
 }
 
 /* Hauptaktionen */
@@ -1816,13 +1801,13 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
 .controls button.big,
 .primaryAction.big {
   min-height: 60px;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   font-size: 17px;
 }
 .controls button.secondaryAction {
   min-height: 60px;
   padding: 0;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   background: var(--surface-3);
   color: var(--ink);
 }
@@ -1850,11 +1835,11 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
   min-height: 42px;
   padding: 8px 6px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--r-md);
   background: transparent;
   color: var(--muted);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
   transition: color 160ms ease, border-color 160ms ease, transform 120ms ease;
 }
@@ -1872,14 +1857,14 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
   margin-top: 14px;
   padding: 10px;
   border: 1px dashed var(--line);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: var(--surface-2);
 }
 .upNext img,
 .upNextIcon {
   width: 52px;
   height: 52px;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   object-fit: cover;
   background: var(--accent-soft);
 }
@@ -1890,9 +1875,7 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
 .upNext span {
   color: var(--muted);
   font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 650;
 }
 .upNext strong { margin-top: 2px; font-size: 15px; }
 .upNext small { margin-top: 1px; color: var(--muted); font-size: 12px; }
@@ -1931,19 +1914,19 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
   gap: 3px;
   padding: 14px 8px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: var(--surface-2);
 }
 .summaryGrid svg { color: var(--accent-strong); }
 .summaryGrid strong { font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.summaryGrid span { color: var(--muted); font-size: 12px; font-weight: 800; }
+.summaryGrid span { color: var(--muted); font-size: 12px; font-weight: 600; }
 .finishActions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   width: min(100%, 420px);
 }
-.finishActions button { min-height: 52px; justify-content: center; border-radius: 12px; }
+.finishActions button { min-height: 52px; justify-content: center; border-radius: var(--r-md); }
 
 /* Restliche Flächen an Theme anpassen */
 .stepList button { background: var(--surface); }
@@ -1987,3 +1970,527 @@ body { background: var(--bg); color: var(--ink); transition: background 200ms ea
   .brand { font-size: 0; }
   .brand img { width: 28px; height: 28px; }
 }
+
+/* ============================================================
+   V1.6 – Design-System „Pro“
+   Archivo · ein Akzent · 3 Rundungen · wenig Rahmen
+   ============================================================ */
+:root {
+  --font-num: "Archivo Variable", "Archivo", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+body { font-feature-settings: "ss01", "tnum" 0; }
+h1, h2, h3 { font-weight: 700; letter-spacing: -0.015em; }
+
+/* Zahlen: schmal, groß, wie eine Anzeigetafel */
+.num,
+.repFigure,
+.timerRingFace strong,
+.summaryGrid strong,
+.progressStats strong,
+.sessionClock,
+.timerDialFace strong {
+  font-family: var(--font-num);
+  font-stretch: 72%;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* Grundflächen: eine Kartenart, kein Schatten */
+.sessionCard,
+.planPanel,
+.customTimer,
+.builder,
+.editor,
+.progressIntro,
+.progressStats article,
+.calendarCard,
+.progressEmpty {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+/* Kopfzeile */
+.topnav {
+  max-width: 720px;
+  margin: 0 auto 8px;
+  padding: 2px 2px 0;
+}
+.brand { font-size: 17px; font-weight: 700; color: var(--ink); gap: 8px; letter-spacing: -0.01em; }
+.brand img { border-radius: 8px; }
+.topActions { display: flex; align-items: center; gap: 8px; }
+.versionTag {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.themeToggle {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* Seitentitel */
+.pageHead { max-width: 720px; margin: 14px auto 14px; padding: 0 2px; }
+.pageHead h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-weight: 750;
+}
+.pageHead p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+
+/* Personen / Programme */
+.personRail {
+  display: flex;
+  gap: 6px;
+  max-width: 720px;
+  margin: 0 auto 10px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: var(--r-md);
+  background: var(--surface-3);
+}
+.personRail::-webkit-scrollbar { display: none; }
+.personRail button {
+  display: inline-flex;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 14px 6px 6px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+.personRail button.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(16, 24, 20, 0.08);
+}
+.personRail .avatar {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+.personRail button.active .avatar { background: var(--accent); color: #fff; }
+.personRail .addProgram {
+  flex: 0 0 42px;
+  min-height: 42px;
+  padding: 0;
+  border: 0 !important;
+  color: var(--muted);
+}
+
+/* Trainingstage als Tabs */
+.dayTabsRail {
+  display: flex;
+  gap: 4px;
+  max-width: 720px;
+  margin: 0 auto 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--line);
+}
+.dayTabsRail::-webkit-scrollbar { display: none; }
+.dayTabsRail button {
+  flex: 1 0 auto;
+  display: grid;
+  gap: 1px;
+  padding: 8px 12px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+.dayTabsRail strong { font-size: 15px; font-weight: 650; }
+.dayTabsRail span { font-size: 12.5px; white-space: nowrap; }
+.dayTabsRail button.active { border-bottom-color: var(--accent); color: var(--ink); }
+.dayTabsRail button.active span { color: var(--muted); }
+
+.dashboard,
+.progressDashboard { max-width: 720px; }
+
+/* Trainingskarte */
+.sessionCard { padding: 16px; }
+.sessionTop { color: var(--muted); }
+.sessionClock,
+.sessionCount {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 15px;
+  color: var(--muted);
+}
+.sessionCount { font-weight: 500; }
+.sessionClock.live { background: none; color: var(--accent-strong); }
+.sessionCard .progressLine { height: 4px; margin: 10px 0 14px; }
+.progressLine span { background: var(--accent); }
+
+.sessionImageWrap { border-radius: var(--r-md); background: var(--surface-2); }
+.phaseBadge,
+.guidePosition {
+  min-height: 0;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.phaseBadge svg { color: var(--accent-strong); }
+.sessionImageWrap .imageModeSwitch button { font-weight: 600; color: var(--ink-soft); }
+
+.sessionHeader {
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.sessionHeader h2 { font-size: 27px; line-height: 1.08; }
+.repFigure {
+  color: var(--accent-strong);
+  font-size: 30px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.exerciseText { margin-top: 8px; color: var(--ink-soft); font-size: 15px; }
+
+.setBar {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.setIndicator { font-weight: 600; color: var(--ink-soft); font-size: 14px; }
+.setStepper button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  font-weight: 500;
+}
+
+.videoActions { margin-top: 10px; gap: 4px; }
+.videoActions .ghostBtn {
+  min-height: 34px;
+  padding: 6px 0;
+  margin-right: 14px;
+  border: 0;
+  background: none;
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 600;
+}
+.videoActions .ghostBtn.subtle { color: var(--muted); }
+
+.timerRing { width: min(64vw, 220px); margin: 20px auto 4px; }
+.timerRing::after { inset: 10px; }
+.timerRing.running { filter: none; }
+.timerRingFace strong { font-size: clamp(56px, 17vw, 72px); letter-spacing: -0.02em; }
+.timerRingFace span { font-size: 13px; font-weight: 500; }
+
+.controls.mainControls { margin-top: 18px; }
+.controls button.big,
+.primaryAction.big { min-height: 56px; border-radius: var(--r-md); font-size: 16px; font-weight: 650; }
+.controls button.secondaryAction { min-height: 56px; border-radius: var(--r-md); }
+.controls button,
+.primaryAction { font-weight: 650; }
+
+.restPresets > span { font-weight: 500; font-size: 13px; }
+.restPresets button {
+  min-height: 32px;
+  border: 0;
+  background: var(--surface-3);
+  font-weight: 600;
+}
+
+.subActions { margin-top: 6px; }
+.subActions button {
+  min-height: 40px;
+  border: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.upNext {
+  margin: 16px -16px -16px;
+  padding: 12px 16px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  background: var(--surface-2);
+  grid-template-columns: 44px 1fr;
+}
+.upNext img,
+.upNextIcon { width: 44px; height: 44px; border-radius: var(--r-sm); }
+.upNext span { font-size: 12.5px; font-weight: 500; }
+.upNext strong { font-weight: 650; }
+
+/* Abschluss */
+.finishBurst { width: 88px; height: 88px; background: var(--accent-soft); border-radius: 50%; }
+.finishState h2 { font-size: 30px; }
+.summaryGrid > div { border: 0; border-radius: var(--r-md); background: var(--surface-2); }
+.summaryGrid strong { font-size: 30px; }
+.summaryGrid span { font-weight: 500; }
+.savedSuccess { font-weight: 600; }
+
+/* Listen, Verlauf, Timer: ruhiger */
+.panelHead > span { background: var(--accent-soft); color: var(--accent-strong); border-radius: 50%; }
+.stepList { gap: 0; }
+.stepList button {
+  min-height: 60px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+}
+.stepList button:last-child { border-bottom: 0; }
+.stepList button.current { background: var(--accent-soft); border-radius: var(--r-sm); }
+.stepList button.done { background: none; opacity: 0.6; }
+.stepIcon { border-radius: 50%; background: var(--surface-3); }
+.eyebrow { font-weight: 600; }
+.progressIntro { padding: 18px; }
+.progressIntro .eyebrow { display: none; }
+.progressStats strong { font-size: 34px; }
+.progressStats span { font-weight: 500; }
+.calendarGrid > div { border-radius: 50%; aspect-ratio: 1; min-height: 0; font-weight: 500; }
+.calendarGrid > div.completed { background: var(--accent); color: #fff; }
+.calendarCheck { display: none; }
+.calendarWeekdays span { font-weight: 500; }
+
+.ghostBtn { border-radius: var(--r-sm); font-weight: 600; }
+.modal { border-radius: var(--r-lg); }
+
+/* Untere Leiste */
+.bottomnav {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--nav-bg);
+  backdrop-filter: saturate(1.4) blur(16px);
+  -webkit-backdrop-filter: saturate(1.4) blur(16px);
+  max-width: none;
+}
+.bottomnav button {
+  gap: 2px;
+  padding: 6px 2px;
+  background: none !important;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.bottomnav button.active { color: var(--accent-strong); font-weight: 650; }
+
+.app { padding: 12px 16px; }
+.app.withTabbar { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+
+@media (min-width: 720px) {
+  .pageHead h1 { font-size: 44px; }
+  .sessionHeader h2 { font-size: 34px; }
+  .repFigure { font-size: 38px; }
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Aktionen: ein Akzent für alle Programme */
+.controls button.doneAction,
+button.doneAction { background: var(--accent); color: #fff; }
+.controls.mainControls.timed button.doneAction { background: var(--accent-soft); color: var(--accent-strong); }
+
+/* Segment-Umschalter */
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--r-md);
+  background: var(--surface-3);
+}
+.segmented button {
+  flex: 1;
+  min-height: 38px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented button.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(16, 24, 20, 0.08); }
+
+/* Programme-Seite */
+.builder {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.builderTitle { margin-top: 6px; }
+.builderSection { margin-top: 26px; }
+.builderSection > h2,
+.editHead h2 { margin: 0 0 10px; font-size: 19px; }
+.programList {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.programRow {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.programRow:last-child { border-bottom: 0; }
+.programRow.active { background: var(--accent-soft); }
+.programInitial {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  font-weight: 700;
+}
+.programRow.active .programInitial { background: var(--accent); color: #fff; }
+.programCopy strong,
+.programCopy small { display: block; }
+.programCopy strong { font-size: 16px; font-weight: 650; }
+.programCopy small { margin-top: 2px; color: var(--muted); font-size: 13px; }
+.programPlay {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+}
+.createRow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.createRow button { justify-content: center; min-height: 48px; border-radius: var(--r-md); }
+.createRow .ghostBtn { border: 0; background: var(--surface-3); }
+
+.templateRail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(170px, 46%);
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.templateRail::-webkit-scrollbar { display: none; }
+.templateCard {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  min-height: 112px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+.templateCard strong { font-size: 15px; font-weight: 650; }
+.templateCard small { color: var(--muted); font-size: 13px; }
+.templateCard span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 10px;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+.editHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.editHead h2 { margin: 0; }
+.builderActions .iconAction.sm { width: 44px; min-height: 44px; border-radius: var(--r-md); }
+.builderActions .primaryAction { min-height: 44px; border-radius: var(--r-md); }
+.editor { padding: 16px; }
+.editorSection h3 { font-size: 14px; font-weight: 600; }
+.field > span { font-size: 13px; font-weight: 500; }
+.field input,
+.field select,
+.field textarea { border-radius: var(--r-sm); background: var(--surface-2); border-color: transparent; }
+.stepEditor { border: 0; border-radius: var(--r-md); background: var(--surface-2); }
+.blockChip { border-style: solid; border-color: transparent; background: var(--surface-3); font-weight: 500; }
+.blockFilter button,
+.dayTabs button { border: 0; background: var(--surface-3); font-weight: 600; }
+
+/* Verlauf */
+.progressIntro { display: none; }
+.progressStats {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.progressStats article { border: 0; border-radius: 0; border-right: 1px solid var(--line); background: none; padding: 18px 8px; }
+.progressStats article:last-child { border-right: 0; }
+.progressStats svg { width: 18px; height: 18px; }
+.calendarCard { padding: 16px; }
+.calendarHead h3 { font-size: 18px; }
+.calendarHead > span { font-weight: 500; }
+.calendarGrid { gap: 4px; }
+.calendarGrid > div { background: none; }
+.calendarGrid > div.today { border: 1.5px solid var(--accent); }
+.calendarGrid > div.completed { background: var(--accent); color: #fff; }
+
+@media (max-width: 719px) {
+  .bottomnav button span { font-size: 10.5px; }
+}
+
+.dashboard.editorMode { grid-template-columns: minmax(0, 1fr); }
+.dashboard.editorMode > *,
+.builder,
+.builderSection,
+.editor { min-width: 0; max-width: 100%; }
+.editor input,
+.editor select,
+.editor textarea { min-width: 0; max-width: 100%; }

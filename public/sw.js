@@ -1,4 +1,4 @@
-const CACHE = 'fitflow-v15'
+const CACHE = 'fitflow-v16'
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {

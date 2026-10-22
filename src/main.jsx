@@ -2,6 +2,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import { applyPlanFixes } from './planFixes'
+import '@fontsource-variable/archivo/wdth.css'
 import './styles.css'
 
 applyPlanFixes()
