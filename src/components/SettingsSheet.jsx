@@ -57,17 +57,17 @@ export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, o
         </section>
 
         <section className="setSection">
-          <h4>Sprach-Coach</h4>
+          <h4>Countdown-Ansage</h4>
           {coachSupported() ? (
             <div className="switchRow">
-              <p>Sagt Übungen, Sätze, Gewichte und Pausen an – du musst nicht aufs Handy schauen.</p>
-              <button role="switch" aria-checked={voiceOn} className={`switch${voiceOn ? ' on' : ''}`} onClick={() => onVoice(!voiceOn)} aria-label="Sprach-Coach"><span /></button>
+              <p>Zählt die letzten 5 Sekunden von Pausen und Zeitübungen laut mit.</p>
+              <button role="switch" aria-checked={voiceOn} className={`switch${voiceOn ? ' on' : ''}`} onClick={() => onVoice(!voiceOn)} aria-label="Countdown-Ansage"><span /></button>
             </div>
           ) : (
             <p className="setHint">Dein Browser unterstützt keine Sprachausgabe.</p>
           )}
           {voiceOn && coachSupported() && (
-            <button className="ghostBtn testVoice" onClick={() => say('Satz 2 von 3. 12 mal 10 Kilo.', { interrupt: true })}>Probehören</button>
+            <button className="ghostBtn testVoice" onClick={() => say('Fünf. Vier. Drei. Zwei. Eins.', { interrupt: true })}>Probehören</button>
           )}
         </section>
 

@@ -70,7 +70,7 @@ import SessionMedia from './components/SessionMedia'
 import ExerciseList from './components/ExerciseList'
 import ProgramPicker from './components/ProgramPicker'
 import { nextDueDay } from './lib/schedule'
-import { coachEnabled, introText, say, setCoachEnabled, setText, unlockCoach } from './lib/coach'
+import { COUNTDOWN_FROM, coachEnabled, countWord, say, setCoachEnabled, unlockCoach } from './lib/coach'
 import { newlyUnlocked } from './lib/achievements'
 import { prefetchMedia } from './lib/backup'
 import {
@@ -171,7 +171,6 @@ export default function App() {
   const [goal, setGoal] = useState(loadGoal)
   const [voiceOn, setVoiceOn] = useState(coachEnabled)
   const [newBadges, setNewBadges] = useState([])
-  const announcedRef = useRef('')
   const expectingRefresh = useRef(false)
   const endsAtRef = useRef(null)
 
@@ -344,7 +343,6 @@ export default function App() {
     setDraft(null)
     setOverview(true)
     setNewBadges([])
-    announcedRef.current = ''
   }
 
   function toggleVoice(value = !voiceOn) {
@@ -352,7 +350,7 @@ export default function App() {
     setVoiceOn(value)
     if (value) {
       unlockCoach()
-      say('Sprach-Coach ist an.', { interrupt: true })
+      say('Drei. Zwei. Eins.', { interrupt: true })
     }
   }
 
@@ -376,7 +374,6 @@ export default function App() {
     if (isRecord(previous, set) && beatsToday) {
       setPrs((list) => [...list.filter((p) => p.name !== currentStep.name), { name: currentStep.name, text: fmtSet(set) }])
       signal('record')
-      say('Stark – neuer Rekord!', { interrupt: true })
     }
     setLog((prev) => upsertEntry(prev, currentOwner, currentStep.name, today, sets, plan.name))
     return nextSessionLog
@@ -416,7 +413,6 @@ export default function App() {
     setClock(pauseSeconds, true)
     setRunning(true)
     setShowVideo(false)
-    say(`Gut gemacht. ${pauseSeconds} Sekunden Pause.`)
   }
 
   function finishWorkout(extraSets = 0, finalLog = sessionLog) {
@@ -442,7 +438,6 @@ export default function App() {
       if (previous.some((e) => e.key === completionKey)) return previous
       return [...previous, entry]
     })
-    say('Training geschafft. Stark gemacht!', { interrupt: true })
     setPhase('done')
     setRunning(false)
     setClock(0, false)
@@ -522,7 +517,6 @@ export default function App() {
     startSession()
     setClock(start, true)
     setRunning(true)
-    if (phase === 'work') say('Los!', { interrupt: true })
   }
 
   function changePause(value) {
@@ -675,42 +669,25 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, phase])
 
-  // Sprach-Coach: neue Übung oder neuer Satz
-  useEffect(() => {
-    if (overview || phase !== 'work' || !session.running || session.key !== sessionKey) return
-    const key = `${sessionKey}:${stepIndex}:${setIndex}`
-    if (announcedRef.current === key) return
-    announcedRef.current = key
-    const target = loggable ? currentDraft : null
-    if (setIndex === 0) {
-      say(introText(currentStep, { sets: effectiveSets, draft: target, weighted, first: stepIndex === 0 }), { interrupt: true })
-    } else {
-      say(setText(setIndex, effectiveSets, target), { interrupt: true })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [overview, phase, stepIndex, setIndex, session.running, sessionKey])
-
   useEffect(() => {
     if (!running || phase === 'done') return
     if (phase !== 'rest' && !(phase === 'work' && isTimed)) return
-    if (seconds > 0 && seconds <= 3) {
-      tick()
-      vibrate(25)
+    // Letzte Sekunden: laut mitzählen (oder piepen, wenn die Ansage aus ist)
+    if (seconds > 0 && seconds <= COUNTDOWN_FROM) {
+      if (voiceOn) say(countWord(seconds), { interrupt: true })
+      else if (seconds <= 3) tick()
+      if (seconds <= 3) vibrate(25)
     }
-    if (seconds === 10 && (phase === 'rest' ? pauseSeconds : workSeconds) > 20) say('Noch zehn Sekunden.')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seconds, running, phase, isTimed])
+  }, [seconds, running, phase, isTimed, voiceOn])
 
   useEffect(() => {
     if (seconds !== 0 || !running) return
     const id = window.setTimeout(() => {
       if (phase === 'work' && isTimed) {
-        say('Geschafft.', { interrupt: true })
         signal('work-done')
         setRunning(false)
         endsAtRef.current = null
       } else if (phase === 'rest') {
-        say('Pause vorbei.', { interrupt: true })
         signal('rest-end')
         setRunning(false)
         endsAtRef.current = null
@@ -832,7 +809,7 @@ export default function App() {
                     </span>
                     <span className="sessionCount">
                       {stepIndex + 1} von {steps.length}
-                      <button className="voiceBtn" onClick={() => toggleVoice()} aria-pressed={voiceOn} aria-label={voiceOn ? 'Sprach-Coach ausschalten' : 'Sprach-Coach einschalten'}>
+                      <button className="voiceBtn" onClick={() => toggleVoice()} aria-pressed={voiceOn} aria-label={voiceOn ? 'Countdown-Ansage ausschalten' : 'Countdown-Ansage einschalten'}>
                         {voiceOn ? <Volume2 size={17} /> : <VolumeX size={17} />}
                       </button>
                     </span>

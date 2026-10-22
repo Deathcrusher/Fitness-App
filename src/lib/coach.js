@@ -1,5 +1,6 @@
 /*
- * Sprach-Coach über die Sprachausgabe des Browsers (Web Speech API).
+ * Countdown-Ansage über die Sprachausgabe des Browsers (Web Speech API):
+ * zählt die letzten Sekunden von Pausen und Zeitübungen laut mit.
  * Läuft offline mit den Stimmen des Geräts, kostet nichts.
  */
 const VOICE_KEY = 'fitflow-voice-v1'
@@ -66,21 +67,11 @@ export function say(text, { interrupt = false } = {}) {
   }
 }
 
-/* ---------- Ansagetexte ---------- */
-const kg = (w) => `${String(Math.round(w * 10) / 10).replace('.', ',')} Kilo`
+/* ---------- Countdown ---------- */
+export const COUNTDOWN_FROM = 5
+const WORDS = ['null', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn']
 
-export function introText(step, { sets, draft, weighted, first }) {
-  const lead = first ? `Los geht's mit ${step.name}.` : `Weiter mit ${step.name}.`
-  const reps = String(step.reps)
-  const sec = reps.match(/(\d+)\s*Sek/i)
-  const min = reps.match(/(\d+)\s*(?:[-–]\s*\d+\s*)?Min/i)
-  if (sec && sets <= 1) return `${lead} ${sec[1]} Sekunden.`
-  if (min) return `${lead} ${min[1]} Minuten.`
-  const target = draft ? (draft.w > 0 && weighted !== false ? `${draft.r} Wiederholungen mit ${kg(draft.w)}.` : `${draft.r} Wiederholungen.`) : ''
-  return sets > 1 ? `${lead} ${sets} Sätze. ${target}`.trim() : `${lead} ${target}`.trim()
-}
-
-export function setText(setIndex, sets, draft) {
-  const target = draft ? (draft.w > 0 ? ` ${draft.r} mal ${kg(draft.w)}.` : ` ${draft.r} Wiederholungen.`) : ''
-  return setIndex === sets - 1 ? `Letzter Satz.${target}` : `Satz ${setIndex + 1} von ${sets}.${target}`
+/** Zahl als Wort – Sprachausgaben betonen Wörter natürlicher als Ziffern */
+export function countWord(n) {
+  return WORDS[n] ?? String(n)
 }

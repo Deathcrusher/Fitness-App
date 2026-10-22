@@ -3,7 +3,7 @@
  * - Build-Dateien mit Hash (JS, CSS, Schrift): Cache zuerst, ändern sich nie
  * - Übungsbilder: Cache zuerst, bleiben über Updates erhalten (Version steckt in ?v=)
  */
-const CACHE = 'fitflow-v21'
+const CACHE = 'fitflow-v211'
 const MEDIA = 'fitflow-media-v1'
 const MEDIA_LIMIT = 200
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png', '/brand-mark.svg']
