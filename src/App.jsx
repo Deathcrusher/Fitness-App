@@ -76,6 +76,7 @@ import { newlyUnlocked } from './lib/achievements'
 import { workoutMuscles } from './lib/muscles'
 import { loadBody, removeBody, saveBody, upsertBody } from './lib/bodyStore'
 import BodyCard from './components/BodyCard'
+import DuelCard from './components/DuelCard'
 import { prefetchMedia } from './lib/backup'
 import {
   STORAGE_KEY,
@@ -818,6 +819,8 @@ export default function App() {
                   goal={goal}
                   prs={prs}
                   badges={newBadges}
+                  name={ownerName}
+                  muscles={lastWorkout?.muscles}
                   onStats={() => setTab('fortschritt')}
                   onRestart={resetWorkout}
                 />
@@ -1038,6 +1041,13 @@ export default function App() {
 
           {tab === 'fortschritt' && (
             <ProgressCalendar history={history} goal={goal} log={log} owner={currentOwner} ownerName={ownerName} ownerOf={ownerOf}>
+              <DuelCard
+                history={history}
+                ownerOf={ownerOf}
+                people={[{ key: 'rene', name: builtinPlans.rene?.name || 'René' }, { key: 'connie', name: builtinPlans.connie?.name || 'Connie' }]}
+                me={currentOwner}
+                goal={goal}
+              />
               <BodyCard
                 entries={body[currentOwner] || []}
                 ownerName={ownerName}
