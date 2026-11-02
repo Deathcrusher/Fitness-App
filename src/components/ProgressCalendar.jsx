@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { CalendarCheck2, Clock3, Flame, Trophy } from 'lucide-react'
 import Achievements, { WeekCompare } from './Achievements'
+import MuscleMap from './MuscleMap'
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
@@ -163,7 +164,7 @@ function RecentList({ history }) {
   )
 }
 
-export default function ProgressCalendar({ history, goal = 3 }) {
+export default function ProgressCalendar({ history, goal = 3, log = {}, owner, ownerName, ownerOf, children }) {
   const today = new Date()
   const todayKey = dateKey(today)
   const completedDates = new Set(history.map((entry) => entry.date))
@@ -217,7 +218,9 @@ export default function ProgressCalendar({ history, goal = 3 }) {
         </article>
       </div>
 
+      {children}
       {history.length > 0 && <WeekCompare history={history} />}
+      {owner && ownerOf && <MuscleMap history={history} log={log} owner={owner} ownerName={ownerName} ownerOf={ownerOf} />}
       {history.length > 0 && <WeeklyChart history={history} today={today} />}
 
       <article className="calendarCard">

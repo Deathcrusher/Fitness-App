@@ -1,4 +1,4 @@
-import { examplePlans } from './plans'
+import { builtinPlans, examplePlans } from './plans'
 
 /* Lokale Speicherung (localStorage) und Zeit-Helfer */
 
@@ -146,4 +146,11 @@ export function persist(key, value) {
   } catch {
     /* Speicher voll oder gesperrt */
   }
+}
+
+/** Zu welcher Person gehört ein Eintrag im Trainingsverlauf? */
+export function ownerOfEntry(entry, customPlans = {}) {
+  if (entry?.owner) return entry.owner
+  if (builtinPlans[entry?.programId]) return entry.programId
+  return customPlans[entry?.programId]?.owner || 'connie'
 }

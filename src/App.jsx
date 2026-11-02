@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ChartColumn,
   CheckCircle2,
@@ -73,6 +73,7 @@ import ProgramPicker from './components/ProgramPicker'
 import { nextDueDay } from './lib/schedule'
 import { COUNTDOWN_FROM, coachEnabled, countWord, say, setCoachEnabled, unlockCoach } from './lib/coach'
 import { newlyUnlocked } from './lib/achievements'
+import { workoutMuscles } from './lib/muscles'
 import { prefetchMedia } from './lib/backup'
 import {
   STORAGE_KEY,
@@ -96,6 +97,7 @@ import {
   SETS_KEY,
   GEAR_KEY,
   loadGear,
+  ownerOfEntry,
 } from './lib/storage'
 
 const PAUSE_PRESETS = [30, 60, 90]
@@ -422,8 +424,10 @@ export default function App() {
     setShowVideo(false)
   }
 
-  function finishWorkout(extraSets = 0, finalLog = sessionLog) {
+  function finishWorkout(extraSets = 0, finalLog = sessionLog, lastDone = true) {
     const durationMs = stopSession()
+    const done = { ...doneSteps, [stepIndex]: lastDone ? true : 'skipped' }
+    const muscles = workoutMuscles(steps, done, finalLog, (step) => setsOverrides[`${programId}:${dayIndex}:${step.name}`])
     const volume = Object.values(finalLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
     const completedDate = dateKey()
     const completionKey = `${completedDate}:${person}:${dayIndex}`
@@ -432,6 +436,7 @@ export default function App() {
       date: completedDate,
       completedAt: new Date().toISOString(),
       programId: person,
+      owner: currentOwner,
       programName: plan.name,
       dayIndex,
       dayName: day.title,
@@ -439,6 +444,7 @@ export default function App() {
       sets: setsDone + extraSets,
       volume: Math.round(volume),
       records: prs.length,
+      muscles,
     }
     if (!history.some((e) => e.key === completionKey)) setNewBadges(newlyUnlocked(history, [...history, entry], goal))
     setHistory((previous) => {
@@ -473,7 +479,7 @@ export default function App() {
     if (stepIndex < steps.length - 1) {
       enterWork(stepIndex + 1, 0)
     } else {
-      finishWorkout()
+      finishWorkout(0, sessionLog, false)
     }
   }
 
@@ -740,6 +746,9 @@ export default function App() {
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [running])
+
+  const ownerOf = useCallback((entry) => ownerOfEntry(entry, customPlans), [customPlans])
+  const ownerName = builtinPlans[currentOwner]?.name || currentOwner
 
   const builtinEntries = Object.entries(builtinPlans)
   const customEntries = Object.entries(customPlans).filter(([, p]) => (p.owner || 'connie') === currentOwner)
@@ -1023,7 +1032,9 @@ export default function App() {
           </section>
           )}
 
-          {tab === 'fortschritt' && <ProgressCalendar history={history} goal={goal} />}
+          {tab === 'fortschritt' && (
+            <ProgressCalendar history={history} goal={goal} log={log} owner={currentOwner} ownerName={ownerName} ownerOf={ownerOf} />
+          )}
 
         </>
       ) : (
