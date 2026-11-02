@@ -1173,6 +1173,7 @@ export default function App() {
           onVoice={toggleVoice}
           gear={gear}
           onGear={setGear}
+          ownerName={ownerName}
           onClose={() => setSettingsOpen(false)}
         />
       )}

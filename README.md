@@ -4,6 +4,18 @@ Mobile-first Web-App fuer persoenliche Trainingsprogramme mit Tagesauswahl, gene
 
 ## Features
 
+**Neu in 2.2**
+- Comeback-Modus: erkennt Trainingspausen ab 14 Tagen, startet mit 90/80/70 % und führt in größeren Schritten zurück zum alten Niveau
+- Gefühl pro Satz (leicht/passt/hart), fließt in den Steigerungsvorschlag ein
+- Scheibenrechner pro Seite, Stange und vorhandene Scheiben einstellbar
+- Kraftkurve mit geschätztem 1RM (Epley), Top-Gewicht und Volumen
+- Muskel-Heatmap (vorne/hinten) mit Sätzen pro Muskel und Hinweis auf vernachlässigte Muskeln
+- Supersätze: Übungen im Editor verbinden, im Training abwechselnd ohne Pause
+- Körperwerte: Gewicht und Umfänge mit Verlauf
+- Teilbare Trainings-Karte als Bild nach dem Training
+- Wochen-Duell René vs. Connie mit gemeinsamem Ziel
+- Trainings-Erinnerungen als wiederkehrende Kalendertermine mit Alarm
+
 - Satz-Log: Gewicht und Wiederholungen pro Satz, vorbefuellt mit dem letzten Mal
 - Steigerungs-Vorschlag (doppelte Progression) und automatische Rekord-Erkennung
 - Uebungs-Verlauf mit Diagramm, Bestwerten und letzten Einheiten

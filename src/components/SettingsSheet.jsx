@@ -4,12 +4,13 @@ import { exportData } from '../lib/backup'
 import { coachSupported, say } from '../lib/coach'
 import { PLATE_CHOICES } from '../lib/storage'
 import { fmtNum } from '../lib/training'
+import ReminderSection from './ReminderSection'
 
 const BARS = [[0, 'Keine'], [2, 'Kurzhantel 2 kg'], [2.5, 'Kurzhantel 2,5 kg'], [10, 'Langhantel 10 kg'], [20, 'Langhantel 20 kg']]
 
 const THEMES = [['system', 'Automatisch'], ['light', 'Hell'], ['dark', 'Dunkel']]
 
-export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, onVoice, gear, onGear, version, onClose, children }) {
+export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, onVoice, gear, onGear, ownerName, version, onClose, children }) {
   const fileRef = useRef(null)
   const [status, setStatus] = useState(null)
   const [pending, setPending] = useState(null)
@@ -83,6 +84,8 @@ export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, o
             <button className="roundBtn" onClick={() => onGoal(Math.min(7, goal + 1))} disabled={goal >= 7} aria-label="Mehr Trainings"><Plus size={18} /></button>
           </div>
         </section>
+
+        <ReminderSection name={ownerName} goal={goal} />
 
         {gear && (
           <section className="setSection">
