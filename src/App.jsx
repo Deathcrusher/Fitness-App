@@ -74,6 +74,8 @@ import { nextDueDay } from './lib/schedule'
 import { COUNTDOWN_FROM, coachEnabled, countWord, say, setCoachEnabled, unlockCoach } from './lib/coach'
 import { newlyUnlocked } from './lib/achievements'
 import { workoutMuscles } from './lib/muscles'
+import { loadBody, removeBody, saveBody, upsertBody } from './lib/bodyStore'
+import BodyCard from './components/BodyCard'
 import { prefetchMedia } from './lib/backup'
 import {
   STORAGE_KEY,
@@ -176,6 +178,7 @@ export default function App() {
   const [goal, setGoal] = useState(loadGoal)
   const [voiceOn, setVoiceOn] = useState(coachEnabled)
   const [gear, setGear] = useState(loadGear)
+  const [body, setBody] = useState(loadBody)
   const [newBadges, setNewBadges] = useState([])
   const expectingRefresh = useRef(false)
   const endsAtRef = useRef(null)
@@ -298,6 +301,7 @@ export default function App() {
   useEffect(() => { persist(HISTORY_KEY, history) }, [history])
   useEffect(() => { persist(SETS_KEY, setsOverrides) }, [setsOverrides])
   useEffect(() => { persist(GEAR_KEY, gear) }, [gear])
+  useEffect(() => { saveBody(body) }, [body])
 
   useEffect(() => {
     if (!session.running) return undefined
@@ -1033,7 +1037,14 @@ export default function App() {
           )}
 
           {tab === 'fortschritt' && (
-            <ProgressCalendar history={history} goal={goal} log={log} owner={currentOwner} ownerName={ownerName} ownerOf={ownerOf} />
+            <ProgressCalendar history={history} goal={goal} log={log} owner={currentOwner} ownerName={ownerName} ownerOf={ownerOf}>
+              <BodyCard
+                entries={body[currentOwner] || []}
+                ownerName={ownerName}
+                onSave={(date, values) => setBody((b) => upsertBody(b, currentOwner, date, values))}
+                onRemove={(date) => setBody((b) => removeBody(b, currentOwner, date))}
+              />
+            </ProgressCalendar>
           )}
 
         </>

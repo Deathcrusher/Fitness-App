@@ -218,9 +218,9 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
         </article>
       </div>
 
-      {children}
       {history.length > 0 && <WeekCompare history={history} />}
       {owner && ownerOf && <MuscleMap history={history} log={log} owner={owner} ownerName={ownerName} ownerOf={ownerOf} />}
+      {children}
       {history.length > 0 && <WeeklyChart history={history} today={today} />}
 
       <article className="calendarCard">

@@ -3516,3 +3516,29 @@ html[data-theme="dark"] {
 .muscleList strong { text-align: right; font-size: 13.5px; }
 .muscleBar { display: block; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
 .muscleBar b { display: block; height: 100%; border-radius: 4px; min-width: 2px; }
+
+/* ---------- Körperwerte ---------- */
+.bodyCard { padding: 16px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+.bodyHead { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.bodyHead h3 { display: flex; align-items: center; gap: 7px; }
+.bodyHead h3 svg { color: var(--accent); }
+.bodyHead .ghostBtn { flex: none; }
+.segmented.scrollable { overflow-x: auto; scrollbar-width: none; }
+.segmented.scrollable button { flex: 1 0 auto; padding-inline: 12px; }
+.bodyNow { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 6px; }
+.bodyNow strong { font-size: 32px; line-height: 1.1; }
+.bodyNow strong small { font-size: 15px; color: var(--muted); font-weight: 500; }
+.bodyDelta { padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); font-size: 12.5px; font-weight: 600; }
+.bodyDelta.down { background: var(--accent-soft); color: var(--accent-strong); }
+.bodyDelta.up { background: var(--feel-hard-bg); color: var(--feel-hard); }
+.bodyList { list-style: none; margin: 10px 0 0; padding: 0; }
+.bodyList li { display: grid; grid-template-columns: 6.5em 1fr auto; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+.bodyList li > span:first-child { color: var(--muted); }
+.bodyVals { color: var(--ink-soft); }
+.bodyList .iconAction.sm { width: 34px; min-height: 34px; color: var(--muted); }
+.linkBtn { margin-top: 6px; padding: 6px 0; border: 0; background: none; color: var(--accent-strong); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+.bodyFields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.unitInput { position: relative; }
+.unitInput input { width: 100%; padding-right: 40px; }
+.unitInput small { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+.primaryAction.block:disabled { opacity: 0.5; cursor: not-allowed; }
