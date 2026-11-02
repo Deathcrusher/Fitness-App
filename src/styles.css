@@ -3156,7 +3156,7 @@ html[data-theme="dark"] .moveFrame { filter: brightness(0.92); }
 .sheetHead p { margin: 2px 0 0; color: var(--muted); }
 .sheetFigure { margin-top: 12px; overflow: hidden; border-radius: var(--r-md); }
 .sheetText { margin: 12px 0 0; color: var(--ink-soft); }
-.sheetStats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.sheetStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin-top: 14px; }
 .sheetStats > div { display: grid; gap: 2px; padding: 12px; border-radius: var(--r-md); background: var(--surface-2); }
 .sheetStats strong { font-size: 26px; line-height: 1.1; }
 .sheetStats span { color: var(--muted); font-size: 12.5px; }
@@ -3467,3 +3467,8 @@ html[data-theme="dark"] {
 .comebackBanner p { margin: 0; display: grid; gap: 2px; }
 .comebackBanner strong { font-size: 14.5px; }
 .comebackBanner span { color: var(--ink-soft); font-size: 13px; line-height: 1.45; }
+
+.progressChart .segmented.small { margin-bottom: 10px; }
+.progressChart .trend { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; font-style: normal; font-size: 12px; font-weight: 600; }
+.progressChart .trend.up { background: var(--accent-soft); color: var(--accent-strong); }
+.progressChart .trend.down { background: var(--feel-hard-bg); color: var(--feel-hard); }

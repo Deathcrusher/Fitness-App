@@ -1,16 +1,27 @@
 import React, { useState } from 'react'
 import { Medal, X } from 'lucide-react'
 import ExerciseFigure, { animationFor } from './ExerciseFigure'
-import { bests, entriesFor, fmtKg, fmtSet } from '../lib/logStore'
+import { bests, entriesFor, fmtKg, fmtSet, volumeOf } from '../lib/logStore'
+import { FEELS, bestE1rm, fmtNum } from '../lib/training'
 
 const fmtDate = (key, opts = { day: 'numeric', month: 'short' }) =>
   new Date(`${key}T12:00:00`).toLocaleDateString('de-DE', opts)
 
+const tick = (v) => (v >= 1000 ? `${fmtNum(v / 1000)}k` : fmtNum(v))
+
+const LINE_METRICS = {
+  top: { label: 'Gewicht', unit: ' kg', aria: 'Höchstes Gewicht', value: (e) => Math.max(...e.sets.map((s) => s.w)) },
+  e1rm: { label: '1RM geschätzt', unit: ' kg', aria: 'Geschätztes Maximalgewicht', value: (e) => Math.round(bestE1rm(e.sets) * 10) / 10 },
+  volume: { label: 'Volumen', unit: ' kg', aria: 'Volumen', value: (e) => Math.round(volumeOf(e.sets)) },
+  reps: { label: 'Wiederholungen', unit: ' Wdh.', aria: 'Meiste Wiederholungen', value: (e) => Math.max(...e.sets.map((s) => s.r)) },
+  total: { label: 'Gesamt-Wdh.', unit: ' Wdh.', aria: 'Wiederholungen gesamt', value: (e) => e.sets.reduce((n, s) => n + s.r, 0) },
+}
+
 function ProgressLine({ entries, weighted }) {
-  const data = entries.slice(-12).map((e) => ({
-    date: e.date,
-    value: weighted ? Math.max(...e.sets.map((s) => s.w)) : Math.max(...e.sets.map((s) => s.r)),
-  }))
+  const keys = weighted ? ['e1rm', 'top', 'volume'] : ['reps', 'total']
+  const [metric, setMetric] = useState(keys[0])
+  const m = LINE_METRICS[keys.includes(metric) ? metric : keys[0]]
+  const data = entries.slice(-12).map((e) => ({ date: e.date, value: m.value(e) }))
   const [sel, setSel] = useState(data.length - 1)
   if (data.length < 2) {
     return <p className="sheetNote">Ab der zweiten Einheit siehst du hier deine Entwicklung.</p>
@@ -26,19 +37,28 @@ function ProgressLine({ entries, weighted }) {
   const y = (v) => pad.t + (1 - (v - lo) / (hi - lo)) * (H - pad.t - pad.b)
   const path = data.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(d.value).toFixed(1)}`).join(' ')
   const area = `${path} L${x(data.length - 1).toFixed(1)} ${H - pad.b} L${x(0).toFixed(1)} ${H - pad.b} Z`
-  const unit = weighted ? ' kg' : ' Wdh.'
   const s = data[Math.min(sel, data.length - 1)]
+  const first = data[0].value
+  const change = first > 0 ? Math.round(((data[data.length - 1].value - first) / first) * 100) : 0
   return (
     <figure className="progressChart">
+      <div className="segmented small" role="tablist" aria-label="Kennzahl">
+        {keys.map((k) => (
+          <button key={k} role="tab" aria-selected={m === LINE_METRICS[k]} className={m === LINE_METRICS[k] ? 'active' : ''} onClick={() => setMetric(k)}>
+            {LINE_METRICS[k].label}
+          </button>
+        ))}
+      </div>
       <figcaption>
-        <strong className="num">{String(s.value).replace('.', ',')}</strong>{unit}
+        <strong className="num">{s.value.toLocaleString('de-DE')}</strong>{m.unit}
         <span> am {fmtDate(s.date)}</span>
+        {change !== 0 && <em className={`trend ${change > 0 ? 'up' : 'down'}`}>{change > 0 ? '+' : ''}{change} % seit {fmtDate(data[0].date)}</em>}
       </figcaption>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${weighted ? 'Höchstes Gewicht' : 'Meiste Wiederholungen'} pro Einheit`}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${m.aria} pro Einheit`}>
         <line x1={pad.l} x2={W - pad.r} y1={y(hi)} y2={y(hi)} className="pcGrid" />
         <line x1={pad.l} x2={W - pad.r} y1={y(lo)} y2={y(lo)} className="pcGrid" />
-        <text x={pad.l - 6} y={y(hi) + 4} className="pcTick" textAnchor="end">{hi}</text>
-        <text x={pad.l - 6} y={y(lo) + 4} className="pcTick" textAnchor="end">{lo}</text>
+        <text x={pad.l - 6} y={y(hi) + 4} className="pcTick" textAnchor="end">{tick(hi)}</text>
+        <text x={pad.l - 6} y={y(lo) + 4} className="pcTick" textAnchor="end">{tick(lo)}</text>
         <path d={area} className="pcArea" />
         <path d={path} className="pcLine" />
         {data.map((d, i) => (
@@ -59,6 +79,7 @@ export default function ExerciseSheet({ step, owner, log, onClose, onStart }) {
   const best = bests(entries)
   const weighted = best.maxW > 0
   const recent = [...entries].reverse().slice(0, 6)
+  const max1rm = entries.reduce((n, e) => Math.max(n, bestE1rm(e.sets)), 0)
   return (
     <div className="modalOverlay sheetOverlay" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={`${step.name}: Verlauf`}>
@@ -80,6 +101,12 @@ export default function ExerciseSheet({ step, owner, log, onClose, onStart }) {
             <strong className="num">{weighted ? fmtKg(best.maxW) : best.maxR || '–'}</strong>
             <span>{weighted ? `Bestes Gewicht${best.maxRAtMaxW ? ` (× ${best.maxRAtMaxW})` : ''}` : 'Meiste Wdh.'}</span>
           </div>
+          {weighted && max1rm > 0 && (
+            <div>
+              <strong className="num">{fmtKg(Math.round(max1rm * 2) / 2)}</strong>
+              <span>1RM geschätzt</span>
+            </div>
+          )}
           <div>
             <strong className="num">{best.sessions}</strong>
             <span>{best.sessions === 1 ? 'Einheit' : 'Einheiten'}</span>
@@ -94,7 +121,7 @@ export default function ExerciseSheet({ step, owner, log, onClose, onStart }) {
               {recent.map((e) => (
                 <li key={e.date}>
                   <span>{fmtDate(e.date, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                  <span>{e.sets.map(fmtSet).join(' · ')}</span>
+                  <span>{e.sets.map(fmtSet).join(' · ')}{e.sets.some((x) => x.f === 3) && <small className="feelTag f3">{FEELS[2].short}</small>}</span>
                   {weighted && e.sets.some((s) => s.w === best.maxW && s.r === best.maxRAtMaxW) && <Medal size={15} aria-label="Rekord" />}
                 </li>
               ))}
