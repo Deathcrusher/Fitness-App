@@ -3564,3 +3564,11 @@ html[data-theme="dark"] {
 .duelTogether .goalBar { position: static; width: 100%; display: block; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-top: 6px; }
 .duelTogether .goalBar b { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
 .duelTogether p { margin: 0; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+
+/* ---------- Supersätze ---------- */
+.supersetTag { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 10px; padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); font-size: 13px; font-weight: 700; }
+.supersetTag span { font-weight: 500; color: var(--ink-soft); }
+.ssTag { display: inline-block; margin-left: 7px; padding: 0 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); font-style: normal; font-size: 11.5px; font-weight: 700; vertical-align: 2px; }
+.iconAction.sm.linked { background: var(--accent-soft); color: var(--accent-strong); border-color: var(--accent); }
+.stepEditor.ssLinked { border-color: var(--accent); }
+.ssLink { display: flex; align-items: center; gap: 6px; margin: 4px 0 0; color: var(--accent-strong); font-size: 13px; font-weight: 600; }

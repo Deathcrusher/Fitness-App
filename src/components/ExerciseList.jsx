@@ -1,6 +1,7 @@
 import React from 'react'
 import { CheckCircle2, ChevronRight, Video } from 'lucide-react'
 import { TYPE_META } from '../lib/plans'
+import { supersetLabel } from '../lib/superset'
 
 export default function ExerciseList({ plan, day, steps, progress, stepIndex, phase, doneSteps, hasVideo, onPick, onInfo }) {
   return (
@@ -18,11 +19,12 @@ export default function ExerciseList({ plan, day, steps, progress, stepIndex, ph
           const ItemIcon = TYPE_META[item.type].icon
           const state = index === stepIndex && phase !== 'done' ? 'current' : doneSteps[index] ? 'done' : ''
           const linked = hasVideo(item)
+          const ss = supersetLabel(steps, index)
           return (
             <div key={`${item.name}-${index}`} className={`stepRow ${state}`}>
               <button className="stepMain" onClick={() => onPick(index)}>
                 <span className="stepIcon">{state === 'done' ? <CheckCircle2 size={18} /> : <ItemIcon size={18} />}</span>
-                <span className="stepCopy"><strong>{item.name}</strong><small>{item.reps}</small></span>
+                <span className="stepCopy"><strong>{item.name}{ss && <em className="ssTag" title="Supersatz">{ss.letter}{ss.pos}</em>}</strong><small>{item.reps}</small></span>
                 {linked && <Video size={15} className="stepVideoIcon" />}
               </button>
               <button className="stepInfo" onClick={() => onInfo(index)} aria-label={`${item.name}: Details und Verlauf`}>

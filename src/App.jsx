@@ -5,6 +5,7 @@ import {
   Dumbbell,
   History,
   Hourglass,
+  Link2,
   ListChecks,
   Medal,
   Pause,
@@ -74,6 +75,7 @@ import { nextDueDay } from './lib/schedule'
 import { COUNTDOWN_FROM, coachEnabled, countWord, say, setCoachEnabled, unlockCoach } from './lib/coach'
 import { newlyUnlocked } from './lib/achievements'
 import { workoutMuscles } from './lib/muscles'
+import { afterRest, partnerAfter, supersetLabel, upcoming } from './lib/superset'
 import { loadBody, removeBody, saveBody, upsertBody } from './lib/bodyStore'
 import BodyCard from './components/BodyCard'
 import DuelCard from './components/DuelCard'
@@ -209,6 +211,13 @@ export default function App() {
   const parsed = parseSets(currentStep.reps)
   const defaultSets = parsed.isSet ? parsed.sets : 1
   const effectiveSets = setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || defaultSets
+  const setsOf = (j) => {
+    const target = steps[j]
+    if (!target) return 0
+    const p = parseSets(target.reps)
+    return setsOverrides[`${programId}:${dayIndex}:${target.name}`] || (p.isSet ? p.sets : 1)
+  }
+  const superset = supersetLabel(steps, stepIndex)
 
   const doneCount = phase === 'done' ? steps.length : Object.values(doneSteps).filter(Boolean).length
   const progress = Math.min(100, Math.round((doneCount / steps.length) * 100))
@@ -219,13 +228,20 @@ export default function App() {
   const sessionKey = `${person}:${dayIndex}`
   const elapsedMs = session.key === sessionKey ? sessionElapsed(session, nowMs) : 0
   const completedExercises = Object.values(doneSteps).filter((value) => value === true).length
-  const nextUp = phase === 'done'
-    ? null
-    : setIndex < effectiveSets - 1 && currentStep.type !== 'warmup'
-      ? { kind: 'set', label: `Satz ${setIndex + 2} von ${effectiveSets}`, step: currentStep }
-      : steps[stepIndex + 1]
+  const nextUp = (() => {
+    if (phase === 'done') return null
+    if (currentStep.type === 'warmup') {
+      return steps[stepIndex + 1]
         ? { kind: 'step', label: steps[stepIndex + 1].name, step: steps[stepIndex + 1] }
         : { kind: 'finish', label: 'Training abschließen' }
+    }
+    const up = upcoming(steps, stepIndex, setIndex, setsOf)
+    if (up.kind === 'finish') return { kind: 'finish', label: 'Training abschließen' }
+    if (up.kind === 'set') return { kind: 'set', label: `Satz ${up.set + 1} von ${effectiveSets}`, step: currentStep }
+    if (up.kind === 'partner') return { kind: 'partner', label: steps[up.step].name, sub: `Supersatz – direkt weiter, Satz ${up.set + 1}`, step: steps[up.step] }
+    if (up.kind === 'round') return { kind: 'round', label: steps[up.step].name, sub: `Nach der Pause: Runde ${up.set + 1}`, step: steps[up.step] }
+    return { kind: 'step', label: steps[up.step].name, step: steps[up.step] }
+  })()
   const lastWorkout = history[history.length - 1]
   const today = dateKey()
   const loggable = phase === 'work' && isLoggable(currentStep)
@@ -417,10 +433,18 @@ export default function App() {
     }
     setSetsDone((value) => value + 1)
     const nextSessionLog = loggable ? recordSet() : sessionLog
-    const isLastSetOfWorkout = stepIndex === steps.length - 1 && setIndex >= effectiveSets - 1
-    if (isLastSetOfWorkout) {
-      setDoneSteps((prev) => ({ ...prev, [stepIndex]: true }))
-      finishWorkout(1, nextSessionLog)
+    const partner = partnerAfter(steps, stepIndex, setIndex, setsOf)
+    if (partner) {
+      // Supersatz: ohne Pause direkt zur Partner-Übung
+      signal('rest-end')
+      enterWork(partner.step, partner.set)
+      return
+    }
+    const next = afterRest(steps, stepIndex, setIndex, setsOf)
+    if (next.step == null) {
+      const done = doneFrom(next.done)
+      setDoneSteps((prev) => ({ ...prev, ...done }))
+      finishWorkout(1, nextSessionLog, done)
       return
     }
     setPhase('rest')
@@ -429,9 +453,13 @@ export default function App() {
     setShowVideo(false)
   }
 
-  function finishWorkout(extraSets = 0, finalLog = sessionLog, lastDone = true) {
+  function doneFrom(list) {
+    return Object.fromEntries(list.map((i) => [i, doneSteps[i] === 'skipped' ? 'skipped' : true]))
+  }
+
+  function finishWorkout(extraSets = 0, finalLog = sessionLog, doneOverride = { [stepIndex]: true }) {
     const durationMs = stopSession()
-    const done = { ...doneSteps, [stepIndex]: lastDone ? true : 'skipped' }
+    const done = { ...doneSteps, ...doneOverride }
     const muscles = workoutMuscles(steps, done, finalLog, (step) => setsOverrides[`${programId}:${dayIndex}:${step.name}`])
     const volume = Object.values(finalLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
     const completedDate = dateKey()
@@ -463,19 +491,17 @@ export default function App() {
   }
 
   function advanceAfterRest() {
-    const curParsed = parseSets(currentStep.reps)
-    const curDefault = curParsed.isSet ? curParsed.sets : 1
-    const curEffective = setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || curDefault
-    if (setIndex < curEffective - 1) {
-      enterWork(stepIndex, setIndex + 1)
-    } else {
+    if (currentStep.type === 'warmup') {
       setDoneSteps((prev) => ({ ...prev, [stepIndex]: true }))
-      if (stepIndex < steps.length - 1) {
-        enterWork(stepIndex + 1, 0)
-      } else {
-        finishWorkout()
-      }
+      if (stepIndex < steps.length - 1) enterWork(stepIndex + 1, 0)
+      else finishWorkout()
+      return
     }
+    const next = afterRest(steps, stepIndex, setIndex, setsOf)
+    const done = doneFrom(next.done)
+    if (next.done.length) setDoneSteps((prev) => ({ ...prev, ...done }))
+    if (next.step == null) finishWorkout(0, sessionLog, done)
+    else enterWork(next.step, next.set)
   }
 
   function skipExercise() {
@@ -484,7 +510,7 @@ export default function App() {
     if (stepIndex < steps.length - 1) {
       enterWork(stepIndex + 1, 0)
     } else {
-      finishWorkout(0, sessionLog, false)
+      finishWorkout(0, sessionLog, { [stepIndex]: 'skipped' })
     }
   }
 
@@ -858,6 +884,10 @@ export default function App() {
                     {phase === 'work' && <span className="repFigure">{currentStep.reps.replace(/(\d)\s*[x×]\s*(\d)/i, '$1 × $2')}</span>}
                   </div>
 
+                  {phase === 'work' && superset && (
+                    <p className="supersetTag"><Link2 size={14} /> Supersatz {superset.letter}{superset.pos} <span>· {superset.pos < superset.size ? `danach direkt ${steps[stepIndex + 1].name}` : 'danach Pause'}</span></p>
+                  )}
+
                   {phase === 'work' && effectiveSets > 1 && (
                     <div className="setBar">
                       <div className="setDots" aria-label={`Satz ${setIndex + 1} von ${effectiveSets}`}>
@@ -1005,7 +1035,7 @@ export default function App() {
                       <div>
                         <span>Als Nächstes</span>
                         <strong>{nextUp.label}</strong>
-                        {nextUp.kind === 'step' && <small>{nextUp.step.reps}</small>}
+                        {nextUp.sub ? <small>{nextUp.sub}</small> : nextUp.kind === 'step' && <small>{nextUp.step.reps}</small>}
                       </div>
                     </div>
                   )}

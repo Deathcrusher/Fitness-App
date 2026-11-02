@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import {
   ChevronDown,
   ChevronUp,
+  Link2,
   Plus,
   Trash2,
   Video,
@@ -164,12 +165,22 @@ export default function Editor({ plan, onChange }) {
         </div>
         <div className="stepEditorList">
           {day?.steps.map((s, si) => (
-            <div key={si} className="stepEditor">
+            <div key={si} className={`stepEditor${s.superset && si < day.steps.length - 1 ? ' ssLinked' : ''}`}>
               <div className="stepEditorTop">
                 <strong>Übung {si + 1}</strong>
                 <div className="stepEditorBtns">
                   <button className="iconAction sm" onClick={() => moveStep(dayIndex, si, -1)} disabled={si === 0} aria-label="Hoch"><ChevronUp size={16} /></button>
                   <button className="iconAction sm" onClick={() => moveStep(dayIndex, si, 1)} disabled={si === day.steps.length - 1} aria-label="Runter"><ChevronDown size={16} /></button>
+                  <button
+                    className={`iconAction sm${s.superset ? ' linked' : ''}`}
+                    onClick={() => patchStep(dayIndex, si, { superset: !s.superset })}
+                    disabled={si === day.steps.length - 1 && !s.superset}
+                    aria-pressed={Boolean(s.superset)}
+                    aria-label="Als Supersatz mit der nächsten Übung verbinden"
+                    title="Supersatz mit der nächsten Übung"
+                  >
+                    <Link2 size={16} />
+                  </button>
                   <button className="iconAction sm danger" onClick={() => removeStep(dayIndex, si)} aria-label="Löschen"><Trash2 size={16} /></button>
                 </div>
               </div>
@@ -212,6 +223,9 @@ export default function Editor({ plan, onChange }) {
                   → Passendes Video auf YouTube suchen
                 </a>
               </label>
+              {s.superset && si < day.steps.length - 1 && (
+                <p className="ssLink"><Link2 size={14} /> Supersatz mit „{day.steps[si + 1].name}" – abwechselnd ohne Pause dazwischen</p>
+              )}
             </div>
           ))}
         </div>

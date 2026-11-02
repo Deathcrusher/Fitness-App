@@ -4,6 +4,7 @@ import { FigureFrame, MOVES, animationFor } from './ExerciseFigure'
 import { imageFor } from '../lib/plans'
 import { comebackOf, estimateMinutes, isLoggable, lastEntry } from '../lib/logStore'
 import { dateKey } from './ProgressCalendar'
+import { supersetLabel } from '../lib/superset'
 
 function Thumb({ step, imagePerson }) {
   const key = animationFor(step)
@@ -82,7 +83,7 @@ export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps
               <button onClick={() => onOpenExercise(i)}>
                 <Thumb step={step} imagePerson={imagePerson} />
                 <span className="ovCopy">
-                  <strong>{step.name}</strong>
+                  <strong>{step.name}{(() => { const ss = supersetLabel(steps, i); return ss ? <em className="ssTag" title="Supersatz">{ss.letter}{ss.pos}</em> : null })()}</strong>
                   <small>{step.reps}{last ? ` · zuletzt ${top > 0 ? `${String(top).replace('.', ',')} kg` : `${Math.max(...last.sets.map((s) => s.r))} Wdh.`}` : ''}</small>
                 </span>
               </button>
