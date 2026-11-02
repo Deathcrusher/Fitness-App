@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Minus, Plus, TrendingUp } from 'lucide-react'
+import { History, Minus, Plus, TrendingUp } from 'lucide-react'
 import { fmtKg, fmtSet } from '../lib/logStore'
+import { FEELS, fmtNum, platesFor } from '../lib/training'
 
 function Stepper({ label, value, unit, step, min = 0, max = 500, onChange, decimals }) {
   const [text, setText] = useState(null)
@@ -38,7 +39,24 @@ function Stepper({ label, value, unit, step, min = 0, max = 500, onChange, decim
   )
 }
 
-export default function SetLogger({ draft, onDraft, weighted, last, sug, doneSets, setIndex }) {
+function PlateHint({ weight, gear }) {
+  if (!gear?.show || !gear.plates.length || weight <= gear.bar) return null
+  const { perSide, rest } = platesFor(weight, gear.bar, gear.plates)
+  if (!perSide.length) return null
+  return (
+    <p className="plateHint" aria-label="Scheiben pro Seite">
+      <span className="plateStack" aria-hidden="true">
+        {perSide.map((p, i) => <i key={i} style={{ '--ph': `${Math.min(30, 12 + p * 1.6)}px` }} />)}
+      </span>
+      <span>
+        Pro Seite: <strong className="num">{perSide.map(fmtNum).join(' + ')}</strong> kg
+        {rest > 0 && <em> · {fmtNum(rest)} kg fehlen</em>}
+      </span>
+    </p>
+  )
+}
+
+export default function SetLogger({ draft, onDraft, weighted, last, sug, doneSets, setIndex, gear }) {
   const [showWeight, setShowWeight] = useState(false)
   const withWeight = weighted || showWeight || draft.w > 0
   return (
@@ -50,9 +68,27 @@ export default function SetLogger({ draft, onDraft, weighted, last, sug, doneSet
         <Stepper label="Wiederholungen" value={draft.r} step={1} max={200} onChange={(r) => onDraft({ ...draft, r })} />
       </div>
 
+      {withWeight && <PlateHint weight={draft.w} gear={gear} />}
+
+      <div className="feelRow" role="radiogroup" aria-label="Wie hat sich der Satz angefühlt?">
+        <span>Gefühl</span>
+        {FEELS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            role="radio"
+            aria-checked={draft.f === f.value}
+            className={`feel f${f.value}${draft.f === f.value ? ' active' : ''}`}
+            onClick={() => onDraft({ ...draft, f: draft.f === f.value ? undefined : f.value })}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {doneSets.some(Boolean) && (
         <ol className="doneSets" aria-label="Erledigte Sätze">
-          {doneSets.map((s, i) => s && i < setIndex && <li key={i}><span>Satz {i + 1}</span> {fmtSet(s)}</li>)}
+          {doneSets.map((s, i) => s && i < setIndex && <li key={i}><span>Satz {i + 1}</span> {fmtSet(s)}{s.f ? <small className={`feelTag f${s.f}`}>{FEELS[s.f - 1].short}</small> : null}</li>)}
         </ol>
       )}
 
@@ -66,13 +102,15 @@ export default function SetLogger({ draft, onDraft, weighted, last, sug, doneSet
           <button
             type="button"
             className={`sugChip ${sug.kind}`}
-            onClick={() => onDraft({ w: sug.w, r: sug.r })}
+            onClick={() => onDraft({ ...draft, w: sug.w, r: sug.r })}
             title="Vorschlag übernehmen"
           >
-            {sug.kind === 'up' && <TrendingUp size={14} />} {sug.text}
+            {sug.kind === 'up' && <TrendingUp size={14} />}
+            {sug.kind === 'comeback' && <History size={14} />} {sug.text}
           </button>
         )}
       </div>
+      {sug?.note && <p className={`sugNote ${sug.kind}`}>{sug.note}</p>}
 
       {!weighted && !withWeight && (
         <button type="button" className="addWeight" onClick={() => setShowWeight(true)}>

@@ -3383,3 +3383,87 @@ html[data-theme="dark"] .moveFrame { filter: brightness(0.92); }
 .badgeIcon svg { color: inherit; }
 .badgeIcon { color: #fff; }
 .badgeIcon.locked { color: var(--muted); }
+
+/* ---------- V2.2: Gefühl, Comeback, Scheiben ---------- */
+:root {
+  --feel-easy: #2f8a5b;
+  --feel-easy-bg: #e1f3e8;
+  --feel-ok: #5b6a63;
+  --feel-ok-bg: #eceff0;
+  --feel-hard: #c2541a;
+  --feel-hard-bg: #fde9dc;
+  --heat-0: #e6ebe8;
+}
+html[data-theme="dark"] {
+  --feel-easy: #7fd6a4;
+  --feel-easy-bg: #1d3328;
+  --feel-ok: #b9c6bf;
+  --feel-ok-bg: #26322c;
+  --feel-hard: #ffab7a;
+  --feel-hard-bg: #3a2519;
+  --heat-0: #26322c;
+}
+
+.feelRow { display: flex; align-items: center; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.feelRow > span { color: var(--muted); font-size: 13px; font-weight: 500; margin-right: 2px; }
+.feel {
+  flex: 1 1 0;
+  min-width: 72px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.feel.f1.active { background: var(--feel-easy-bg); color: var(--feel-easy); border-color: var(--feel-easy); }
+.feel.f2.active { background: var(--feel-ok-bg); color: var(--ink); border-color: var(--feel-ok); }
+.feel.f3.active { background: var(--feel-hard-bg); color: var(--feel-hard); border-color: var(--feel-hard); }
+.feelTag { margin-left: 5px; padding: 1px 6px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.feelTag.f1 { background: var(--feel-easy-bg); color: var(--feel-easy); }
+.feelTag.f2 { background: var(--feel-ok-bg); color: var(--feel-ok); }
+.feelTag.f3 { background: var(--feel-hard-bg); color: var(--feel-hard); }
+
+.sugChip.comeback { background: var(--feel-hard-bg); color: var(--feel-hard); }
+.sugNote { margin: 6px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.sugNote.comeback { color: var(--feel-hard); }
+
+.plateHint { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; color: var(--ink-soft); font-size: 13.5px; }
+.plateHint em { color: var(--danger); font-style: normal; }
+.plateStack { display: inline-flex; align-items: center; gap: 2px; height: 30px; padding-left: 10px; position: relative; }
+.plateStack::before { content: ''; position: absolute; left: 0; right: -6px; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px; background: var(--muted); opacity: 0.5; }
+.plateStack i { position: relative; width: 6px; height: var(--ph); border-radius: 2px; background: var(--accent); }
+
+.plateChoices { display: flex; flex-wrap: wrap; gap: 6px; }
+.plateChoices button {
+  min-width: 48px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.plateChoices button.active { background: var(--accent-soft); color: var(--accent-strong); border-color: var(--accent); }
+.compactField { margin-top: 10px; }
+
+.comebackBanner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 14px 0 4px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--feel-hard-bg);
+  color: var(--feel-hard);
+}
+.comebackBanner.ramp { background: var(--accent-soft); color: var(--accent-strong); }
+.comebackBanner svg { flex: none; margin-top: 1px; }
+.comebackBanner p { margin: 0; display: grid; gap: 2px; }
+.comebackBanner strong { font-size: 14.5px; }
+.comebackBanner span { color: var(--ink-soft); font-size: 13px; line-height: 1.45; }

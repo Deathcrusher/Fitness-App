@@ -1,9 +1,11 @@
 import { parseSets, timedSeconds } from './plans'
 import { MOVES, moveFor } from './figure/moves'
+import { comebackFor, smartSuggestion } from './training'
 
 /*
  * Satz-Protokoll pro Person und Übung.
- * log = { "rene::Rudern": [ { date, at, program, sets: [{ w, r }] }, … ] }
+ * log = { "rene::Rudern": [ { date, at, program, sets: [{ w, r, f? }] }, … ] }
+ * f = Gefühl des Satzes: 1 leicht, 2 passt, 3 hart
  */
 const LOG_KEY = 'fitflow-log-v1'
 
@@ -41,7 +43,11 @@ export function lastEntry(log, owner, name, excludeDate) {
 export function upsertEntry(log, owner, name, date, sets, program) {
   const key = exKey(owner, name)
   const list = (log[key] || []).filter((entry) => entry.date !== date)
-  const clean = sets.filter(Boolean).map((s) => ({ w: Number(s.w) || 0, r: Number(s.r) || 0 }))
+  const clean = sets.filter(Boolean).map((s) => {
+    const set = { w: Number(s.w) || 0, r: Number(s.r) || 0 }
+    if ([1, 2, 3].includes(s.f)) set.f = s.f
+    return set
+  })
   if (!clean.length) return { ...log, [key]: list }
   list.push({ date, at: new Date().toISOString(), program, sets: clean })
   list.sort((a, b) => a.date.localeCompare(b.date))
@@ -97,31 +103,23 @@ export function isRecord(previous, set) {
   return best.maxW === 0 && set.r > best.maxR
 }
 
-/** Steigerungsvorschlag nach dem Prinzip der doppelten Progression */
-export function suggestion(last, range, step) {
-  if (!last || !last.sets.length) return null
-  const sets = last.sets
-  const topW = Math.max(...sets.map((s) => s.w || 0))
-  const allHit = sets.every((s) => s.r >= range[1])
-  if (topW > 0) {
-    if (allHit) {
-      const inc = step?.type === 'lower' ? 2 : 1
-      return { kind: 'up', w: topW + inc, r: range[0], text: `Steigern auf ${fmtKg(topW + inc)}` }
-    }
-    return { kind: 'hold', w: topW, r: Math.min(range[1], Math.max(...sets.map((s) => s.r)) + 1), text: `${fmtKg(topW)} halten` }
-  }
-  const maxR = Math.max(...sets.map((s) => s.r))
-  if (allHit) return { kind: 'up', w: 0, r: maxR + 1, text: `Ziel: ${maxR + 1} Wdh.` }
-  return { kind: 'hold', w: 0, r: range[1], text: `Ziel: ${range[1]} Wdh.` }
+/** Steigerungsvorschlag: doppelte Progression plus Gefühl und Comeback nach Pausen */
+export function suggestion(last, range, step, comeback = null) {
+  return smartSuggestion(last, range, step, comeback)
+}
+
+/** Comeback-Status einer Übung (Pause erkannt?) */
+export function comebackOf(log, owner, name, today) {
+  return comebackFor(entriesFor(log, owner, name), today)
 }
 
 /** Startwerte für einen Satz */
 export function draftFor({ log, owner, step, setIndex, today, sessionSets }) {
   const range = targetRange(step.reps)
   const prevThisSession = sessionSets?.[setIndex - 1]
-  if (prevThisSession) return { w: prevThisSession.w, r: prevThisSession.r }
+  if (prevThisSession) return { w: prevThisSession.w, r: prevThisSession.r, f: prevThisSession.f }
   const last = lastEntry(log, owner, step.name, today)
-  const sug = suggestion(last, range, step)
+  const sug = suggestion(last, range, step, comebackOf(log, owner, step.name, today))
   if (sug) return { w: sug.w, r: sug.r }
   if (last) {
     const s = last.sets[Math.min(setIndex, last.sets.length - 1)]

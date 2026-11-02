@@ -2,10 +2,14 @@ import React, { useRef, useState } from 'react'
 import { Download, Minus, Plus, Upload, X } from 'lucide-react'
 import { exportData } from '../lib/backup'
 import { coachSupported, say } from '../lib/coach'
+import { PLATE_CHOICES } from '../lib/storage'
+import { fmtNum } from '../lib/training'
+
+const BARS = [[0, 'Keine'], [2, 'Kurzhantel 2 kg'], [2.5, 'Kurzhantel 2,5 kg'], [10, 'Langhantel 10 kg'], [20, 'Langhantel 20 kg']]
 
 const THEMES = [['system', 'Automatisch'], ['light', 'Hell'], ['dark', 'Dunkel']]
 
-export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, onVoice, version, onClose }) {
+export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, onVoice, gear, onGear, version, onClose, children }) {
   const fileRef = useRef(null)
   const [status, setStatus] = useState(null)
   const [pending, setPending] = useState(null)
@@ -79,6 +83,46 @@ export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, o
             <button className="roundBtn" onClick={() => onGoal(Math.min(7, goal + 1))} disabled={goal >= 7} aria-label="Mehr Trainings"><Plus size={18} /></button>
           </div>
         </section>
+
+        {gear && (
+          <section className="setSection">
+            <h4>Hanteln &amp; Scheiben</h4>
+            <div className="switchRow">
+              <p>Zeigt beim Eintragen, welche Scheiben pro Seite auf die Stange müssen.</p>
+              <button role="switch" aria-checked={gear.show} className={`switch${gear.show ? ' on' : ''}`} onClick={() => onGear({ ...gear, show: !gear.show })} aria-label="Scheibenrechner"><span /></button>
+            </div>
+            {gear.show && (
+              <>
+                <label className="field compactField">
+                  <span>Stange</span>
+                  <select value={gear.bar} onChange={(e) => onGear({ ...gear, bar: Number(e.target.value) })}>
+                    {BARS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+                    {!BARS.some(([v]) => v === gear.bar) && <option value={gear.bar}>{fmtNum(gear.bar)} kg</option>}
+                  </select>
+                </label>
+                <p className="setHint">Vorhandene Scheiben (antippen zum An-/Abwählen):</p>
+                <div className="plateChoices">
+                  {PLATE_CHOICES.map((p) => {
+                    const on = gear.plates.includes(p)
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        aria-pressed={on}
+                        className={on ? 'active' : ''}
+                        onClick={() => onGear({ ...gear, plates: on ? gear.plates.filter((x) => x !== p) : [...gear.plates, p].sort((a, b) => b - a) })}
+                      >
+                        {fmtNum(p)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {children}
 
         <section className="setSection">
           <h4>Daten sichern</h4>

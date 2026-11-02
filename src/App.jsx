@@ -44,6 +44,7 @@ import ExerciseSheet from './components/ExerciseSheet'
 import WorkoutOverview from './components/WorkoutOverview'
 import SettingsSheet from './components/SettingsSheet'
 import {
+  comebackOf,
   draftFor,
   entriesFor,
   fmtSet,
@@ -93,6 +94,8 @@ import {
   loadHistory,
   persist,
   SETS_KEY,
+  GEAR_KEY,
+  loadGear,
 } from './lib/storage'
 
 const PAUSE_PRESETS = [30, 60, 90]
@@ -170,6 +173,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [goal, setGoal] = useState(loadGoal)
   const [voiceOn, setVoiceOn] = useState(coachEnabled)
+  const [gear, setGear] = useState(loadGear)
   const [newBadges, setNewBadges] = useState([])
   const expectingRefresh = useRef(false)
   const endsAtRef = useRef(null)
@@ -221,7 +225,8 @@ export default function App() {
   const loggable = phase === 'work' && isLoggable(currentStep)
   const weighted = usesWeight(currentStep)
   const lastLog = loggable ? lastEntry(log, currentOwner, currentStep.name, today) : null
-  const sug = loggable ? suggestion(lastLog, targetRange(currentStep.reps), currentStep) : null
+  const comeback = loggable ? comebackOf(log, currentOwner, currentStep.name, today) : null
+  const sug = loggable ? suggestion(lastLog, targetRange(currentStep.reps), currentStep, comeback) : null
   const draftKey = `${sessionKey}:${stepIndex}:${setIndex}`
   const currentDraft = draft?.key === draftKey
     ? draft
@@ -290,6 +295,7 @@ export default function App() {
   useEffect(() => { persist(VIDEOS_KEY, videos) }, [videos])
   useEffect(() => { persist(HISTORY_KEY, history) }, [history])
   useEffect(() => { persist(SETS_KEY, setsOverrides) }, [setsOverrides])
+  useEffect(() => { persist(GEAR_KEY, gear) }, [gear])
 
   useEffect(() => {
     if (!session.running) return undefined
@@ -364,6 +370,7 @@ export default function App() {
 
   function recordSet() {
     const set = { w: currentDraft.w, r: currentDraft.r }
+    if (currentDraft.f) set.f = currentDraft.f
     const sets = [...(sessionLog[stepIndex] || [])]
     sets[setIndex] = set
     const nextSessionLog = { ...sessionLog, [stepIndex]: sets }
@@ -860,6 +867,7 @@ export default function App() {
                       sug={setIndex === 0 && !(sessionLog[stepIndex] || []).some(Boolean) ? sug : null}
                       doneSets={sessionLog[stepIndex] || []}
                       setIndex={setIndex}
+                      gear={gear}
                     />
                   )}
 
@@ -1101,6 +1109,8 @@ export default function App() {
           version={APP_VERSION}
           voiceOn={voiceOn}
           onVoice={toggleVoice}
+          gear={gear}
+          onGear={setGear}
           onClose={() => setSettingsOpen(false)}
         />
       )}

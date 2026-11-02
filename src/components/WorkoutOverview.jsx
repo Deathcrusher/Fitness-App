@@ -1,8 +1,9 @@
 import React from 'react'
-import { CalendarCheck2, Clock3, ListChecks, Play, Target } from 'lucide-react'
+import { CalendarCheck2, Clock3, HeartHandshake, ListChecks, Play, Target } from 'lucide-react'
 import { FigureFrame, MOVES, animationFor } from './ExerciseFigure'
 import { imageFor } from '../lib/plans'
-import { estimateMinutes, isLoggable, lastEntry } from '../lib/logStore'
+import { comebackOf, estimateMinutes, isLoggable, lastEntry } from '../lib/logStore'
+import { dateKey } from './ProgressCalendar'
 
 function Thumb({ step, imagePerson }) {
   const key = animationFor(step)
@@ -28,6 +29,10 @@ export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps
   const minutes = estimateMinutes(steps, pauseSeconds)
   const lastSameDay = [...history].reverse().find((e) => e.programId === programKey && e.dayIndex === dayIndex)
   const strength = steps.filter(isLoggable).length
+  const today = dateKey()
+  const comebacks = steps.filter(isLoggable).map((s) => comebackOf(log, owner, s.name, today)).filter(Boolean)
+  const restart = comebacks.filter((c) => c.kind === 'restart').sort((a, b) => b.gap - a.gap)[0]
+  const ramping = !restart && comebacks.some((c) => c.kind === 'ramp')
 
   return (
     <div className="overview">
@@ -43,6 +48,25 @@ export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps
       {day.tone && <p className="ovTone">{day.tone}</p>}
       {lastSameDay && (
         <p className="ovLast"><CalendarCheck2 size={15} /> Zuletzt gemacht {daysAgo(lastSameDay.date)}</p>
+      )}
+
+      {restart && (
+        <div className="comebackBanner" role="status">
+          <HeartHandshake size={20} />
+          <p>
+            <strong>Willkommen zurück!</strong>
+            <span>{restart.gap} Tage Pause erkannt – die Vorschläge starten heute bei ca. {Math.round(restart.factor * 100)} % und steigern sich in den nächsten Einheiten wieder zu deinem alten Niveau.</span>
+          </p>
+        </div>
+      )}
+      {ramping && (
+        <div className="comebackBanner ramp" role="status">
+          <HeartHandshake size={20} />
+          <p>
+            <strong>Comeback läuft</strong>
+            <span>Die Vorschläge führen dich in größeren Schritten zurück zu deinen Werten vor der Pause.</span>
+          </p>
+        </div>
       )}
 
       <button className="primaryAction big ovStart" onClick={onStart}>

@@ -10,6 +10,25 @@ export const SESSION_KEY = 'fitflow-session-v1'
 export const THEME_KEY = 'fitflow-theme-v1'
 export const GOAL_KEY = 'fitflow-goal-v1'
 export const SETS_KEY = 'fitflow-sets-v1'
+export const GEAR_KEY = 'fitflow-gear-v1'
+
+export const DEFAULT_GEAR = { bar: 2, plates: [10, 5, 2.5, 1.25, 0.5], show: true }
+export const PLATE_CHOICES = [20, 15, 10, 5, 2.5, 2, 1.25, 1, 0.5]
+
+/** Hantelstange und vorhandene Scheiben für den Scheibenrechner */
+export function loadGear() {
+  try {
+    const g = JSON.parse(localStorage.getItem(GEAR_KEY) || 'null')
+    if (!g || typeof g !== 'object') return DEFAULT_GEAR
+    return {
+      bar: Number.isFinite(Number(g.bar)) ? Math.max(0, Number(g.bar)) : DEFAULT_GEAR.bar,
+      plates: Array.isArray(g.plates) ? g.plates.map(Number).filter((n) => n > 0) : DEFAULT_GEAR.plates,
+      show: g.show !== false,
+    }
+  } catch {
+    return DEFAULT_GEAR
+  }
+}
 
 export function loadGoal() {
   try {
