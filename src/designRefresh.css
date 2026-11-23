@@ -298,3 +298,17 @@ html[data-theme="dark"] .app {
 @media (prefers-reduced-motion: reduce) {
   .ffProgramOption, .dayTabsRail button, .bottomnav button { transition: none !important; }
 }
+
+/* Show a small, verifiable build number even on narrow phone screens. */
+.ffBrandStudio { display: inline-flex; align-items: center; justify-content: center; }
+@media (max-width: 440px) {
+  .ffBrandStudio { display: inline-flex; margin-left: -3px; padding: 4px 5px; font-size: 9px; letter-spacing: 0; }
+  .ffSyncIndicator { min-width: 36px; padding: 0 7px; }
+  .ffSyncIndicator span { display: none; }
+  .brand { font-size: 19px; }
+  .topActions { gap: 5px; }
+}
+@media (max-width: 360px) {
+  .ffBrandStudio { padding: 3px 4px; font-size: 8px; }
+  .brand { gap: 6px; }
+}
