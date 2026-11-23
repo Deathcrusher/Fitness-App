@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Medal, X } from 'lucide-react'
 import ExerciseFigure, { animationFor } from './ExerciseFigure'
+import ExerciseTechnique from './ExerciseTechnique'
 import { bests, entriesFor, fmtKg, fmtSet, volumeOf } from '../lib/logStore'
 import { FEELS, bestE1rm, fmtNum } from '../lib/training'
 
@@ -95,6 +96,7 @@ export default function ExerciseSheet({ step, owner, log, onClose, onStart }) {
           <div className="sheetFigure"><ExerciseFigure step={step} label={`${step.name}: Bewegungsablauf`} /></div>
         )}
         <p className="sheetText">{step.detail}</p>
+        <ExerciseTechnique step={step} />
 
         <div className="sheetStats">
           <div>
