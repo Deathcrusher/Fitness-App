@@ -10,6 +10,11 @@ describe('FitFlow Cloud-Merge', () => {
     expect(entries).toHaveLength(2)
     expect(JSON.parse(mergeFitflowData(merged, b)['fitflow-history-v1'])).toHaveLength(2)
   })
+  it('übernimmt Korrekturen statt veraltete Einträge mit gleichem Trainingsdatum zu behalten', () => {
+    const old = { 'fitflow-history-v1': JSON.stringify([{key:'arm', date:'2026-11-22', completedAt:'2026-11-22T12:00:00Z', sets:13}]) }
+    const corrected = { 'fitflow-history-v1': JSON.stringify([{key:'arm', date:'2026-11-22', completedAt:'2026-11-22T12:00:00Z', updatedAt:'2026-11-23T12:00:00Z', sets:7}]) }
+    expect(JSON.parse(mergeFitflowData(old, corrected)['fitflow-history-v1'])[0].sets).toBe(7)
+  })
   it('bewahrt separate Satzdaten aus beiden Geräten', () => {
     const a = {'fitflow-log-v1': JSON.stringify({ 'rene::Bizeps-Curls': [{date:'2026-11-20', at:'2026-11-20T12:00:00Z', sets:[{w:10,r:8}]}] })}
     const b = {'fitflow-log-v1': JSON.stringify({ 'rene::Bizeps-Curls': [{date:'2026-11-22', at:'2026-11-22T12:00:00Z', sets:[{w:0,r:8}]}] })}
