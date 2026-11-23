@@ -1,26 +1,38 @@
+import { mergeFitflowData, sameFitflowData } from './cloudMerge'
+
 // Private, one-time cloud backup. The existing localStorage data is never deleted or overwritten.
 const API_URL = 'https://ifvlhfhyeqgodvhbdxbv.supabase.co'
 const PUBLIC_KEY = 'sb_publishable_RQvUolij_etM5fUV8_MnDg_x40yft-h'
 const AUTH_KEY = 'ffcloud-auth-v1' // Outside fitflow-* so auth tokens never enter FitFlow JSON exports.
 
 async function api(path, { method = 'GET', token, body, headers = {} } = {}) {
-  const response = await fetch(API_URL + path, {
-    method,
-    headers: {
-      apikey: PUBLIC_KEY,
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  })
-  const payload = await response.json().catch(() => null)
-  if (!response.ok) {
-    const error = new Error(payload?.msg || payload?.error_description || payload?.message || payload?.error || 'Cloud-Anfrage fehlgeschlagen.')
-    error.status = response.status
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
+  try {
+    const response = await fetch(API_URL + path, {
+      method,
+      signal: controller.signal,
+      headers: {
+        apikey: PUBLIC_KEY,
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    })
+    const payload = await response.json().catch(() => null)
+    if (!response.ok) {
+      const error = new Error(payload?.msg || payload?.error_description || payload?.message || payload?.error || 'Cloud-Anfrage fehlgeschlagen.')
+      error.status = response.status
+      throw error
+    }
+    return payload
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('Cloud nicht erreichbar. Deine lokalen Daten bleiben erhalten; wir versuchen es beim nächsten Mal erneut.')
     throw error
+  } finally {
+    clearTimeout(timer)
   }
-  return payload
 }
 
 function storeAuth(session) {
@@ -48,11 +60,13 @@ export async function cloudSignIn(email, password) {
   })
   if (!session?.access_token) throw new Error('Bitte bestätige zuerst deine E-Mail-Adresse.')
   storeAuth(session)
+  window.dispatchEvent(new Event('fitflow-cloud-auth'))
   return session.user
 }
 
 export function cloudSignOut() {
   localStorage.removeItem(AUTH_KEY)
+  window.dispatchEvent(new Event('fitflow-cloud-auth'))
 }
 
 async function validAuth() {
@@ -101,4 +115,133 @@ export async function initialCloudBackup() {
   })
   if (!verified?.length) throw new Error('Upload wurde nicht bestätigt. Bitte vor weiteren Änderungen das lokale Backup behalten.')
   return { saved: true, createdAt: verified[0].created_at }
+}
+
+const CLOUD_STATUS_KEY = 'ffcloud-sync-status-v1'
+const BOUND_ACCOUNT_KEY = 'ffcloud-bound-account-v1'
+
+export function cloudStatus() {
+  try { return JSON.parse(localStorage.getItem(CLOUD_STATUS_KEY) || 'null') } catch { return null }
+}
+function publishStatus(status, message) {
+  const entry = { status, message, at: new Date().toISOString() }
+  localStorage.setItem(CLOUD_STATUS_KEY, JSON.stringify(entry))
+  window.dispatchEvent(new CustomEvent('fitflow-cloud-status', { detail: entry }))
+}
+function checkAccount(auth) {
+  const bound = localStorage.getItem(BOUND_ACCOUNT_KEY)
+  if (bound && bound !== auth.user?.id) {
+    throw new Error('Dieser Browser wurde bereits mit einem anderen Cloud-Konto synchronisiert. Bitte verwende dein ursprüngliches FitFlow-Konto, um eine Vermischung von Trainingsdaten zu vermeiden.')
+  }
+  if (auth.user?.id && !bound) localStorage.setItem(BOUND_ACCOUNT_KEY, auth.user.id)
+}
+export function collectFitflowData() {
+  const out = {}
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith('fitflow-')) out[key] = localStorage.getItem(key)
+  }
+  return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)))
+}
+
+async function cloudSnapshots(auth) {
+  const rows = await api('/rest/v1/fitflow_sync_snapshots?select=id,data&order=id.desc&limit=1', { token: auth.access_token })
+  if (rows?.length) {
+    // Each snapshot is complete. Never re-add intentionally corrected/removed entries
+    // from older revisions, which remain available as immutable backups.
+    const latest = rows[0]
+    if (latest.data?.app !== 'FitFlow' || !latest.data?.data || typeof latest.data.data !== 'object') {
+      throw new Error('Ungültiger Cloud-Datenstand; automatischer Upload wurde gestoppt.')
+    }
+    return { id: latest.id, data: latest.data.data }
+  }
+  // Support the existing one-time backup until the first automatic revision exists.
+  const initial = await api('/rest/v1/fitflow_initial_backups?select=data&limit=1', { token: auth.access_token })
+  return { id: null, data: initial?.[0]?.data?.data || {} }
+}
+
+/** On page startup, merge the cloud's history into local storage BEFORE React loads it. */
+export async function bootstrapCloudSync() {
+  if (!currentCloudUser()) return
+  try {
+    const auth = await validAuth()
+    checkAccount(auth)
+    const remote = await cloudSnapshots(auth)
+    const local = collectFitflowData()
+    // Never replace existing data wholesale. Historical lists and exercise logs are unioned.
+    const merged = mergeFitflowData(local, remote.data)
+    if (!sameFitflowData(merged, local)) {
+      // Keep the pre-import state for diagnostic recovery.
+      localStorage.setItem('ffcloud-before-import-v1', JSON.stringify({ exportedAt: new Date().toISOString(), data: local }))
+      for (const [key, value] of Object.entries(merged)) {
+        if (local[key] !== value) localStorage.setItem(key, value)
+      }
+      publishStatus('merged', 'Cloud-Daten mit lokalen Daten zusammengeführt.')
+    }
+  } catch (error) {
+    publishStatus('error', 'Cloud-Abgleich beim Start fehlgeschlagen: ' + error.message)
+  }
+}
+
+let inFlight = null
+/** Append-only cloud backup, safe to retry; never modifies the initial backup. */
+export function syncFitflowNow() {
+  if (inFlight) return inFlight
+  inFlight = (async () => {
+    if (!currentCloudUser()) return { skipped: true }
+    try {
+      const auth = await validAuth()
+      checkAccount(auth)
+      const remote = await cloudSnapshots(auth)
+      const data = mergeFitflowData(collectFitflowData(), remote.data)
+      if (sameFitflowData(data, remote.data)) {
+        publishStatus('saved', 'Alle vorhandenen FitFlow-Daten sind in der Cloud gesichert.')
+        return { saved: true, unchanged: true }
+      }
+      const payload = { app: 'FitFlow', version: 2, exportedAt: new Date().toISOString(), data }
+      const saved = await api('/rest/v1/fitflow_sync_snapshots?select=id', {
+        token: auth.access_token,
+        method: 'POST',
+        headers: { Prefer: 'return=representation' },
+        body: { user_id: auth.user.id, data: payload },
+      })
+      if (!saved?.[0]?.id) throw new Error('Cloud-Upload konnte nicht bestätigt werden.')
+      publishStatus('saved', 'Automatisch in Supabase gespeichert.')
+      return { saved: true, revision: saved[0].id }
+    } catch (error) {
+      publishStatus('error', 'Noch nicht synchronisiert: ' + error.message)
+      throw error
+    }
+  })().finally(() => { inFlight = null })
+  return inFlight
+}
+
+/** Registers a debounced auto-upload and retries after connectivity returns. */
+export function startAutomaticCloudSync() {
+  let timeout
+  function schedule() {
+    if (!currentCloudUser()) return
+    clearTimeout(timeout)
+    timeout = setTimeout(() => { syncFitflowNow().catch(() => {}) }, 3500)
+  }
+  const onStorage = (event) => {
+    if (event.key?.startsWith('fitflow-')) schedule()
+  }
+  const onVisibility = () => { if (document.visibilityState === 'visible') schedule() }
+  window.addEventListener('fitflow-local-change', schedule)
+  window.addEventListener('fitflow-cloud-auth', schedule)
+  window.addEventListener('storage', onStorage)
+  window.addEventListener('online', schedule)
+  document.addEventListener('visibilitychange', onVisibility)
+  const interval = setInterval(schedule, 30000)
+  schedule()
+  return () => {
+    clearTimeout(timeout)
+    clearInterval(interval)
+    window.removeEventListener('fitflow-local-change', schedule)
+    window.removeEventListener('fitflow-cloud-auth', schedule)
+    window.removeEventListener('storage', onStorage)
+    window.removeEventListener('online', schedule)
+    document.removeEventListener('visibilitychange', onVisibility)
+  }
 }

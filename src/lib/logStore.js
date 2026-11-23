@@ -21,6 +21,7 @@ export function loadLog() {
 export function saveLog(log) {
   try {
     localStorage.setItem(LOG_KEY, JSON.stringify(log))
+    window.dispatchEvent(new Event('fitflow-local-change'))
   } catch {
     /* Speicher voll oder gesperrt */
   }

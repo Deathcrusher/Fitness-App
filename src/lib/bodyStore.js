@@ -25,6 +25,7 @@ export function loadBody() {
 export function saveBody(body) {
   try {
     localStorage.setItem(BODY_KEY, JSON.stringify(body))
+    window.dispatchEvent(new Event('fitflow-local-change'))
   } catch {
     /* Speicher voll oder gesperrt */
   }

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary'
 import { applyPlanFixes } from './lib/planFixes'
+import { bootstrapCloudSync, startAutomaticCloudSync } from './lib/cloudBackup'
 import '@fontsource-variable/archivo/wdth.css'
 import './styles.css'
 
@@ -12,11 +13,14 @@ const root = createRoot(document.getElementById('root'))
 if (window.location.search.includes('figures')) {
   import('./components/FigureDebug.jsx').then(({ default: FigureDebug }) => root.render(<FigureDebug />))
 } else {
-  root.render(
-    <ErrorBoundary version={__APP_VERSION__}>
-      <App />
-    </ErrorBoundary>,
-  )
+  bootstrapCloudSync().finally(() => {
+    root.render(
+      <ErrorBoundary version={__APP_VERSION__}>
+        <App />
+      </ErrorBoundary>,
+    )
+    startAutomaticCloudSync()
+  })
 }
 
 if ('serviceWorker' in navigator) {

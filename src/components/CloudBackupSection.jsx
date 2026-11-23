@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CloudUpload, LogOut } from 'lucide-react'
-import { cloudSignIn, cloudSignOut, cloudSignUp, currentCloudUser, initialCloudBackup } from '../lib/cloudBackup'
+import { cloudSignIn, cloudSignOut, cloudSignUp, currentCloudUser, initialCloudBackup, cloudStatus, syncFitflowNow, bootstrapCloudSync } from '../lib/cloudBackup'
 
 export default function CloudBackupSection() {
   const [user, setUser] = useState(currentCloudUser)
@@ -9,6 +9,12 @@ export default function CloudBackupSection() {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [failure, setFailure] = useState(false)
+  const [syncState, setSyncState] = useState(cloudStatus)
+  useEffect(() => {
+    const onStatus = (event) => setSyncState(event.detail)
+    window.addEventListener('fitflow-cloud-status', onStatus)
+    return () => window.removeEventListener('fitflow-cloud-status', onStatus)
+  }, [])
 
   async function run(action) {
     setBusy(true)
@@ -22,11 +28,16 @@ export default function CloudBackupSection() {
         const loggedIn = await cloudSignIn(email.trim(), password)
         setUser(loggedIn)
         setPassword('')
-        setMessage('Angemeldet. Du kannst jetzt deine bisherigen Daten einmalig in der Cloud sichern.')
+        setMessage('Angemeldet. Deine Daten werden mit deinem Cloud-Backup abgeglichen.')
+        await bootstrapCloudSync()
+        window.location.reload()
+      } else if (action === 'sync') {
+        await syncFitflowNow()
+        setMessage('Cloud-Sicherung überprüft. Neue Einträge werden automatisch gesichert.')
       } else {
         const result = await initialCloudBackup()
         setMessage(result.saved
-          ? 'Cloud-Backup erfolgreich gespeichert und überprüft! Deine lokalen Daten bleiben unverändert.'
+          ? 'Cloud-Backup erfolgreich gespeichert und überprüft! Automatische Sicherung läuft nun im Hintergrund, solange du angemeldet bist.'
           : 'Für dieses Konto gibt es bereits ein Erst-Backup. Es wurde nichts überschrieben.')
       }
     } catch (error) {
@@ -40,14 +51,16 @@ export default function CloudBackupSection() {
   return (
     <section className="setSection">
       <h4>FitFlow Cloud-Backup</h4>
-      <p className="setHint">Einmalige Sicherung aller FitFlow-Daten von diesem Browser (auch von anderen Profilen wie Connie). Nichts wird lokal gelöscht. Noch keine automatische Synchronisierung.</p>
+      <p className="setHint">Automatische Cloud-Sicherung deiner FitFlow-Daten bei Änderungen, zusätzlich zu den Daten im Browser. Die erste Sicherung bleibt unverändert erhalten. Daten anderer Personen im selben Browser werden mitgesichert.</p>
       {user ? (
         <>
           <p className="setHint">Angemeldet: <strong>{user.email}</strong></p>
+          {syncState && <p className={syncState.status === 'error' ? 'setError' : 'setHint'} role="status">Cloud: {syncState.message} ({new Date(syncState.at).toLocaleString('de-AT')})</p>}
           <div className="setActions">
             <button className="primaryAction" disabled={busy} onClick={() => run('backup')}>
-              <CloudUpload size={17} /> {busy ? 'Sichere …' : 'Erstmalig in Cloud sichern'}
+              <CloudUpload size={17} /> {busy ? 'Sichere …' : 'Erst-Backup prüfen'}
             </button>
+            <button className="ghostBtn" disabled={busy} onClick={() => run('sync')}>Jetzt synchronisieren</button>
             <button className="ghostBtn" disabled={busy} onClick={() => { cloudSignOut(); setUser(null); setMessage('Abgemeldet.') }}>
               <LogOut size={17} /> Abmelden
             </button>
