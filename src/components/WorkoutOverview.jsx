@@ -1,5 +1,5 @@
 import React from 'react'
-import { CalendarCheck2, Clock3, HeartHandshake, ListChecks, Play, Target } from 'lucide-react'
+import { ArrowUpRight, CalendarCheck2, ChevronRight, Clock3, HeartHandshake, ListChecks, Play, Target, Zap } from 'lucide-react'
 import { FigureFrame, MOVES, animationFor } from './ExerciseFigure'
 import { imageFor } from '../lib/plans'
 import { comebackOf, estimateMinutes, isLoggable, lastEntry } from '../lib/logStore'
@@ -26,6 +26,11 @@ function daysAgo(dateStr) {
   return `vor ${diff} Tagen`
 }
 
+const categoryOf = (type) => ({
+  upper: 'Oberkörper', lower: 'Beine', core: 'Core', warmup: 'Warm-up',
+  cardio: 'Cardio', recovery: 'Erholung',
+}[type] || 'Training')
+
 export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps, imagePerson, owner, log, history, pauseSeconds, goal, weekCount, onStart, onOpenExercise }) {
   const minutes = estimateMinutes(steps, pauseSeconds)
   const lastSameDay = [...history].reverse().find((e) => e.programId === programKey && e.dayIndex === dayIndex)
@@ -37,20 +42,32 @@ export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps
 
   return (
     <div className="overview">
-      <div className="ovHead">
-        <h2>{day.title}</h2>
-        <p>{day.focus}</p>
-      </div>
-      <div className="ovMeta">
-        <span><Clock3 size={15} /> ca. {minutes} Min</span>
-        <span><ListChecks size={15} /> {steps.length} Übungen</span>
-        {goal > 0 && <span className={weekCount >= goal ? 'met' : ''}><Target size={15} /> Woche {Math.min(weekCount, goal)}/{goal}</span>}
-      </div>
-      {day.tone && <p className="ovTone">{day.tone}</p>}
-      {lastSameDay && (
-        <p className="ovLast"><CalendarCheck2 size={15} /> Zuletzt gemacht {daysAgo(lastSameDay.date)}</p>
-      )}
+      <section className="ovHero">
+        <div className="ovHeroTop">
+          <span className="ovHeroTag"><Zap size={15} fill="currentColor" /> DEIN WORKOUT</span>
+          <span className="ovHeroTag secondary">{plan.builtin ? 'GANZKÖRPER' : 'DEIN PROGRAMM'}</span>
+        </div>
+        <div className="ovHeroTitle">
+          <p className="ovHeroPre">{plan.name} / {dayIndex + 1 < 10 ? '0' : ''}{dayIndex + 1}</p>
+          <h2>{day.title}</h2>
+          <p className="ovHeroFocus">{day.focus}</p>
+        </div>
+        <div className="ovHeroStats">
+          <span><Clock3 size={17} /> <strong>ca. {minutes} Min</strong></span>
+          <span><ListChecks size={17} /> <strong>{steps.length} Übungen</strong></span>
+          {goal > 0 && <span><Target size={17} /> <strong>{Math.min(weekCount, goal)} / {goal} Woche</strong></span>}
+        </div>
+        <button className="primaryAction big ovStart" onClick={onStart}>
+          <span className="ovStartIcon"><Play size={18} fill="currentColor" /></span>
+          Training starten
+          <ArrowUpRight className="ovStartArrow" size={19} />
+        </button>
+        {day.tone && <p className="ovHeroTone">{day.tone}</p>}
+      </section>
 
+      {lastSameDay && (
+        <p className="ovLast"><CalendarCheck2 size={15} /> Diese Einheit zuletzt {daysAgo(lastSameDay.date)}</p>
+      )}
       {restart && (
         <div className="comebackBanner" role="status">
           <HeartHandshake size={20} />
@@ -70,28 +87,36 @@ export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps
         </div>
       )}
 
-      <button className="primaryAction big ovStart" onClick={onStart}>
-        <Play size={22} /> Training starten
-      </button>
+      <div className="ovSectionHead">
+        <div>
+          <span className="ovSectionKicker">DEIN FAHRPLAN</span>
+          <h3>Heute auf dem Plan <small>{steps.length}</small></h3>
+        </div>
+        <span className="ovSectionHint">Antippen für Details</span>
+      </div>
 
       <ol className="ovList">
         {steps.map((step, i) => {
           const last = isLoggable(step) ? lastEntry(log, owner, step.name) : null
           const top = last ? Math.max(...last.sets.map((s) => s.w)) : 0
+          const ss = supersetLabel(steps, i)
           return (
             <li key={`${step.name}-${i}`}>
-              <button onClick={() => onOpenExercise(i)}>
+              <button onClick={() => onOpenExercise(i)} aria-label={`${step.name}: Anleitung und letzte Ergebnisse ansehen`}>
+                <span className="ovStepNumber">{String(i + 1).padStart(2, '0')}</span>
                 <Thumb step={step} imagePerson={imagePerson} />
                 <span className="ovCopy">
-                  <strong>{step.name}{(() => { const ss = supersetLabel(steps, i); return ss ? <em className="ssTag" title="Supersatz">{ss.letter}{ss.pos}</em> : null })()}</strong>
-                  <small>{step.reps}{last ? ` · zuletzt ${top > 0 ? `${String(top).replace('.', ',')} kg` : `${Math.max(...last.sets.map((s) => s.r))} Wdh.`}` : ''}</small>
+                  <span className="ovType">{categoryOf(step.type)}</span>
+                  <strong>{step.name}{ss ? <em className="ssTag" title="Supersatz">{ss.letter}{ss.pos}</em> : null}</strong>
+                  <small>{step.reps}{last ? ` · Zuletzt ${top > 0 ? `${String(top).replace('.', ',')} kg` : `${Math.max(...last.sets.map((s) => s.r))} Wdh.`}` : ''}</small>
                 </span>
+                <ChevronRight className="ovArrow" size={20} aria-hidden="true" />
               </button>
             </li>
           )
         })}
       </ol>
-      {strength > 0 && <p className="ovFoot">Bei {strength} Kraftübungen trägst du Gewicht und Wiederholungen ein – die App schlägt dir dann vor, wann du steigern kannst.</p>}
+      {strength > 0 && <p className="ovFoot">Deine Gewichte und Wiederholungen bleiben gespeichert. FitFlow zeigt dir deine bisherigen Leistungen beim nächsten Training.</p>}
     </div>
   )
 }
