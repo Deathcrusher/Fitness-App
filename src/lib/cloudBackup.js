@@ -135,15 +135,15 @@ export function collectFitflowData() {
 }
 
 async function cloudSnapshots(auth) {
-  const rows = await api('/rest/v1/fitflow_sync_snapshots?select=id,data&order=id.desc&limit=5', { token: auth.access_token })
+  const rows = await api('/rest/v1/fitflow_sync_snapshots?select=id,data&order=id.desc&limit=1', { token: auth.access_token })
   if (rows?.length) {
-    let data = {}
-    for (const row of [...rows].reverse()) {
-      if (row.data?.app === 'FitFlow' && row.data?.data && typeof row.data.data === 'object') {
-        data = mergeFitflowData(row.data.data, data)
-      }
+    // Each snapshot is complete. Never re-add intentionally corrected/removed entries
+    // from older revisions, which remain available as immutable backups.
+    const latest = rows[0]
+    if (latest.data?.app !== 'FitFlow' || !latest.data?.data || typeof latest.data.data !== 'object') {
+      throw new Error('Ungültiger Cloud-Datenstand; automatischer Upload wurde gestoppt.')
     }
-    return { id: rows[0].id, data }
+    return { id: latest.id, data: latest.data.data }
   }
   // Support the existing one-time backup until the first automatic revision exists.
   const initial = await api('/rest/v1/fitflow_initial_backups?select=data&limit=1', { token: auth.access_token })
