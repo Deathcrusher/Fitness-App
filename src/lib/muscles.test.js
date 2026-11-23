@@ -13,6 +13,16 @@ describe('musclesOf', () => {
     }
     expect(logMusclesOn(log, 'rene', '2026-11-22').forearms).toBe(4)
   })
+  it('Wadenheben und rumänisches Kreuzheben treffen gezielt die fehlenden Muskeln', () => {
+    expect(musclesOf({ name: 'Wadenheben stehend', type: 'lower' })).toEqual({ calves: 1 })
+    expect(musclesOf({ name: 'Rumänisches Kreuzheben mit Kurzhanteln', type: 'lower' })).toMatchObject({ hamstrings: 1, glutes: 0.75 })
+    const map = logMusclesOn({
+      'rene::Wadenheben stehend': [{date:'2026-11-23',sets:[{w:0,r:15},{w:0,r:15}]}],
+      'rene::Rumänisches Kreuzheben mit Kurzhanteln': [{date:'2026-11-23',sets:[{w:10,r:10},{w:10,r:10}]}],
+    }, 'rene', '2026-11-23')
+    expect(map.calves).toBe(2)
+    expect(map.hamstrings).toBe(2)
+  })
   it('Aufwärmen zählt nicht', () => expect(musclesOf({ name: 'Kniebeugen', type: 'warmup' })).toEqual({}))
   it('unbekannte Kraftübung nach Typ', () => expect(musclesOf({ name: 'Irgendwas', type: 'core' }).abs).toBe(1))
 })

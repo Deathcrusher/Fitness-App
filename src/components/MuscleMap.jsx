@@ -46,7 +46,6 @@ function Body({ side, levelOf, selected, onSelect }) {
         <path d={BASE} />
         <path d="M36 118 Q60 132 84 118 L84 136 Q60 146 36 136 Z" />
         {ell(20, 129, 5, 6)}
-        {side === 'front' ? ell(48, 218, 7, 24) : null}
         {ell(46, 245, 8, 4)}
       </Neutral>
       {part('shoulders', ell(33, 52, 10, 9))}
@@ -63,6 +62,7 @@ function Body({ side, levelOf, selected, onSelect }) {
           </g>
           {part('obliques', pair('M39 76 L46 78 L46 116 L38 112 Q36 94 39 76 Z'))}
           {part('quads', ell(49, 165, 11, 30, 4))}
+          {part('calves', ell(48, 218, 7, 24))}
         </>
       ) : (
         <>
@@ -72,7 +72,7 @@ function Body({ side, levelOf, selected, onSelect }) {
           {part('triceps', ell(27, 78, 7, 14, 10))}
           {part('glutes', ell(50, 134, 11, 12))}
           {part('hamstrings', ell(49, 172, 10, 24, 4))}
-          <Neutral>{ell(48, 220, 8, 22)}</Neutral>
+          {part('calves', ell(48, 220, 8, 22))}
         </>
       )}
     </g>

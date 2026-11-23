@@ -58,6 +58,20 @@ export const MOVES = {
       k(S({ hip: [141, 142], lean: 4, fN: A(180, Y), fF: A(112, 175), faF: 42, hN: R(3, 52), hF: R(-1, 52) }), 1.2, 0.25, 'Hoch · ausatmen'),
     ],
   },
+  calfRaise: {
+    view: 'side', work: ['shin'],
+    keys: [
+      k(S({ hip: [150, 105], fN: A(154, Y), fF: A(147, Y) }), 1.2, 0.25, 'Fersen langsam heben'),
+      k(S({ hip: [150, 98], fN: A(154, Y - 7), fF: A(147, Y - 7) }), 1.3, 0.4, 'Oben halten · kontrolliert senken'),
+    ],
+  },
+  romanianDeadlift: {
+    view: 'side', work: ['thigh', 'glute'], bell: 'end',
+    keys: [
+      k(S({ hip: [150, 105], hN: R(4, 51), hF: R(1, 51) }), 1.4, 0.2, 'Po nach hinten · Rücken neutral'),
+      k(S({ hip: [139, 116], lean: 55, head: -12, hN: R(8, 54), hF: R(5, 53) }), 1.6, 0.35, 'Mit der Hüfte aufrichten'),
+    ],
+  },
   wallSit: {
     view: 'side', work: ['thigh'], props: { wall: 104 },
     keys: [
@@ -109,6 +123,20 @@ export const MOVES = {
     keys: [
       k(S({ hN: R(4, 51), hF: R(0, 51) }), 1.1, 0.35, 'Hoch · ausatmen'),
       k(S({ hN: R(16, 5), hF: R(13, 7) }), 1.8, 0.3, 'Runter · einatmen'),
+    ],
+  },
+  reverseCurl: {
+    view: 'side', work: ['fore', 'upper'], bell: 'end', poles: { elbow: [-1, 0.35] },
+    keys: [
+      k(S({ hN: R(4, 51), hF: R(0, 51) }), 1.2, 0.3, 'Obergriff · kontrolliert anheben'),
+      k(S({ hN: R(15, 6), hF: R(12, 7) }), 1.7, 0.3, 'Langsam senken'),
+    ],
+  },
+  wristCurl: {
+    view: 'side', work: ['fore'], bell: 'end',
+    keys: [
+      k(S({ hN: R(18, 28), hF: R(15, 30) }), 1.1, 0.35, 'Unterarme abstützen · Handgelenke beugen'),
+      k(S({ hN: R(18, 33), hF: R(15, 35) }), 1.7, 0.4, 'Langsam zurück'),
     ],
   },
   tricepsOverhead: {
@@ -315,6 +343,11 @@ const RULES = [
   [/einarmig.*rudern/i, 'rowOneArm'],
   [/rudern|row/i, 'row'],
   [/hammer/i, 'hammer'],
+  // Specific movements must precede generic /curl/ rules.
+  [/reverse[ -]?curls?/i, 'reverseCurl'],
+  [/wrist[ -]?curls?|handgelenks?curls?/i, 'wristCurl'],
+  [/wadenheben|calf[ -]?raise/i, 'calfRaise'],
+  [/rumänische[snm]? kreuzheben|romanian deadlift|\\brdl\\b/i, 'romanianDeadlift'],
   [/bizeps|curl/i, 'curl'],
   [/brustdrück|floor press/i, 'floorPress'],
   [/trizeps/i, 'tricepsOverhead'],

@@ -2,7 +2,7 @@ import { moveFor } from './figure/moves'
 import { parseSets, timedSeconds } from './plans'
 import { baseName } from './logStore'
 
-/* Muskelgruppen für die Heatmap. Waden fehlen bewusst – keine Übung trainiert sie gezielt. */
+/* Muskelgruppen für die Heatmap, inklusive direktem Wadentraining. */
 export const MUSCLES = {
   chest: 'Brust',
   shoulders: 'Schultern',
@@ -16,6 +16,7 @@ export const MUSCLES = {
   glutes: 'Po',
   quads: 'Oberschenkel vorn',
   hamstrings: 'Oberschenkel hinten',
+  calves: 'Waden',
 }
 
 /* Hauptmuskel = 1 Satz, Nebenmuskeln anteilig */
@@ -32,6 +33,8 @@ const MOVE_MUSCLES = {
   hammer: { biceps: 1, forearms: 1 },
   reverseCurl: { forearms: 1, biceps: 0.35 },
   wristCurl: { forearms: 1 },
+  calfRaise: { calves: 1 },
+  romanianDeadlift: { hamstrings: 1, glutes: 0.75, lowerback: 0.25 },
   tricepsOverhead: { triceps: 1 },
   press: { shoulders: 1, triceps: 0.5 },
   lateral: { shoulders: 1 },
@@ -60,6 +63,8 @@ export function musclesOf(step) {
   const name = String(step.name || '')
   if (/reverse[ -]?curls?|reverse[ -]?curlen/i.test(name)) return MOVE_MUSCLES.reverseCurl
   if (/wrist[ -]?curls?|handgelenks?curls?|unterarmcurls?/i.test(name)) return MOVE_MUSCLES.wristCurl
+  if (/wadenheben|calf[ -]?raise/i.test(name)) return MOVE_MUSCLES.calfRaise
+  if (/rumänische[snm]? kreuzheben|romanian deadlift|\\brdl\\b/i.test(name)) return MOVE_MUSCLES.romanianDeadlift
   const key = moveFor(step)
   if (key && MOVE_MUSCLES[key]) return MOVE_MUSCLES[key]
   if (key) return {}
