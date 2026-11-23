@@ -61,8 +61,9 @@ export const MOVES = {
   calfRaise: {
     view: 'side', work: ['shin'],
     keys: [
-      k(S({ hip: [150, 105], fN: A(154, Y), fF: A(147, Y) }), 1.2, 0.25, 'Fersen langsam heben'),
-      k(S({ hip: [150, 98], fN: A(154, Y - 7), fF: A(147, Y - 7) }), 1.3, 0.4, 'Oben halten · kontrolliert senken'),
+      // Keep the toes on the ground while the ankles/heels travel upward.
+      k(S({ hip: [150, 105], fN: A(154, Y), fF: A(147, Y), faN: 22, faF: 22 }), 1.25, 0.25, 'Fersen langsam heben'),
+      k(S({ hip: [150, 98], fN: A(154, Y - 7), fF: A(147, Y - 7), faN: 65, faF: 65 }), 1.35, 0.4, 'Oben kurz halten · langsam absenken'),
     ],
   },
   romanianDeadlift: {
