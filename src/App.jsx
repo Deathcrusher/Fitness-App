@@ -69,6 +69,8 @@ import BrandMark from './components/BrandMark'
 import TimerRing from './components/TimerRing'
 import FinishSummary from './components/FinishSummary'
 import SessionMedia from './components/SessionMedia'
+import CloudSyncIndicator from './components/CloudSyncIndicator'
+import ExerciseTechnique from './components/ExerciseTechnique'
 import ExerciseList from './components/ExerciseList'
 import ProgramPicker from './components/ProgramPicker'
 import { nextDueDay } from './lib/schedule'
@@ -788,8 +790,9 @@ export default function App() {
   return (
     <main className={`app ${plan.accent} withTabbar`}>
       <nav className="topnav" aria-label="Hauptnavigation">
-        <span className="brand"><BrandMark /> FitFlow</span>
+        <span className="brand"><BrandMark /> <span>Fit<span className="ffBrandEmphasis">Flow</span></span><span className="ffBrandStudio">STUDIO</span></span>
         <div className="topActions">
+          <CloudSyncIndicator onOpen={() => setSettingsOpen(true)} />
           <button className="themeToggle" onClick={() => setSettingsOpen(true)} aria-label="Einstellungen" title="Einstellungen">
             <Settings size={19} />
           </button>
@@ -798,7 +801,7 @@ export default function App() {
 
       {view === 'train' ? (
         <>
-          <ProgramPicker
+          {tab === 'training' && <ProgramPicker
             plan={plan}
             person={person}
             owner={currentOwner}
@@ -809,7 +812,12 @@ export default function App() {
             onPerson={setPerson}
             onNewProgram={createProgram}
             onDay={selectDay}
-          />
+          />}
+          {tab !== 'training' && <header className="ffSubPageHead">
+            <span className="ffPageEyebrow"><span className="ffEyebrowDot" /> FITFLOW / STUDIO</span>
+            <h1>{tab === 'fortschritt' ? 'Dein Fortschritt.' : tab === 'uebungen' ? 'Alle Übungen.' : 'Dein Timer.'}</h1>
+            <p>{tab === 'fortschritt' ? 'Jede Wiederholung zählt. Hier siehst du deine Entwicklung.' : tab === 'uebungen' ? 'Dein Trainingsablauf auf einen Blick.' : 'Konzentrier dich auf deinen Rhythmus.'}</p>
+          </header>}
 
           {tab === 'training' && (
           <section className="dashboard singleCol">
@@ -931,6 +939,7 @@ export default function App() {
                           : 'Atmen, kurz trinken und bereit machen.'
                       : currentStep.detail}
                   </p>
+                  {phase === 'work' && <ExerciseTechnique step={currentStep} compact />}
 
                   {phase === 'work' && (stepVideo || plan.builtin || loggable) && (
                     <div className="videoActions">
