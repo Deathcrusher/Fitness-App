@@ -3,7 +3,8 @@
  * - Build-Dateien mit Hash (JS, CSS, Schrift): Cache zuerst, ändern sich nie
  * - Übungsbilder: Cache zuerst, bleiben über Updates erhalten (Version steckt in ?v=)
  */
-const CACHE = 'fitflow-v220'
+// Bump when releasing a visible UI update; old CacheStorage entries must not hide new HTML/CSS.
+const CACHE = 'fitflow-v230-studio'
 const MEDIA = 'fitflow-media-v1'
 const MEDIA_LIMIT = 200
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png', '/brand-mark.svg']
@@ -87,18 +88,23 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const copy = response.clone()
-            caches.open(CACHE).then((cache) => cache.put(request, copy))
-          }
-          return response
-        })
-        .catch(() => cached)
-      return cached || network
-    }),
-  )
+  // Non-fingerprinted resources must be network-first, otherwise an old CSS/JS
+  // can remain visible indefinitely in an installed PWA even after a release.
+  // All durable workouts are in localStorage/Supabase, NOT CacheStorage.
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request, { cache: 'no-cache' })
+      if (response && response.ok) {
+        try {
+          const cache = await caches.open(CACHE)
+          await cache.put(request, response.clone())
+        } catch {
+          /* A cache write must never block a live response. */
+        }
+      }
+      return response
+    } catch {
+      return (await caches.match(request)) || Response.error()
+    }
+  })())
 })
