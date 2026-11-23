@@ -30,6 +30,8 @@ const MOVE_MUSCLES = {
   rowOneArm: { back: 1, biceps: 0.5, shoulders: 0.25 },
   curl: { biceps: 1, forearms: 0.5 },
   hammer: { biceps: 1, forearms: 1 },
+  reverseCurl: { forearms: 1, biceps: 0.35 },
+  wristCurl: { forearms: 1 },
   tricepsOverhead: { triceps: 1 },
   press: { shoulders: 1, triceps: 0.5 },
   lateral: { shoulders: 1 },
@@ -54,6 +56,10 @@ export function musclesOf(step) {
   if (!step) return {}
   const type = step.type
   if (type && !['lower', 'upper', 'core'].includes(type)) return {}
+  // Match forearm-specific variants BEFORE the generic /curl/ rule.
+  const name = String(step.name || '')
+  if (/reverse[ -]?curls?|reverse[ -]?curlen/i.test(name)) return MOVE_MUSCLES.reverseCurl
+  if (/wrist[ -]?curls?|handgelenks?curls?|unterarmcurls?/i.test(name)) return MOVE_MUSCLES.wristCurl
   const key = moveFor(step)
   if (key && MOVE_MUSCLES[key]) return MOVE_MUSCLES[key]
   if (key) return {}
