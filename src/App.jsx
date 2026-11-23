@@ -256,7 +256,7 @@ export default function App() {
     ? draft
     : { key: draftKey, ...draftFor({ log, owner: currentOwner, step: currentStep, setIndex, today, sessionSets: sessionLog[stepIndex] }) }
   const sessionVolume = Object.values(sessionLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
-  const weekCount = weekCountOf(history)
+  const weekCount = weekCountOf(history.filter((entry) => ownerOfEntry(entry, customPlans) === currentOwner))
   const dueDay = nextDueDay(history, person, plan.days.length)
 
   // Kurzbefehle vom Homescreen: Parameter nach dem Start wieder aus der Adresse entfernen
