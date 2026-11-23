@@ -143,6 +143,7 @@ export function loadHistory() {
 export function persist(key, value) {
   try {
     localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value))
+    window.dispatchEvent(new Event('fitflow-local-change'))
   } catch {
     /* Speicher voll oder gesperrt */
   }
