@@ -331,6 +331,8 @@ export const EXERCISE_LIBRARY = [
   { type: 'warmup', name: 'Seilspringen (ohne Seil)', reps: '60 Sek', detail: 'Leicht auf den Ballen, Rhythmus gleichmäßig.', equip: 'bw' },
 
   { type: 'lower', name: 'Kniebeugen', reps: '3 x 15', detail: 'Brust aufrecht, Knie leicht nach außen, kontrolliert tief.', equip: 'both' },
+  { type: 'lower', name: 'Wadenheben stehend', reps: '2 x 15-20', detail: 'Fersen langsam heben und senken, oben kurz halten. Optional mit Hanteln.', equip: 'both' },
+  { type: 'lower', name: 'Rumänisches Kreuzheben mit Kurzhanteln', reps: '2 x 10', detail: 'Po zurück, Knie leicht gebeugt, Rücken neutral, leicht starten.', equip: 'db' },
   { type: 'lower', name: 'Ausfallschritte', reps: '3 x 12 je Bein', detail: 'Pro Bein sauber arbeiten, Oberkörper ruhig.', equip: 'both' },
   { type: 'lower', name: 'Glute Bridge', reps: '3 x 15', detail: 'Po oben kurz anspannen, langsam absenken.', equip: 'bw' },
   { type: 'lower', name: 'Wandsitz', reps: '30 Sek', detail: 'Rücken flach an die Wand, Oberschenkel waagerecht.', equip: 'bw' },
@@ -340,6 +342,8 @@ export const EXERCISE_LIBRARY = [
   { type: 'upper', name: 'Rudern', reps: '3 x 12', detail: 'Rücken gerade, Schulterblätter zusammenführen.', equip: 'db' },
   { type: 'upper', name: 'Schulterdrücken', reps: '3 x 12', detail: 'Bauch fest, kontrolliert nach oben drücken.', equip: 'db' },
   { type: 'upper', name: 'Bizeps-Curls', reps: '2 x 12', detail: 'Ellbogen ruhig, langsam senken.', equip: 'db' },
+  { type: 'upper', name: 'Wrist Curls', reps: '2 x 12-15', detail: 'Unterarme abstützen und Handgelenke langsam bewegen.', equip: 'db' },
+  { type: 'upper', name: 'Reverse Curls', reps: '2 x 8-12', detail: 'Obergriff, Handgelenke stabil und ohne Schwung curlen.', equip: 'db' },
   { type: 'upper', name: 'Trizepsdrücken', reps: '2 x 12', detail: 'Ellbogen nah am Körper, langsam führen.', equip: 'both' },
   { type: 'upper', name: 'Seitheben', reps: '3 x 15', detail: 'Leichtes Gewicht, ohne Schwung.', equip: 'db' },
   { type: 'upper', name: 'Brustdrücken am Boden', reps: '3 x 12', detail: 'Hanteln kontrolliert nach oben drücken.', equip: 'db' },
