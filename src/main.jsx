@@ -7,6 +7,7 @@ import { bootstrapCloudSync, startAutomaticCloudSync } from './lib/cloudBackup'
 import '@fontsource-variable/archivo/wdth.css'
 import './styles.css'
 import './designRefresh.css'
+import './motionStudio.css'
 
 applyPlanFixes()
 
