@@ -6,6 +6,7 @@ import { applyPlanFixes, repairMondayPlankSets } from './lib/planFixes'
 import { bootstrapCloudSync, startAutomaticCloudSync } from './lib/cloudBackup'
 import '@fontsource-variable/archivo/wdth.css'
 import './styles.css'
+import './designRefresh.css'
 
 applyPlanFixes()
 
