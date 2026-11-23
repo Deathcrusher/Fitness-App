@@ -99,6 +99,11 @@ export default function MuscleMap({ history, log, owner, ownerName, ownerOf }) {
   const missing = any ? rows.filter((x) => x.v < 3).map((x) => MUSCLES[x.m]) : []
   const max = Math.max(10, ...rows.map((x) => x.v))
   const sel = selected && { name: MUSCLES[selected], v: perWeek(selected) }
+  const fromDate = new Date()
+  fromDate.setDate(fromDate.getDate() - r.days + 1)
+  const fromKey = dateKey(fromDate)
+  const currentSessions = history.filter(entry => entry.date >= fromKey && ownerOf(entry) === owner)
+  const partialSessions = currentSessions.filter(entry => entry.partial)
 
   return (
     <article className="muscleCard">
@@ -113,6 +118,10 @@ export default function MuscleMap({ history, log, owner, ownerName, ownerOf }) {
           <button key={key} role="tab" aria-selected={range === key} className={range === key ? 'active' : ''} onClick={() => setRange(key)}>{item.label}</button>
         ))}
       </div>
+
+      {partialSessions.length > 0 && (
+        <p className="mmPartialNote">Hinweis: {partialSessions.length === 1 ? 'Ein nachgetragenes Training ist' : `${partialSessions.length} nachgetragene Trainings sind`} nur teilweise dokumentiert. Die Heatmap zählt nur eindeutig erfasste Sätze und kann die tatsächliche Belastung deshalb unterschätzen.</p>
+      )}
 
       <div className="muscleFigures">
         <figure>
@@ -133,6 +142,9 @@ export default function MuscleMap({ history, log, owner, ownerName, ownerOf }) {
         <span>0</span>{[0, 1, 2, 3, 4].map((l) => <i key={l} className={`hl${l}`} />)}<span>10+ Sätze/Woche</span>
       </div>
 
+      {currentSessions.some(entry => entry.programId === 'chat-arm-special-20261122') && (
+        <p className="mmWorkoutNote"><strong>22.11. · Arme Spezial:</strong> Nachtrag vorhanden. Unterarme, Trizeps und Brust werden anhand der bestätigten Sätze berücksichtigt.</p>
+      )}
       {any ? (
         <>
           <ul className="muscleList">
