@@ -28,6 +28,15 @@ describe('Animationen', () => {
     })
   }
 
+  it('Wadenheben: Zehenspitzen bleiben am Boden und Fersen heben sich', () => {
+    const def = MOVES.calfRaise
+    const atStart = solve(sample(def, 0).pose, def)
+    const atPeak = solve(sample(def, def.keys[0].hold + def.keys[0].dur).pose, def)
+    expect(Math.abs(atStart.toN[1] - atPeak.toN[1])).toBeLessThan(2)
+    expect(atPeak.anN[1]).toBeLessThan(atStart.anN[1] - 5)
+    expect(atPeak.toN[1]).toBeGreaterThan(atPeak.anN[1])
+  })
+
   it('Kniebeuge: Füße bleiben am Boden', () => {
     const def = MOVES.squat
     for (let i = 0; i < 20; i++) {
