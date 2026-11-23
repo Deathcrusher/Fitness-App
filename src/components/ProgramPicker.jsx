@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronDown, ChevronUp, Dumbbell, Plus, Sparkles, Check } from 'lucide-react'
+import { ChevronDown, ChevronUp, Dumbbell, Plus, Sparkles, Check, MoveUpRight, CalendarDays } from 'lucide-react'
 
-// Primary training is always visible. Optional and custom workouts never crowd out the weekly plan.
+// The program and day selectors only appear on the actual workout screen.
 export default function ProgramPicker({ plan, person, owner, builtinEntries, customEntries, dayIndex, dueDay, onPerson, onNewProgram, onDay }) {
   const specialEntries = customEntries.filter(([key, item]) =>
     key === 'chat-arm-special-20261122' || item.name === 'Arme Spezial')
@@ -10,16 +10,22 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
 
   useEffect(() => {
     if (otherEntries.some(([key]) => key === person)) setShowOthers(true)
-  }, [person]) // Keep the expanded section visible when a custom program is selected.
+  }, [person])
 
   return (
     <>
-      <header className="pageHead">
-        <h1>Dein Training</h1>
-        <p>{plan.name} · {plan.title}</p>
+      <header className="pageHead ffPageHead">
+        <div className="ffPageEyebrow"><span className="ffEyebrowDot" /> FITFLOW / TRAINING STUDIO</div>
+        <div className="ffPageTitleRow">
+          <div>
+            <h1>Werde <span>stärker.</span></h1>
+            <p>Dein Training. Dein Tempo. Dein Fortschritt.</p>
+          </div>
+          <span className="ffPageCorner" aria-hidden="true"><MoveUpRight size={29} /></span>
+        </div>
       </header>
 
-      <div className="segmented personSeg" role="tablist" aria-label="Person wählen">
+      <div className="segmented personSeg ffPersonSeg" role="tablist" aria-label="Person wählen">
         {builtinEntries.map(([key, item]) => (
           <button key={key} role="tab" aria-selected={owner === key} className={owner === key ? 'active' : ''} onClick={() => onPerson(key)}>
             {item.name}
@@ -29,14 +35,14 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
 
       <section className="ffProgramPicker" aria-label="Trainingsprogramm auswählen">
         <div className="ffProgramHeading">
-          <strong>Trainingsprogramm</strong>
-          <span>Dein Standardplan zuerst, Extras bei Bedarf</span>
+          <strong>DEINE PROGRAMME</strong>
+          <span>Wähle, was du heute trainierst</span>
         </div>
         <div className="ffProgramChoices">
           <button type="button" className={`ffProgramOption${plan.builtin ? ' active' : ''}`}
             onClick={() => onPerson(owner)} aria-pressed={Boolean(plan.builtin)}>
             <span className="ffProgramIcon"><Dumbbell size={19} /></span>
-            <span className="ffProgramText"><strong>Grundtraining</strong><small>3 Tage · Ganzkörper & Kraft</small></span>
+            <span className="ffProgramText"><strong>Grundtraining</strong><small>Dein 3-Tage-Ganzkörperplan</small></span>
             {plan.builtin && <Check className="ffProgramCheck" size={19} />}
           </button>
           {specialEntries.map(([key, item]) => (
@@ -69,11 +75,12 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
         </div>
       </section>
 
+      <div className="ffDayHeader"><span><CalendarDays size={16} /> DEINE TRAININGSTAGE</span><small>{plan.days.length} {plan.days.length === 1 ? 'Einheit' : 'Einheiten'}</small></div>
       <nav className="dayTabsRail" aria-label="Trainingstag wählen">
         {plan.days.map((item, index) => (
           <button key={`${item.title}-${index}`} className={dayIndex === index ? 'active' : ''}
             onClick={() => onDay(index)} aria-current={dayIndex === index ? 'page' : undefined}>
-            <strong>{item.title}{plan.builtin && dueDay === index && <em className="dueBadge">Heute dran</em>}</strong>
+            <strong>{item.title}{plan.builtin && dueDay === index && <em className="dueBadge">Als Nächstes</em>}</strong>
             <span>{item.focus}</span>
           </button>
         ))}
