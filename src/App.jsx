@@ -471,6 +471,7 @@ export default function App() {
       programId: person,
       owner: currentOwner,
       programName: plan.name,
+      planVersion: plan.version || null,
       dayIndex,
       dayName: day.title,
       durationSec: Math.round(durationMs / 1000),
