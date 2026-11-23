@@ -13,7 +13,7 @@ function mergeHistory(a, b) {
     if (!e || typeof e !== 'object') continue
     const key = e.key || [e.date, e.programId, e.dayIndex].join(':')
     const prev = rows.get(key)
-    if (!prev || String(e.completedAt || '') >= String(prev.completedAt || '')) rows.set(key, e)
+    if (!prev || String(e.updatedAt || e.completedAt || '') >= String(prev.updatedAt || prev.completedAt || '')) rows.set(key, e)
   }
   return [...rows.values()].sort((x, y) =>
     String(x.date || '').localeCompare(String(y.date || '')) ||
