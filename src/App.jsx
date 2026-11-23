@@ -790,7 +790,7 @@ export default function App() {
   return (
     <main className={`app ${plan.accent} withTabbar`}>
       <nav className="topnav" aria-label="Hauptnavigation">
-        <span className="brand"><BrandMark /> <span>Fit<span className="ffBrandEmphasis">Flow</span></span><span className="ffBrandStudio">STUDIO</span></span>
+        <span className="brand"><BrandMark /> <span>Fit<span className="ffBrandEmphasis">Flow</span></span><span className="ffBrandStudio">{APP_VERSION}</span></span>
         <div className="topActions">
           <CloudSyncIndicator onOpen={() => setSettingsOpen(true)} />
           <button className="themeToggle" onClick={() => setSettingsOpen(true)} aria-label="Einstellungen" title="Einstellungen">
@@ -1222,7 +1222,7 @@ export default function App() {
 
       {updateInfo && (
         <div className="updateBanner" role="status">
-          <span>{updating ? 'Update wird installiert …' : 'Neue Version verfügbar.'}</span>
+          <span>{updating ? 'Update wird installiert …' : 'Neues FitFlow-Update verfügbar – bitte installieren.'}</span>
           <button className="primaryAction" onClick={applyUpdate} disabled={updating}>
             {updating ? 'Aktualisiere …' : 'Jetzt aktualisieren'}
           </button>
