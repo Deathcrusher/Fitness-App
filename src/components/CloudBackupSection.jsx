@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { CloudUpload, LogOut } from 'lucide-react'
-import { cloudSignIn, cloudSignOut, cloudSignUp, currentCloudUser, initialCloudBackup, cloudStatus, syncFitflowNow } from '../lib/cloudBackup'
+import { cloudSignIn, cloudSignOut, cloudSignUp, currentCloudUser, initialCloudBackup, cloudStatus, syncFitflowNow, bootstrapCloudSync } from '../lib/cloudBackup'
 
 export default function CloudBackupSection() {
   const [user, setUser] = useState(currentCloudUser)
@@ -28,7 +28,9 @@ export default function CloudBackupSection() {
         const loggedIn = await cloudSignIn(email.trim(), password)
         setUser(loggedIn)
         setPassword('')
-        setMessage('Angemeldet. Deine FitFlow-Daten werden automatisch gesichert, sobald du online bist. Beim nächsten Öffnen werden Cloud-Daten mit den lokalen Daten zusammengeführt.')
+        setMessage('Angemeldet. Deine Daten werden mit deinem Cloud-Backup abgeglichen.')
+        await bootstrapCloudSync()
+        window.location.reload()
       } else if (action === 'sync') {
         await syncFitflowNow()
         setMessage('Cloud-Sicherung überprüft. Neue Einträge werden automatisch gesichert.')
