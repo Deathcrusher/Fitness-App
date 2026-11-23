@@ -8,7 +8,7 @@ describe('Motion Studio', () => {
     const html = renderToStaticMarkup(<FigureFrame moveKey="calfRaise" time={0.5} label="Wadenheben" />)
     expect(html).toContain('MOVEMENT / STUDIO')
     expect(html).toContain('WADEN')
-    expect(html).toContain('Bewegungsablauf')
+    expect(html).toContain('BEWEGUNGSABLAUF')
     expect(html).toContain('Fortschritt des Animationszyklus')
     expect(html).toContain('ffMotionGhost')
     expect(html).toContain('ffFigJoints')
