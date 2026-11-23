@@ -132,7 +132,7 @@ export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, o
 
         <section className="setSection">
           <h4>Daten sichern</h4>
-          <p className="setHint">Alles liegt nur auf diesem Gerät. Sichere ein Backup, um auf ein neues Handy umzuziehen oder nichts zu verlieren.</p>
+          <p className="setHint">FitFlow speichert weiterhin lokal. Wenn du angemeldet bist, werden neue Daten zusätzlich in deiner privaten Cloud gesichert. Mit diesem JSON-Backup hast du eine unabhängige Sicherheitskopie.</p>
           <div className="setActions">
             <button className="ghostBtn" onClick={() => exportData(version)}><Download size={17} /> Backup speichern</button>
             <button className="ghostBtn" onClick={() => fileRef.current?.click()}><Upload size={17} /> Backup laden</button>
