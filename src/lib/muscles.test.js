@@ -4,6 +4,15 @@ import { heatLevel, logMusclesOn, muscleSetsFor, musclesOf, workoutMuscles } fro
 describe('musclesOf', () => {
   it('Kniebeugen treffen Beine und Po', () => expect(musclesOf({ name: 'Kniebeugen', type: 'lower' })).toMatchObject({ quads: 1, glutes: 1 }))
   it('Rudern trifft den Rücken', () => expect(musclesOf({ name: 'Rudern mit Hanteln', type: 'upper' }).back).toBe(1))
+  it('Reverse-Curls und Wrist-Curls färben die Unterarme statt nur Bizeps', () => {
+    expect(musclesOf({ name: 'Reverse Curls', type: 'upper' })).toMatchObject({ forearms: 1 })
+    expect(musclesOf({ name: 'Wrist Curls', type: 'upper' })).toEqual({ forearms: 1 })
+    const log = {
+      'rene::Reverse Curls': [{date:'2026-11-22',sets:[{w:10,r:8},{w:10,r:10}]}],
+      'rene::Wrist Curls': [{date:'2026-11-22',sets:[{w:0,r:15},{w:0,r:15}]}],
+    }
+    expect(logMusclesOn(log, 'rene', '2026-11-22').forearms).toBe(4)
+  })
   it('Aufwärmen zählt nicht', () => expect(musclesOf({ name: 'Kniebeugen', type: 'warmup' })).toEqual({}))
   it('unbekannte Kraftübung nach Typ', () => expect(musclesOf({ name: 'Irgendwas', type: 'core' }).abs).toBe(1))
 })
