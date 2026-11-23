@@ -6,23 +6,33 @@ const PUBLIC_KEY = 'sb_publishable_RQvUolij_etM5fUV8_MnDg_x40yft-h'
 const AUTH_KEY = 'ffcloud-auth-v1' // Outside fitflow-* so auth tokens never enter FitFlow JSON exports.
 
 async function api(path, { method = 'GET', token, body, headers = {} } = {}) {
-  const response = await fetch(API_URL + path, {
-    method,
-    headers: {
-      apikey: PUBLIC_KEY,
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  })
-  const payload = await response.json().catch(() => null)
-  if (!response.ok) {
-    const error = new Error(payload?.msg || payload?.error_description || payload?.message || payload?.error || 'Cloud-Anfrage fehlgeschlagen.')
-    error.status = response.status
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
+  try {
+    const response = await fetch(API_URL + path, {
+      method,
+      signal: controller.signal,
+      headers: {
+        apikey: PUBLIC_KEY,
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    })
+    const payload = await response.json().catch(() => null)
+    if (!response.ok) {
+      const error = new Error(payload?.msg || payload?.error_description || payload?.message || payload?.error || 'Cloud-Anfrage fehlgeschlagen.')
+      error.status = response.status
+      throw error
+    }
+    return payload
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('Cloud nicht erreichbar. Deine lokalen Daten bleiben erhalten; wir versuchen es beim nächsten Mal erneut.')
     throw error
+  } finally {
+    clearTimeout(timer)
   }
-  return payload
 }
 
 function storeAuth(session) {
