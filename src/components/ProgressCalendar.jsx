@@ -165,17 +165,18 @@ function RecentList({ history }) {
 }
 
 export default function ProgressCalendar({ history, goal = 3, log = {}, owner, ownerName, ownerOf, children }) {
+  const personalHistory = owner && ownerOf ? history.filter((entry) => ownerOf(entry) === owner) : history
   const today = new Date()
   const todayKey = dateKey(today)
-  const completedDates = new Set(history.map((entry) => entry.date))
+  const completedDates = new Set(personalHistory.map((entry) => entry.date))
   const weekStart = startOfWeek(today)
   const weekEnd = addDays(weekStart, 7)
-  const thisWeek = history.filter((entry) => {
+  const thisWeek = personalHistory.filter((entry) => {
     const value = new Date(`${entry.date}T12:00:00`)
     return value >= weekStart && value < weekEnd
   }).length
 
-  const timed = history.filter((entry) => entry.durationSec)
+  const timed = personalHistory.filter((entry) => entry.durationSec)
   const avgMinutes = timed.length ? Math.round(timed.reduce((n, e) => n + e.durationSec, 0) / timed.length / 60) : 0
 
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -197,7 +198,7 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
       <div className="progressStats">
         <article>
           <Trophy size={18} />
-          <strong>{history.length}</strong>
+          <strong>{personalHistory.length}</strong>
           <span>Gesamt</span>
         </article>
         <article>
@@ -208,7 +209,7 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
         </article>
         <article>
           <Flame size={18} />
-          <strong>{weekStreak(history, today)}</strong>
+          <strong>{weekStreak(personalHistory, today)}</strong>
           <span>Wochen-Serie</span>
         </article>
         <article>
@@ -218,10 +219,10 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
         </article>
       </div>
 
-      {history.length > 0 && <WeekCompare history={history} />}
-      {owner && ownerOf && <MuscleMap history={history} log={log} owner={owner} ownerName={ownerName} ownerOf={ownerOf} />}
+      {personalHistory.length > 0 && <WeekCompare history={personalHistory} />}
+      {owner && ownerOf && <MuscleMap history={personalHistory} log={log} owner={owner} ownerName={ownerName} ownerOf={ownerOf} />}
       {children}
-      {history.length > 0 && <WeeklyChart history={history} today={today} />}
+      {personalHistory.length > 0 && <WeeklyChart history={personalHistory} today={today} />}
 
       <article className="calendarCard">
         <div className="calendarHead">
@@ -250,10 +251,10 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
         </div>
       </article>
 
-      <Achievements history={history} goal={goal} />
-      <RecentList history={history} />
+      <Achievements history={personalHistory} goal={goal} />
+      <RecentList history={personalHistory} />
 
-      {history.length === 0 && (
+      {personalHistory.length === 0 && (
         <p className="progressEmpty">Schließe dein erstes Training ab – dann erscheint hier dein erster Erfolg.</p>
       )}
     </section>
