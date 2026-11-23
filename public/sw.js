@@ -91,15 +91,20 @@ self.addEventListener('fetch', (event) => {
   // Non-fingerprinted resources must be network-first, otherwise an old CSS/JS
   // can remain visible indefinitely in an installed PWA even after a release.
   // All durable workouts are in localStorage/Supabase, NOT CacheStorage.
-  event.respondWith(
-    fetch(request, { cache: 'no-cache' })
-      .then((response) => {
-        if (response && response.ok) {
-          const copy = response.clone()
-          event.waitUntil(caches.open(CACHE).then((cache) => cache.put(request, copy)))
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request, { cache: 'no-cache' })
+      if (response && response.ok) {
+        try {
+          const cache = await caches.open(CACHE)
+          await cache.put(request, response.clone())
+        } catch {
+          /* A cache write must never block a live response. */
         }
-        return response
-      })
-      .catch(() => caches.match(request)),
-  )
+      }
+      return response
+    } catch {
+      return (await caches.match(request)) || Response.error()
+    }
+  })())
 })
