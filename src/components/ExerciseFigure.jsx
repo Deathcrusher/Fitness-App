@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { Gauge, Pause, Play, RotateCcw } from 'lucide-react'
 import { GROUND, LEN, R, A, VB_H, VB_W, cycleLength, rotate, sample, solve } from '../lib/figure/rig'
 import { MOVES, moveFor } from '../lib/figure/moves'
 
@@ -39,21 +40,29 @@ function applyDrive(def, pose, t) {
   return { pose: p, extra }
 }
 
-function useAnimationTime(active) {
+function useAnimationTime(active, rate = 1) {
+  const clock = useRef(0)
   const [time, setTime] = useState(0)
   useEffect(() => {
     if (!active) return undefined
     let raf = 0
-    let start = null
+    let last = null
+    let displayed = null
     const loop = (ts) => {
-      if (start == null) start = ts
-      setTime((ts - start) / 1000)
+      if (last !== null) clock.current += Math.min((ts - last) / 1000, 0.08) * rate
+      last = ts
+      // About 30fps keeps the figure fluid without doing 60 React renders a second.
+      if (displayed == null || ts - displayed >= 33) {
+        setTime(clock.current)
+        displayed = ts
+      }
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [active])
-  return time
+  }, [active, rate])
+  const reset = () => { clock.current = 0; setTime(0) }
+  return { time, reset }
 }
 
 function prefersReducedMotion() {
@@ -67,13 +76,14 @@ function prefersReducedMotion() {
 /* ---------- Zeichnen ---------- */
 const f1 = (n) => n.toFixed(1)
 function Seg({ a, b, w, cls, outline }) {
-  const line = <line x1={f1(a[0])} y1={f1(a[1])} x2={f1(b[0])} y2={f1(b[1])} strokeWidth={w} className={cls} />
-  if (!outline) return line
+  const ends = { x1: f1(a[0]), y1: f1(a[1]), x2: f1(b[0]), y2: f1(b[1]) }
   return (
-    <>
-      <line x1={f1(a[0])} y1={f1(a[1])} x2={f1(b[0])} y2={f1(b[1])} strokeWidth={w + 5} className="figGap" />
-      {line}
-    </>
+    <g className="ffBodySegment">
+      {outline && <line {...ends} strokeWidth={w + 8} className="figGap" />}
+      <line {...ends} strokeWidth={w + 4} className="ffFigContour" />
+      <line {...ends} strokeWidth={w} className={cls} />
+      <line {...ends} strokeWidth={Math.max(1.5, w * 0.17)} className="ffFigReflect" />
+    </g>
   )
 }
 
@@ -219,7 +229,19 @@ function Figure({ def, j, t, extra }) {
   const glute = !front && work.has('glute') && (
     <circle key="glute" cx={f1(j.hip[0] + back[0] * 4 + j.up[0] * 2)} cy={f1(j.hip[1] + back[1] * 4 + j.up[1] * 2)} r={10.5} className="figWorkFill" />
   )
-  const head = <circle key="head" cx={f1(j.head[0])} cy={f1(j.head[1])} r={LEN.headR} className="figHead" />
+  const head = (
+    <g key="head" className="ffMotionHead">
+      <circle cx={f1(j.head[0])} cy={f1(j.head[1])} r={LEN.headR + 2.2} className="ffFigHeadRim" />
+      <circle cx={f1(j.head[0])} cy={f1(j.head[1])} r={LEN.headR} className="figHead" />
+      <circle cx={f1(j.head[0] - 3)} cy={f1(j.head[1] - 3)} r={3.2} className="ffFigHeadShine" />
+    </g>
+  )
+  const joints = (
+    <g className="ffFigJoints">
+      {[j.shN, j.elN, j.knN, j.hip].map((point, index) =>
+        <circle key={index} cx={f1(point[0])} cy={f1(point[1])} r={index === 3 ? 3.8 : 3.2} />)}
+    </g>
+  )
 
   if (front) {
     return (
@@ -232,6 +254,7 @@ function Figure({ def, j, t, extra }) {
         {farArm !== 'F' && arm('F')}
         {farArm !== 'N' && arm('N')}
         {head}
+        {joints}
         {Props({ def, j, t, extra, layer: 'front' })}
       </>
     )
@@ -244,11 +267,30 @@ function Figure({ def, j, t, extra }) {
       {torso}
       {glute}
       {head}
+      {joints}
       {leg('N')}
       {arm('N')}
       {Props({ def, j, t, extra, layer: 'front' })}
     </>
   )
+}
+
+const FIGURE_FOCUS = {
+  calfRaise: 'WADEN', romanianDeadlift: 'BEINRÜCKSEITE', wristCurl: 'UNTERARME',
+  reverseCurl: 'UNTERARME', squat: 'OBERSCHENKEL', lunge: 'BEINE',
+  row: 'RÜCKEN', rowOneArm: 'RÜCKEN', press: 'SCHULTERN',
+  curl: 'BIZEPS', hammer: 'ARME', lateral: 'SCHULTERN',
+  floorPress: 'BRUST', pushup: 'BRUST', plank: 'CORE',
+  sidePlank: 'CORE', bridge: 'PO', tricepsOverhead: 'TRIZEPS',
+}
+function figureFocus(moveKey, def) {
+  if (FIGURE_FOCUS[moveKey]) return FIGURE_FOCUS[moveKey]
+  const work = def.work || []
+  if (work.includes('shin')) return 'UNTERSCHENKEL'
+  if (work.includes('fore')) return 'ARME'
+  if (work.includes('thigh')) return 'BEINE'
+  if (work.includes('torso')) return 'RUMPF'
+  return 'BEWEGUNG'
 }
 
 export function FigureFrame({ moveKey, time, showCue = true, label }) {
@@ -257,16 +299,37 @@ export function FigureFrame({ moveKey, time, showCue = true, label }) {
   const s = sample(def, time)
   const { pose, extra } = applyDrive(def, s.pose, time)
   const j = solve(pose, def, s.lift)
+  const duration = cycleLength(def)
+  const progress = duration ? (((time % duration) + duration) % duration) / duration * 100 : 0
+  const ghostSample = showCue ? sample(def, time + duration * 0.5) : null
+  const ghost = ghostSample ? applyDrive(def, ghostSample.pose, time + duration * 0.5) : null
+  const ghostJ = ghost ? solve(ghost.pose, def, ghostSample.lift) : null
   const lying = def.props?.mat
   const shadowRx = (lying ? 70 : 34) * (1 - Math.min(0.5, s.lift / 24))
   return (
-    <div className="exerciseFigure">
-      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} role="img" aria-label={label}>
+    <div className={`exerciseFigure ffMotionScene${showCue ? ' ffMotionFull' : ' ffMotionThumb'}`}>
+      {showCue && <div className="ffMotionHudTop">
+        <span className="ffMotionEdition"><i /> MOVEMENT / STUDIO</span>
+        <span className="ffMotionFocus">{figureFocus(moveKey, def)}</span>
+      </div>}
+      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} role="img" aria-label={label || `Bewegungsanimation ${moveKey}`}>
+        <g className="ffMotionBlueprint" aria-hidden="true">
+          <circle cx={151} cy={99} r={83} />
+          <circle cx={151} cy={99} r={64} />
+          <path d="M24 99 H278 M151 17 V183" />
+        </g>
         <line x1={14} y1={GROUND + 3} x2={VB_W - 14} y2={GROUND + 3} className="figGround" />
         <ellipse cx={f1(lying ? 150 : j.hip[0])} cy={GROUND + 2} rx={f1(shadowRx)} ry={4} className="figShadow" />
+        {ghostJ && <g className="ffMotionGhost" aria-hidden="true"><Figure def={def} j={ghostJ} t={time + duration * 0.5} extra={ghost.extra} /></g>}
         <Figure def={def} j={j} t={time} extra={extra} />
       </svg>
-      {showCue && s.cue && <span className="figCue" key={s.cue}>{s.cue}</span>}
+      {showCue && <div className="ffMotionBottom">
+        <div className="ffMotionCue"><span className="ffMotionCueDot" /><span key={s.cue || 'moving'}>{s.cue || 'Bewegung kontrolliert ausführen'}</span></div>
+        <div className="ffMotionCycle" role="progressbar" aria-label="Fortschritt des Animationszyklus" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
+          <span style={{ transform: `scaleX(${progress / 100})` }} />
+        </div>
+        <div className="ffMotionCaption"><span>BEWEGUNGSABLAUF</span><span>{def.view === 'front' ? 'FRONTANSICHT' : 'SEITENANSICHT'}</span></div>
+      </div>}
     </div>
   )
 }
@@ -274,11 +337,29 @@ export function FigureFrame({ moveKey, time, showCue = true, label }) {
 export default function ExerciseFigure({ step, label }) {
   const moveKey = moveFor(step)
   const def = moveKey ? MOVES[moveKey] : null
-  const reduce = prefersReducedMotion()
-  const time = useAnimationTime(Boolean(def) && !reduce)
+  const [paused, setPaused] = useState(prefersReducedMotion)
+  const [speed, setSpeed] = useState(1)
+  const { time, reset } = useAnimationTime(Boolean(def) && !paused, speed)
   if (!def) return null
-  const t = reduce ? (def.keys[0].hold || 0) + def.keys[0].dur : time
-  return <FigureFrame moveKey={moveKey} time={t} label={label} />
+  const changeSpeed = () => setSpeed((value) => value === 1 ? 0.75 : value === 0.75 ? 1.25 : 1)
+  return (
+    <div className="ffMotionPlayer">
+      <FigureFrame moveKey={moveKey} time={time} label={label} />
+      <div className="ffMotionControls" role="group" aria-label="Bewegungsanimation steuern">
+        <span className="ffMotionLegend"><i /> Farbig markierte Muskeln sind besonders beteiligt</span>
+        <div className="ffMotionButtons">
+          <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? 'Animation abspielen' : 'Animation pausieren'}>
+            {paused ? <Play size={15} fill="currentColor" /> : <Pause size={15} fill="currentColor" />}
+            <span>{paused ? 'Abspielen' : 'Pause'}</span>
+          </button>
+          <button type="button" onClick={changeSpeed} aria-label={`Animationstempo ändern, derzeit ${speed}fach`}>
+            <Gauge size={15} /> <span>{String(speed).replace('.', ',')}×</span>
+          </button>
+          <button type="button" onClick={reset} aria-label="Animationszyklus zurücksetzen" title="Animation neu starten"><RotateCcw size={16} /></button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export { MOVES, cycleLength }
