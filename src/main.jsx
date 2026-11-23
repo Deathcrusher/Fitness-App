@@ -28,7 +28,7 @@ if (window.location.search.includes('figures')) {
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then((reg) => {
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((reg) => {
       const notify = () => {
         if (navigator.serviceWorker.controller && reg.waiting) {
           window.dispatchEvent(new CustomEvent('sw-update', { detail: { registration: reg } }))
@@ -42,6 +42,8 @@ if ('serviceWorker' in navigator) {
         })
       })
       notify()
+      // Look for the latest PWA release immediately, not only after an hour.
+      reg.update().catch(() => {})
       setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000)
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') reg.update().catch(() => {})
