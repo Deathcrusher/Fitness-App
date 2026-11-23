@@ -155,6 +155,7 @@ export async function bootstrapCloudSync() {
   if (!currentCloudUser()) return
   try {
     const auth = await validAuth()
+    checkAccount(auth)
     const remote = await cloudSnapshots(auth)
     const local = collectFitflowData()
     // Never replace existing data wholesale. Historical lists and exercise logs are unioned.
