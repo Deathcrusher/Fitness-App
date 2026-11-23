@@ -315,6 +315,8 @@ const RULES = [
   [/einarmig.*rudern/i, 'rowOneArm'],
   [/rudern|row/i, 'row'],
   [/hammer/i, 'hammer'],
+  // Avoid showing a misleading normal biceps-curl animation for forearm exercises.
+  [/reverse[ -]?curls?|wrist[ -]?curls?|handgelenks?curls?/i, null],
   [/bizeps|curl/i, 'curl'],
   [/brustdrück|floor press/i, 'floorPress'],
   [/trizeps/i, 'tricepsOverhead'],
