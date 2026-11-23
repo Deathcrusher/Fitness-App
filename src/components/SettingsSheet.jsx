@@ -5,6 +5,7 @@ import { coachSupported, say } from '../lib/coach'
 import { PLATE_CHOICES } from '../lib/storage'
 import { fmtNum } from '../lib/training'
 import ReminderSection from './ReminderSection'
+import CloudBackupSection from './CloudBackupSection'
 
 const BARS = [[0, 'Keine'], [2, 'Kurzhantel 2 kg'], [2.5, 'Kurzhantel 2,5 kg'], [10, 'Langhantel 10 kg'], [20, 'Langhantel 20 kg']]
 
@@ -126,6 +127,8 @@ export default function SettingsSheet({ theme, onTheme, goal, onGoal, voiceOn, o
         )}
 
         {children}
+
+        <CloudBackupSection />
 
         <section className="setSection">
           <h4>Daten sichern</h4>
