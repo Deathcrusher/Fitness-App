@@ -191,7 +191,6 @@ export default function App() {
     return !(Number(st.stepIndex) > 0 || Object.keys(st.doneSteps || {}).length > 0 || st.overview === false)
   })
   const [sheetStep, setSheetStep] = useState(null)
-  const [editOrder,setEditOrder] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [goal, setGoal] = useState(loadGoal)
   const [voiceOn, setVoiceOn] = useState(coachEnabled)
@@ -833,7 +832,7 @@ export default function App() {
   const builtinEntries = Object.entries(builtinPlans)
   const customEntries = Object.entries({ ...customPlans, [ENERGY_ID]: energyPreset }).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
-  const openTab = (key) => { setView('train'); setTab(key); if(key!=='uebungen')setEditOrder(false);window.scrollTo(0,0) }
+  const openTab = (key) => { setView('train'); setTab(key); window.scrollTo(0,0) }
   const openPrograms = () => { if(activeWorkout)return;setBuilderOwner(currentOwner);setView('build');window.scrollTo(0,0) }
   const switchProfile = (key) => { if(!activeWorkout && key!==currentOwner)setPerson(key) }
   const activeNav = view==='build' || ['timer','mehr'].includes(tab) ? 'mehr' : tab
@@ -876,7 +875,7 @@ export default function App() {
             <p>{tab === 'fortschritt' ? 'Jede Wiederholung zählt. Hier siehst du deine Entwicklung.' : tab === 'uebungen' ? 'Dein Trainingsablauf auf einen Blick.' : 'Konzentrier dich auf deinen Rhythmus.'}</p>
           </header>}
 
-          {tab === 'training' && activeWorkout && <div className="ff3ActiveHeader"><span>{plan.builtin?'Grundtraining':plan.name} · {day.title}</span><button onClick={()=>{setEditOrder(true);openTab('uebungen')}}><ListChecks size={17}/> Reihenfolge</button></div>}
+          {tab === 'training' && activeWorkout && <div className="ff3ActiveHeader"><span>{plan.builtin?'Grundtraining':plan.name} · {day.title}</span><button onClick={()=>openTab('uebungen')}><ListChecks size={17}/> Übungen</button></div>}
           {tab === 'training' && (
           <section className="dashboard singleCol">
             {overview && phase !== 'done' ? (
@@ -1132,8 +1131,6 @@ export default function App() {
               activeWorkout={activeWorkout}
               sessionLog={sessionLog}
               onMove={reorderExercise}
-              editing={editOrder}
-              onEditing={setEditOrder}
               onResume={()=>openTab('training')}
             />
           </section>

@@ -347,3 +347,25 @@ html[data-theme="dark"] .ffLiveSession .controls.mainControls.single .doneAction
  .ff3App .bottomnav.ff3Nav{bottom:16px;padding:5px}
 }
 @media(max-width:380px){.ff3App .ff3Nav button span{font-size:9px}.ff3App .ff3Nav button svg{width:20px;height:20px}.ffLiveSession .sessionBody{padding:12px}.ffLiveMediaTabs button{font-size:11px}.ffLiveSession .stepperRow{grid-template-columns:28px minmax(0,1fr) 28px}.ffLiveSession .stepperRow>button{width:28px}}
+
+/* Long-press reorder: normal list until a row is lifted. */
+.ffDragHint{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:12px 0;flex-wrap:wrap}
+.ffDragHint svg{color:var(--accent-strong)}.ffDragHint span{opacity:.8}
+.ffDragList{position:relative;overflow:visible!important}
+.ffDragBlock{position:relative;padding:0!important;border-left:0!important}
+.ffDragBlock.grouped .ffDragInner{border-left:3px solid var(--accent);padding-left:3px}
+.ffDragInner{position:relative;background:var(--surface);transition:transform .16s ease;min-width:0}
+.ffDragBlock.movable,.ffDragBlock.movable .stepMain{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+.ffDragGrip{flex:none;color:var(--muted);opacity:.55}
+.ffDragList.dragging .ffDragInner{pointer-events:none}
+.ffDragList.dragging .ffDragBlock.lifted{background:var(--accent-soft);border-radius:12px;outline:1px dashed var(--accent);outline-offset:-2px}
+.ffDragBlock.lifted .ffDragInner{opacity:0}
+.ffDragGhost{position:fixed;z-index:10000;pointer-events:none;display:grid;align-content:center;background:#f8fbf7;color:#17241d;border:1px solid #70a98b;border-radius:14px;box-shadow:0 12px 30px #0004;transform:scale(1.025);overflow:hidden}
+html[data-theme="dark"] .ffDragGhost{background:#2b382f;color:#f4faf4;border-color:#79bf98}
+.ffDragGhostRow{display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:54px}
+.ffDragGhostRow+ .ffDragGhostRow{border-top:1px solid #8883}
+.ffDragGhostRow div{flex:1;min-width:0}.ffDragGhostRow strong,.ffDragGhostRow small{display:block}.ffDragGhostRow strong{font-size:14px}.ffDragGhostRow small{font-size:12px;opacity:.7;margin-top:3px}
+@media(prefers-reduced-motion:reduce){.ffDragInner{transition:none}}
+
+.ffDragRowIcons{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0}
+.ffDragList .stepCopy{min-width:0}

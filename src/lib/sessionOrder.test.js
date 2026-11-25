@@ -24,3 +24,13 @@ describe('Session-specific exercise ordering',()=>{
  expect(steps.map(s=>s.name)).toEqual(['Warmup','A','B','C','D','E'])
  })
 })
+
+ it('drops a block directly across several other exercises without mutating plan order',()=>{
+ const ids=identityOrder(steps)
+ expect(moveSessionBlock(steps,ids,1,{}, {},5,{target:2})).toEqual([0,1,5,2,3,4])
+ expect(moveSessionBlock(steps,ids,1,{}, {},2,{target:5})).toEqual([0,1,4,5,2,3])
+ expect(moveSessionBlock(steps,ids,1,{}, {},5,{target:0})).toBeNull()
+ const changed=[...steps,{name:'Warmup 2',type:'warmup'},{name:'F'}]
+ expect(moveSessionBlock(changed,identityOrder(changed),1,{}, {},7,{target:4})).toBeNull()
+ expect(orderedIndices(steps,null)).toEqual(ids)
+ })
