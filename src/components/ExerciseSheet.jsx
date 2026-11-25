@@ -3,7 +3,7 @@ import { Medal, X } from 'lucide-react'
 import ExerciseFigure, { animationFor } from './ExerciseFigure'
 import ExerciseTechnique from './ExerciseTechnique'
 import ExerciseDemo from './ExerciseDemo'
-import { exerciseVideoFor } from '../lib/exerciseVideos'
+import { exerciseVideoFor, prefersVideo } from '../lib/exerciseVideos'
 import { bests, entriesFor, fmtKg, fmtSet, volumeOf } from '../lib/logStore'
 import { FEELS, bestE1rm, fmtNum } from '../lib/training'
 
@@ -77,6 +77,16 @@ function ProgressLine({ entries, weighted }) {
   )
 }
 
+function SheetMedia({step}) {
+  const [videoMode,setVideoMode]=useState(()=>prefersVideo(step))
+  const video=exerciseVideoFor(step)
+  const anim=animationFor(step)
+  return <>
+    {video && !prefersVideo(step) && <div className="ffMediaTabs"><button type="button" className={!videoMode?'active':''} aria-pressed={!videoMode} onClick={()=>setVideoMode(false)}>Animation</button><button type="button" className={videoMode?'active':''} aria-pressed={videoMode} onClick={()=>setVideoMode(true)}>Video</button></div>}
+    {video && videoMode ? <ExerciseDemo step={step}/> : anim && <div className="sheetFigure"><ExerciseFigure step={step} label={`${step.name}: Bewegungsablauf`}/></div>}
+  </>
+}
+
 export default function ExerciseSheet({ step, owner, log, onClose, onStart }) {
   const entries = entriesFor(log, owner, step.name)
   const best = bests(entries)
@@ -94,9 +104,7 @@ export default function ExerciseSheet({ step, owner, log, onClose, onStart }) {
           <button className="closeBtn" onClick={onClose} aria-label="Schließen"><X size={20} /></button>
         </div>
 
-        {exerciseVideoFor(step) ? <ExerciseDemo key={step.name} step={step}/> : animationFor(step) && (
-          <div className="sheetFigure"><ExerciseFigure step={step} label={`${step.name}: Bewegungsablauf`} /></div>
-        )}
+        <SheetMedia key={step.name} step={step}/>
         <p className="sheetText">{step.detail}</p>
         <ExerciseTechnique step={step} />
 
