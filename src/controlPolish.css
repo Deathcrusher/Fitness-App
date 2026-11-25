@@ -1,0 +1,95 @@
+/* FitFlow control system — final layer for shared interactive components. */
+.ff3App{--ff-control-radius:13px;--ff-press:#ffffff16;--ff-action-ink:#fff;--ff-control-shadow:0 2px 6px rgba(0,0,0,.045)}
+html[data-theme="dark"] .ff3App{--ff-action-ink:#101913;--ff-control-shadow:none}
+.ff3App :is(button,input,select,textarea){font-family:inherit}
+.ff3App :is(.primaryAction,.doneAction,.ff3Primary,.ff3HeroButton,.ghostBtn,.secondaryAction,.iconAction,.roundBtn,.closeBtn,.timerStepperBtn,.ff3IconButton,.ff3DateNav button,.ff3Meal button,.ffLiveMediaTabs button,.ffMediaTabs button,.restPresets button,.setStepper button,.feel,.sugChip,.stepperRow>button,.plateChoices button,.segmented button,.subActions button){transition:background-color .15s,color .15s,border-color .15s,transform .12s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.ff3App :is(.primaryAction,.doneAction,.ff3Primary,.ff3HeroButton,.ghostBtn,.secondaryAction,.iconAction,.roundBtn,.closeBtn,.timerStepperBtn,.ff3IconButton,.restPresets button,.setStepper button,.feel,.stepperRow>button):not(:disabled):active{transform:scale(.97)}
+.ff3App button:disabled{cursor:not-allowed}
+.ff3App :is(.ghostBtn,.secondaryAction,.iconAction,.roundBtn,.closeBtn,.timerStepperBtn,.setStepper button,.stepperRow>button){border:1px solid var(--line);background:var(--surface-2);color:var(--ink);box-shadow:var(--ff-control-shadow);border-radius:var(--ff-control-radius)}
+.ff3App :is(.primaryAction,.ff3Primary,.controls button.primaryAction,.controls button.doneAction){background:var(--accent);color:var(--ff-action-ink);border:1px solid transparent;border-radius:15px;font-weight:750}
+.ff3App :is(.primaryAction,.ff3Primary,.doneAction):disabled{opacity:.42}
+.ff3App :is(.ghostBtn,.subActions button){min-height:44px;font-size:13px;gap:7px;font-weight:650}
+.ff3App .ghostBtn.subtle{color:var(--ink-soft);background:transparent;box-shadow:none}
+.ff3App .subActions button{border:1px solid var(--line);background:var(--surface-2);border-radius:12px;color:var(--ink-soft)}
+.ff3App .subActions button:last-child{color:var(--danger);background:transparent}
+.ff3App .subActions button:disabled{opacity:.38}
+.ff3App :is(.roundBtn,.closeBtn,.iconAction,.timerStepperBtn){min-height:44px;min-width:44px}
+.ff3App .closeBtn{width:44px;height:44px;flex:none}
+.ff3App :is(.segmented,.ffLiveMediaTabs,.ffMediaTabs){padding:4px;gap:4px;background:var(--surface-3);border:0;border-radius:15px;min-width:0}
+.ff3App :is(.segmented,.ffLiveMediaTabs,.ffMediaTabs) button{min-height:42px;min-width:0;flex:1;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--ink-soft);font-size:13px;font-weight:650;white-space:normal;line-height:1.2;padding:7px 5px}
+.ff3App :is(.segmented,.ffLiveMediaTabs,.ffMediaTabs) button.active{background:var(--surface);color:var(--accent-strong);border-color:var(--line);box-shadow:var(--ff-control-shadow)}
+.ff3App .segmented.scrollable button{flex:1 0 auto;padding-inline:10px}
+.ff3App .restPresets{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.ff3App .restPresets>span{flex:1 0 100%;margin:0 0 2px;font-size:12px;font-weight:700;color:var(--muted)}
+.ff3App .restPresets button{flex:1 1 auto;min-width:43px;min-height:44px;padding:7px 9px;border:1px solid var(--line);border-radius:11px;background:var(--surface-2);color:var(--ink-soft);font-weight:700}
+.ff3App .restPresets button.active{color:var(--accent-strong);background:var(--accent-soft);border-color:var(--accent)}
+.ff3App .ffLiveSession .setBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.ff3App .setDots{flex:1;min-width:0;display:flex;gap:4px;flex-wrap:wrap}
+.ff3App .setDots>span{min-width:8px;max-width:24px;flex:1 0 8px;height:7px;border-radius:100px}
+.ff3App .setStepper{display:flex;gap:4px;margin-left:auto}
+.ff3App .setStepper button{width:42px;height:44px;font-size:22px;line-height:1}
+.ff3App .stepperGrid{gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.ff3App .stepperGrid.single{grid-template-columns:minmax(0,1fr)}
+.ff3App .ffLiveSession .stepperField{padding:12px 9px 9px;border-radius:17px;min-width:0}
+.ff3App .stepperLabel{font-size:12px;letter-spacing:.015em}
+.ff3App .ffLiveSession .stepperRow{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}
+.ff3App .ffLiveSession .stepperValue{grid-column:1/-1;grid-row:1;display:flex;justify-content:center;align-items:baseline;gap:5px;min-height:49px}
+.ff3App .ffLiveSession .stepperValue input{font-size:clamp(29px,8vw,40px);max-width:112px;width:80%;font-weight:800;letter-spacing:-.045em;line-height:1.15;padding:3px 0}
+.ff3App .ffLiveSession .stepperValue small{font-size:13px}
+.ff3App .ffLiveSession .stepperRow>button{width:100%;min-height:44px;height:44px;background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:none}
+.ff3App .ffLiveSession .stepperRow>button:first-child{grid-row:2;grid-column:1}
+.ff3App .ffLiveSession .stepperRow>button:last-child{grid-row:2;grid-column:2}
+.ff3App .feelRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ff3App .feelRow>span{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted)}
+.ff3App .feel{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:44px;border-radius:12px;font-size:13px;padding:6px 3px;background:var(--surface-2)}
+.ffFeelDot{width:7px;height:7px;border-radius:100%;background:currentColor;flex:none;opacity:.7}
+.ff3App .feel.f1{color:var(--feel-easy,#267c5b)}
+.ff3App .feel.f2{color:var(--ink-soft)}
+.ff3App .feel.f3{color:var(--feel-hard,#a65438)}
+.ff3App .feel.active{border-color:currentColor;font-weight:800}
+.ff3App .lastTime{align-items:flex-start;gap:8px;flex-wrap:wrap;line-height:1.4}
+.ff3App .lastTime>span{min-width:0;overflow-wrap:anywhere}
+.ff3App .sugChip{min-height:38px;border-radius:10px;padding:7px 10px;font-size:12px}
+.ff3App .ffLiveSession .controls.mainControls:not(.single):not(.timed){grid-template-columns:minmax(0,1fr) 54px 54px}
+.ff3App .ffLiveSession .controls.mainControls.timed{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ff3App .ffLiveSession .controls.mainControls button.big{min-height:58px;line-height:1.2;padding:10px 8px}
+.ff3App .ffLiveSession .controls.mainControls.timed .doneAction{background:var(--accent-soft);color:var(--accent-strong);border-color:var(--line)}
+.ff3App .ffLiveSession .subActions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.ff3App .ffLiveSession .subActions button{font-size:11px;padding:6px 3px}
+.ff3App .ffLiveSession .subActions button svg{flex:none;width:15px}
+.ff3App .sheet,.ff3App .modal{border-radius:24px 24px 0 0;box-shadow:0 12px 50px #0003}
+.ff3App .modal:not(.sheet){border-radius:24px}
+.ff3App .sheet{max-height:92vh;max-height:92dvh;overscroll-behavior:contain}
+.ff3App .sheetHead{align-items:center;gap:10px;margin-bottom:14px}
+.ff3App .sheetHead>div{min-width:0}
+.ff3App .sheetHead h3{font-size:clamp(21px,5vw,27px);letter-spacing:-.04em;overflow-wrap:anywhere}
+.ff3App .sheetHead p{font-size:13px}
+.ff3App .sheet .setSection{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+.ff3App .sheet :is(input:not([type=file]):not([type=checkbox]):not([type=radio]),select,textarea){font-size:16px;min-height:44px;border-radius:12px;border-color:var(--line)}
+.ff3App .sheet .plateChoices button{min-height:42px;border-radius:11px}
+.ff3App .sheet .setActions{gap:7px}
+.ff3App .sheet .setActions>button{flex:1;min-width:0;min-height:44px}
+.ff3App .ffDemoFrame{border-radius:16px}
+.ff3App .ffDemoPlay>span{background:var(--ff3-bright);color:#18251c;border-radius:20px}
+.ff3App .ffDemoFoot{gap:10px;line-height:1.4}
+.ff3App .ffDemoFoot a{min-height:38px;display:inline-flex;align-items:center;padding:7px 10px;background:var(--surface);color:var(--accent-strong);border:1px solid var(--line);border-radius:10px;text-decoration:none;font-weight:650}
+.ff3App .ffExerciseDemo>.ghostBtn{width:100%}
+.ff3App .ffPolishedTimer{border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:none}
+.ff3App .ffPolishedTimer .timerDialWrap{gap:8px}
+.ff3App .ffPolishedTimer .timerStepperBtn{width:44px;height:48px;padding:0;flex:none}
+.ff3App .ffPolishedTimer .timerDial{min-width:0}
+.ff3App .ffPolishedTimer .startResetControls{display:grid;grid-template-columns:minmax(0,1fr) 54px;gap:8px}
+.ff3App .ffPolishedTimer .startResetControls>button{min-height:56px}
+.ff3App .ff3Nav button:active{background:var(--surface-2)!important}
+.ff3App .ff3Nav button.active{background:var(--accent-soft)!important}
+@media(max-width:380px){
+ .ff3App .ffLiveSession .sessionBody{padding:12px}
+ .ff3App .ffLiveSession .controls.mainControls:not(.single):not(.timed){grid-template-columns:minmax(0,1fr) 46px 46px;gap:5px}
+ .ff3App .ffLiveSession .controls.mainControls button.big{font-size:14px}
+ .ff3App .ffLiveSession .subActions button{font-size:10px;gap:3px}
+ .ff3App .ffLiveSession .subActions button svg{width:13px}
+ .ff3App .ffPolishedTimer{padding:14px}
+ .ff3App .ffLiveMediaTabs button{font-size:11px}
+}
+@media(min-width:760px){.ff3App .sheet{border-radius:24px 24px 0 0}}
+@media(prefers-reduced-motion:reduce){.ff3App button,.ff3App .sheet{transition:none!important;animation:none!important}}

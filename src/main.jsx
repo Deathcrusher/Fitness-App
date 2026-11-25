@@ -9,6 +9,7 @@ import './styles.css'
 import './designRefresh.css'
 import './motionStudio.css'
 import './studio3.css'
+import './controlPolish.css'
 
 applyPlanFixes()
 
