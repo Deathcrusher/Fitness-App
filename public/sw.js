@@ -48,7 +48,8 @@ self.addEventListener('message', (event) => {
     event.waitUntil(
       caches.open(MEDIA).then((cache) => Promise.all(event.data.urls.slice(0, 200).map(async (url) => {
         if (typeof url !== 'string') return
-        const target = new URL(url, self.location.origin)
+        let target
+        try { target = new URL(url, self.location.origin) } catch { return }
         if (target.origin !== self.location.origin || !target.pathname.startsWith('/assets/exercises/')) return
         if (await cache.match(url)) return
         try {

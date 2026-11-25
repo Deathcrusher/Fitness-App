@@ -12,6 +12,7 @@ async function api(path, { method = 'GET', token, body, headers = {} } = {}) {
     const response = await fetch(API_URL + path, {
       method,
       cache: 'no-store',
+      redirect: 'error',
       signal: controller.signal,
       headers: {
         apikey: PUBLIC_KEY,
@@ -87,6 +88,11 @@ async function assertApproved(token,user){
 export async function verifyCloudAccess(){
   const auth=await validAuth()
   const user=await api('/auth/v1/user',{token:auth.access_token})
+  if (user?.id !== auth.user.id) {
+    const error = new Error('Ungültige Sitzung.')
+    error.status = 401
+    throw error
+  }
   await assertApproved(auth.access_token,user)
   checkAccount({user})
   return user
@@ -114,9 +120,15 @@ async function validAuth() {
       throw error
     }
     if (latest.access_token && latest.expires_at > Date.now()/1000+90) return latest
-    const session = await api('/auth/v1/token?grant_type=refresh_token', {
-      method:'POST', body:{refresh_token:latest.refresh_token},
-    })
+    let session
+    try {
+      session = await api('/auth/v1/token?grant_type=refresh_token', {
+        method:'POST', body:{refresh_token:latest.refresh_token},
+      })
+    } catch (error) {
+      if (error.status === 400) error.status = 401
+      throw error
+    }
     const current = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null')
     if (current?.user?.id !== auth.user.id || current.refresh_token !== latest.refresh_token) {
       const error = new Error('Sitzung wurde geändert.')
