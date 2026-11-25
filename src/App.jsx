@@ -1,21 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ChartColumn,
+  House,
+  Utensils,
+  Ellipsis,
   CheckCircle2,
   Dumbbell,
   History,
   Hourglass,
   Link2,
-  ListChecks,
   Medal,
   Pause,
   Play,
-  Plus,
   RotateCcw,
   Settings,
   SkipBack,
   SkipForward,
-  Timer,
   Trash2,
   Trophy,
   Video,
@@ -73,6 +73,10 @@ import CloudSyncIndicator from './components/CloudSyncIndicator'
 import ExerciseTechnique from './components/ExerciseTechnique'
 import ExerciseList from './components/ExerciseList'
 import ProgramPicker from './components/ProgramPicker'
+import HomeStudio from './components/HomeStudio'
+import Nutrition from './components/Nutrition'
+import MoreStudio from './components/MoreStudio'
+import { NUTRITION_KEY, NUTRITION_GOALS_KEY, readNutrition, dailyMeals, totals, saveMeal, removeMeal, localDate } from './lib/nutrition'
 import { ENERGY_ID, ENERGY_MODES, energyPlan, workSecondsFor } from './lib/energyPlan'
 import { nextDueDay } from './lib/schedule'
 import { COUNTDOWN_FROM, coachEnabled, countWord, say, setCoachEnabled, unlockCoach } from './lib/coach'
@@ -137,9 +141,9 @@ export default function App() {
   const [tab, setTab] = useState(() => {
     try {
       const t = new URLSearchParams(window.location.search).get('tab')
-      return ['training', 'uebungen', 'timer', 'fortschritt'].includes(t) ? t : 'training'
+      return ['heute','training','uebungen','timer','fortschritt','ernaehrung','mehr'].includes(t) ? t : (saved.overview === false || Number(saved.stepIndex)>0 || Object.keys(saved.doneSteps||{}).length || new URLSearchParams(window.location.search).get('action')==='train' ? 'training' : 'heute')
     } catch {
-      return 'training'
+      return 'heute'
     }
   })
   const initialOwner = builtinPlans[savedPerson] ? savedPerson : (allPlans[savedPerson]?.owner || 'connie')
@@ -187,6 +191,8 @@ export default function App() {
   const [voiceOn, setVoiceOn] = useState(coachEnabled)
   const [gear, setGear] = useState(loadGear)
   const [body, setBody] = useState(loadBody)
+  const [nutrition,setNutrition] = useState(()=>readNutrition())
+  const [nutritionGoals,setNutritionGoals] = useState(()=>readNutrition(NUTRITION_GOALS_KEY))
   const [newBadges, setNewBadges] = useState([])
   const expectingRefresh = useRef(false)
   const endsAtRef = useRef(null)
@@ -196,6 +202,7 @@ export default function App() {
 
   const plan = allPlans[person]
   const currentOwner = plan.builtin ? person : (plan.owner || 'connie')
+  const activeWorkout = !overview && phase !== 'done'
   const day = plan.days[dayIndex] || plan.days[0]
   const steps = day.steps
   const currentStep = steps[stepIndex] || steps[steps.length - 1]
@@ -327,6 +334,8 @@ export default function App() {
   useEffect(() => { persist(SETS_KEY, setsOverrides) }, [setsOverrides])
   useEffect(() => { persist(GEAR_KEY, gear) }, [gear])
   useEffect(() => { saveBody(body) }, [body])
+  useEffect(() => { persist(NUTRITION_KEY,nutrition) }, [nutrition])
+  useEffect(() => { persist(NUTRITION_GOALS_KEY,nutritionGoals) }, [nutritionGoals])
 
   useEffect(() => {
     if (!session.running) return undefined
@@ -651,6 +660,7 @@ export default function App() {
   function runProgram(key) {
     setPerson(key)
     setView('train')
+    setTab('training')
   }
 
   function openGenerator() {
@@ -800,11 +810,16 @@ export default function App() {
   const builtinEntries = Object.entries(builtinPlans)
   const customEntries = Object.entries({ ...customPlans, [ENERGY_ID]: energyPreset }).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
+  const openTab = (key) => { setView('train'); setTab(key); window.scrollTo(0,0) }
+  const openPrograms = () => { if(activeWorkout)return;setBuilderOwner(currentOwner);setView('build');window.scrollTo(0,0) }
+  const switchProfile = (key) => { if(!activeWorkout && key!==currentOwner)setPerson(key) }
+  const activeNav = view==='build' || ['uebungen','timer','mehr'].includes(tab) ? 'mehr' : tab
   return (
-    <main className={`app ${plan.accent} withTabbar`}>
+    <main className={`app ${plan.accent} withTabbar ff3App ${maintenance?'ff3Balance':'ff3Strength'}${activeWorkout && tab==='training' && view==='train'?' ff3Focus':''}`}>
       <nav className="topnav" aria-label="Hauptnavigation">
         <span className="brand"><BrandMark /> <span>Fit<span className="ffBrandEmphasis">Flow</span></span><span className="ffBrandStudio">{APP_VERSION}</span></span>
         <div className="topActions">
+          <label className="ff3ProfileSelect"><span className="srOnly">Aktives Profil</span><select aria-label="Aktives Profil" value={currentOwner} disabled={activeWorkout || view==='build'} onChange={e=>switchProfile(e.target.value)}>{builtinEntries.map(([key,item])=><option key={key} value={key}>{item.name}</option>)}</select></label>
           <CloudSyncIndicator onOpen={() => setSettingsOpen(true)} />
           <button className="themeToggle" onClick={() => setSettingsOpen(true)} aria-label="Einstellungen" title="Einstellungen">
             <Settings size={19} />
@@ -814,7 +829,10 @@ export default function App() {
 
       {view === 'train' ? (
         <>
-          {tab === 'training' && <ProgramPicker
+          {tab === 'heute' && <HomeStudio owner={currentOwner} ownerName={ownerName} programId={person} plan={plan} day={activeWorkout?day:plan.days[dueDay]||day} history={personalHistory} weekCount={weekCount} goal={goal} pauseSeconds={pauseSeconds} nutrition={totals(dailyMeals(nutrition,currentOwner,localDate()))} goals={nutritionGoals[currentOwner]} active={activeWorkout} onTraining={()=>{if(!activeWorkout && dueDay!==dayIndex)selectDay(dueDay);openTab('training')}} onNutrition={()=>openTab('ernaehrung')} onProgress={()=>openTab('fortschritt')} onPrograms={openPrograms}/>}
+          {tab === 'ernaehrung' && <Nutrition key={currentOwner} owner={currentOwner} ownerName={ownerName} data={nutrition} goals={nutritionGoals[currentOwner]} onSave={(date,raw,id)=>{const key=id||makeId();setNutrition(old=>saveMeal(old,currentOwner,date,raw,key))}} onDelete={id=>setNutrition(old=>removeMeal(old,currentOwner,id))} onGoals={values=>setNutritionGoals(old=>({...old,[currentOwner]:{...values,updatedAt:new Date().toISOString()}}))}/>}
+          {tab === 'mehr' && <MoreStudio active={activeWorkout} onExercises={()=>openTab('uebungen')} onTimer={()=>openTab('timer')} onPrograms={openPrograms} onSettings={()=>setSettingsOpen(true)}/>}
+          {tab === 'training' && !activeWorkout && <ProgramPicker
             plan={plan}
             person={person}
             owner={currentOwner}
@@ -828,12 +846,13 @@ export default function App() {
             energyMode={energyMode}
             onEnergyMode={overview && phase !== 'done' ? changeEnergyMode : null}
           />}
-          {tab !== 'training' && <header className="ffSubPageHead">
+          {['fortschritt','uebungen','timer'].includes(tab) && <header className="ffSubPageHead">
             <span className="ffPageEyebrow"><span className="ffEyebrowDot" /> FITFLOW / STUDIO</span>
             <h1>{tab === 'fortschritt' ? 'Dein Fortschritt.' : tab === 'uebungen' ? 'Alle Übungen.' : 'Dein Timer.'}</h1>
             <p>{tab === 'fortschritt' ? 'Jede Wiederholung zählt. Hier siehst du deine Entwicklung.' : tab === 'uebungen' ? 'Dein Trainingsablauf auf einen Blick.' : 'Konzentrier dich auf deinen Rhythmus.'}</p>
           </header>}
 
+          {tab === 'training' && activeWorkout && <div className="ff3ActiveHeader"><span>{plan.builtin?'Grundtraining':plan.name} · {day.title}</span><button onClick={()=>openTab('uebungen')}>Übungsübersicht</button></div>}
           {tab === 'training' && (
           <section className="dashboard singleCol">
             {overview && phase !== 'done' ? (
@@ -1129,20 +1148,18 @@ export default function App() {
         </section>
       )}
 
-      <nav className="bottomnav" aria-label="Bereiche">
+      <nav className="bottomnav ff3Nav" aria-label="Bereiche">
         {[
+          ['heute', House, 'Heute'],
           ['training', Dumbbell, 'Training'],
-          ['uebungen', ListChecks, 'Übungen'],
-          ['timer', Timer, 'Timer'],
-          ['fortschritt', ChartColumn, 'Statistik'],
+          ['ernaehrung', Utensils, 'Ernährung'],
+          ['fortschritt', ChartColumn, 'Fortschritt'],
+          ['mehr', Ellipsis, 'Mehr'],
         ].map(([key, Icon, label]) => (
-          <button key={key} className={view === 'train' && tab === key ? 'active' : ''} onClick={() => { setView('train'); setTab(key) }}>
-            <Icon size={21} strokeWidth={view === 'train' && tab === key ? 2.3 : 1.8} /> <span>{label}</span>
+          <button key={key} className={activeNav === key ? 'active' : ''} aria-current={activeNav===key?'page':undefined} onClick={() => openTab(key)}>
+            <Icon size={22} strokeWidth={activeNav === key ? 2.3 : 1.8} /> <span>{label}</span>
           </button>
         ))}
-        <button className={view === 'build' ? 'active' : ''} onClick={() => { setBuilderOwner(currentOwner); setView('build') }}>
-          <Plus size={21} strokeWidth={view === 'build' ? 2.3 : 1.8} /> <span>Programme</span>
-        </button>
       </nav>
 
       {linkTarget && (

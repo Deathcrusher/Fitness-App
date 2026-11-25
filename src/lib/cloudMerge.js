@@ -1,3 +1,5 @@
+import { mergeVersioned, NUTRITION_KEY, NUTRITION_GOALS_KEY } from './nutrition'
+
 // Deterministic, additive merge of durable FitFlow data from different devices.
 // A complete immutable cloud snapshot is retained after every successful upload.
 const parse = (value, fallback) => {
@@ -57,6 +59,8 @@ export function mergeFitflowData(local, remote) {
   mergeJSON('fitflow-history-v1', mergeHistory, [])
   mergeJSON('fitflow-log-v1', mergeLogs, {})
   mergeJSON('fitflow-body-v1', mergeBody, {})
+  mergeJSON(NUTRITION_KEY, mergeVersioned, {})
+  mergeJSON(NUTRITION_GOALS_KEY, mergeVersioned, {})
   for (const key of ['fitflow-custom-plans-v1', 'fitflow-sets-v1', 'fitflow-videos-v1']) {
     if (a[key] != null || b[key] != null) {
       out[key] = str({ ...object(parse(b[key], {})), ...object(parse(a[key], {})) })
