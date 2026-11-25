@@ -78,11 +78,11 @@ function ProgressLine({ entries, weighted }) {
 }
 
 function SheetMedia({step}) {
-  const [videoMode,setVideoMode]=useState(()=>prefersVideo(step))
+  const [videoMode,setVideoMode]=useState(()=>prefersVideo(step)||!animationFor(step))
   const video=exerciseVideoFor(step)
   const anim=animationFor(step)
   return <>
-    {video && !prefersVideo(step) && <div className="ffMediaTabs"><button type="button" className={!videoMode?'active':''} aria-pressed={!videoMode} onClick={()=>setVideoMode(false)}>Animation</button><button type="button" className={videoMode?'active':''} aria-pressed={videoMode} onClick={()=>setVideoMode(true)}>Video</button></div>}
+    {video && anim && <div className="ffMediaTabs"><button type="button" className={!videoMode?'active':''} aria-pressed={!videoMode} onClick={()=>setVideoMode(false)}>Animation</button><button type="button" className={videoMode?'active':''} aria-pressed={videoMode} onClick={()=>setVideoMode(true)}>Video</button></div>}
     {video && videoMode ? <ExerciseDemo step={step}/> : anim && <div className="sheetFigure"><ExerciseFigure step={step} label={`${step.name}: Bewegungsablauf`}/></div>}
   </>
 }

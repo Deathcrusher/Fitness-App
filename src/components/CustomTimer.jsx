@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Minus, Pause, Play, Plus, RotateCcw, Timer as TimerIcon } from 'lucide-react'
 import { fmt } from '../lib/plans'
 import { ensureAudio, tick, signal } from '../lib/audio'
+import { secondsUntil,timerMinutes } from '../lib/controlValues'
 
 const PRESETS = [1, 3, 5, 10]
 const MAX_MINUTES = 180
@@ -10,8 +11,7 @@ const DIAL_START = -135
 const DIAL_SWEEP = 270
 
 function loadMinutes() {
-  const v = Number(localStorage.getItem(STORAGE_KEY))
-  return v >= 1 && v <= MAX_MINUTES ? v : 5
+  try{return timerMinutes(localStorage.getItem(STORAGE_KEY))}catch{return 5}
 }
 
 export default function CustomTimer() {
@@ -20,10 +20,8 @@ export default function CustomTimer() {
   const [running, setRunning] = useState(false)
   const wakeLockRef = useRef(null)
   const draggingRef = useRef(false)
-
-  useEffect(() => {
-    if (!running) setSecondsLeft(minutes * 60)
-  }, [minutes, running])
+  const deadlineRef = useRef(null)
+  const lastTickRef = useRef(null)
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, String(minutes)) } catch { /* noop */ }
@@ -31,25 +29,24 @@ export default function CustomTimer() {
 
   useEffect(() => {
     if (!running) return
-    const id = window.setInterval(() => {
-      setSecondsLeft((value) => (value > 0 ? value - 1 : 0))
-    }, 1000)
-    return () => window.clearInterval(id)
+    function update(){
+      if(deadlineRef.current===null)return
+      const left=secondsUntil(deadlineRef.current)
+      setSecondsLeft(left)
+      if(left===0){
+        deadlineRef.current=null
+        setRunning(false)
+        signal('done')
+      }else if(left<=3&&lastTickRef.current!==left){
+        lastTickRef.current=left
+        tick()
+      }
+    }
+    update()
+    const id=window.setInterval(update,200)
+    document.addEventListener('visibilitychange',update)
+    return ()=>{window.clearInterval(id);document.removeEventListener('visibilitychange',update)}
   }, [running])
-
-  useEffect(() => {
-    if (!running) return
-    if (secondsLeft > 0 && secondsLeft <= 3) tick()
-  }, [secondsLeft, running])
-
-  useEffect(() => {
-    if (secondsLeft !== 0 || !running) return
-    const id = window.setTimeout(() => {
-      signal('done')
-      setRunning(false)
-    }, 200)
-    return () => window.clearTimeout(id)
-  }, [secondsLeft, running])
 
   useEffect(() => {
     async function acquire() {
@@ -82,9 +79,16 @@ export default function CustomTimer() {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [running])
 
+  function chooseMinutes(value){
+    if(running)return
+    const n=Math.max(1,Math.min(MAX_MINUTES,value))
+    deadlineRef.current=null
+    lastTickRef.current=null
+    setMinutes(n)
+    setSecondsLeft(n*60)
+  }
   function changeMinutes(delta) {
-    setRunning(false)
-    setMinutes((m) => Math.max(1, Math.min(MAX_MINUTES, m + delta)))
+    chooseMinutes(minutes+delta)
   }
   function minutesFromPointer(event) {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -99,12 +103,12 @@ export default function CustomTimer() {
   }
   function updateFromPointer(event) {
     if (running) return
-    setMinutes(minutesFromPointer(event))
+    chooseMinutes(minutesFromPointer(event))
   }
   function beginDial(event) {
     if (running) return
     draggingRef.current = true
-    event.currentTarget.setPointerCapture(event.pointerId)
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     updateFromPointer(event)
   }
   function moveDial(event) {
@@ -112,7 +116,7 @@ export default function CustomTimer() {
   }
   function endDial(event) {
     draggingRef.current = false
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
   }
@@ -123,22 +127,33 @@ export default function CustomTimer() {
       changeMinutes(steps[event.key])
     } else if (event.key === 'Home' && !running) {
       event.preventDefault()
-      setMinutes(1)
+      chooseMinutes(1)
     } else if (event.key === 'End' && !running) {
       event.preventDefault()
-      setMinutes(MAX_MINUTES)
+      chooseMinutes(MAX_MINUTES)
     }
   }
   function setPreset(value) {
-    setRunning(false)
-    setMinutes(value)
+    chooseMinutes(value)
   }
   function toggle() {
     ensureAudio()
-    setSecondsLeft((value) => (value === 0 ? minutes * 60 : value))
-    setRunning((r) => !r)
+    if(running){
+      const left=deadlineRef.current===null?secondsLeft:secondsUntil(deadlineRef.current)
+      deadlineRef.current=null
+      setSecondsLeft(left)
+      setRunning(false)
+      return
+    }
+    const left=secondsLeft===0?minutes*60:secondsLeft
+    lastTickRef.current=null
+    deadlineRef.current=Date.now()+left*1000
+    setSecondsLeft(left)
+    setRunning(true)
   }
   function reset() {
+    deadlineRef.current=null
+    lastTickRef.current=null
     setRunning(false)
     setSecondsLeft(minutes * 60)
   }
@@ -151,7 +166,7 @@ export default function CustomTimer() {
   const fresh = !done && secondsLeft === minutes * 60
 
   return (
-    <article className="customTimer">
+    <article className="customTimer ffPolishedTimer">
       <div className="panelHead">
         <div>
           <p className="muted">Eigener Timer</p>
@@ -184,9 +199,9 @@ export default function CustomTimer() {
           <div className="timerDialTrack" aria-hidden="true" />
           {!running && <div className="timerDialHandle" aria-hidden="true"><span /></div>}
           <div className="timerDialFace">
-            <span className="timerDialEyebrow">{running ? 'Noch' : done ? 'Fertig' : 'Drehen'}</span>
+            <span className="timerDialEyebrow">{running ? 'Noch' : done ? 'Fertig' : fresh ? 'Drehen' : 'Pausiert'}</span>
             <strong>{fmt(secondsLeft)}</strong>
-            <span className="timerDialCaption">{running ? 'verbleibend' : `${minutes} Minute${minutes === 1 ? '' : 'n'}`}</span>
+            <span className="timerDialCaption">{running||!fresh&&!done ? 'verbleibend' : `${minutes} Minute${minutes === 1 ? '' : 'n'}`}</span>
           </div>
           <span className="timerDialMin" aria-hidden="true">1</span>
           <span className="timerDialMax" aria-hidden="true">180</span>
@@ -195,10 +210,10 @@ export default function CustomTimer() {
       </div>
 
       <div className="restPresets" aria-label="Minuten-Presets">
-        <span>Schnellwahl:</span>
+        <span>Schnellwahl</span>
         {PRESETS.map((preset) => (
           <button key={preset} className={minutes === preset ? 'active' : ''} disabled={running} onClick={() => setPreset(preset)}>
-            {preset}
+            {preset} Min.
           </button>
         ))}
       </div>

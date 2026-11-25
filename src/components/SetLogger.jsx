@@ -2,13 +2,14 @@ import React, { useState } from 'react'
 import { History, Minus, Plus, TrendingUp } from 'lucide-react'
 import { fmtKg, fmtSet } from '../lib/logStore'
 import { FEELS, fmtNum, platesFor } from '../lib/training'
+import { parseStepper } from '../lib/controlValues'
 
 function Stepper({ label, value, unit, step, min = 0, max = 500, onChange, decimals }) {
   const [text, setText] = useState(null)
   const shown = text ?? (decimals ? String(value).replace('.', ',') : String(value))
   const commit = (raw) => {
-    const n = Number(String(raw).replace(',', '.'))
-    if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, Math.round(n * 2) / 2)))
+    const n = parseStepper(raw,min,max,decimals)
+    if (n !== null) onChange(n)
     setText(null)
   }
   return (
@@ -71,7 +72,7 @@ export default function SetLogger({ draft, onDraft, weighted, last, sug, doneSet
       {withWeight && <PlateHint weight={draft.w} gear={gear} />}
 
       <div className="feelRow" role="radiogroup" aria-label="Wie hat sich der Satz angefühlt?">
-        <span>Gefühl</span>
+        <span>Wie war der Satz?</span>
         {FEELS.map((f) => (
           <button
             key={f.value}
@@ -81,12 +82,12 @@ export default function SetLogger({ draft, onDraft, weighted, last, sug, doneSet
             className={`feel f${f.value}${draft.f === f.value ? ' active' : ''}`}
             onClick={() => onDraft({ ...draft, f: draft.f === f.value ? undefined : f.value })}
           >
-            {f.label}
+            <i className="ffFeelDot" aria-hidden="true"/>{f.label}
           </button>
         ))}
       </div>
 
-      {doneSets.some(Boolean) && (
+      {doneSets.some((s,i)=>s&&i<setIndex) && (
         <ol className="doneSets" aria-label="Erledigte Sätze">
           {doneSets.map((s, i) => s && i < setIndex && <li key={i}><span>Satz {i + 1}</span> {fmtSet(s)}{s.f ? <small className={`feelTag f${s.f}`}>{FEELS[s.f - 1].short}</small> : null}</li>)}
         </ol>
