@@ -73,6 +73,7 @@ import CloudSyncIndicator from './components/CloudSyncIndicator'
 import ExerciseTechnique from './components/ExerciseTechnique'
 import ExerciseList from './components/ExerciseList'
 import ProgramPicker from './components/ProgramPicker'
+import { ENERGY_ID, ENERGY_MODES, energyPlan, workSecondsFor } from './lib/energyPlan'
 import { nextDueDay } from './lib/schedule'
 import { COUNTDOWN_FROM, coachEnabled, countWord, say, setCoachEnabled, unlockCoach } from './lib/coach'
 import { newlyUnlocked } from './lib/achievements'
@@ -114,7 +115,9 @@ export default function App() {
   const [customPlans, setCustomPlans] = useState(loadCustomPlans)
   const [videos, setVideos] = useState(loadVideos)
   const [history, setHistory] = useState(loadHistory)
-  const allPlans = { ...builtinPlans, ...customPlans }
+  const [energyMode, setEnergyMode] = useState(() => { try { const m = localStorage.getItem('fitflow-energy-mode-v1'); return Object.hasOwn(ENERGY_MODES,m) ? m : 'normal' } catch { return 'normal' } })
+  const energyPreset = energyPlan(energyMode)
+  const allPlans = { ...builtinPlans, ...customPlans, [ENERGY_ID]: energyPreset }
 
   const saved = loadState()
   const savedPerson = allPlans[saved.person] ? saved.person : 'connie'
@@ -128,7 +131,7 @@ export default function App() {
     savedSteps.length - 1,
   )
   const initialStep = savedSteps[savedStepIndex]
-  const initialWork = timedSeconds(initialStep.reps)
+  const initialWork = workSecondsFor(initialStep, timedSeconds)
 
   const [view, setView] = useState('train')
   const [tab, setTab] = useState(() => {
@@ -193,10 +196,10 @@ export default function App() {
 
   const plan = allPlans[person]
   const currentOwner = plan.builtin ? person : (plan.owner || 'connie')
-  const day = plan.days[dayIndex]
+  const day = plan.days[dayIndex] || plan.days[0]
   const steps = day.steps
   const currentStep = steps[stepIndex] || steps[steps.length - 1]
-  const parsedWork = timedSeconds(currentStep.reps)
+  const parsedWork = workSecondsFor(currentStep, timedSeconds)
   const isTimed = parsedWork != null
   const meta = TYPE_META[currentStep.type]
   const TypeIcon = meta.icon
@@ -212,12 +215,12 @@ export default function App() {
 
   const parsed = parseSets(currentStep.reps)
   const defaultSets = parsed.isSet ? parsed.sets : 1
-  const effectiveSets = setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || defaultSets
+  const effectiveSets = person === ENERGY_ID ? defaultSets : (setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || defaultSets)
   const setsOf = (j) => {
     const target = steps[j]
     if (!target) return 0
     const p = parseSets(target.reps)
-    return setsOverrides[`${programId}:${dayIndex}:${target.name}`] || (p.isSet ? p.sets : 1)
+    return (person === ENERGY_ID ? null : setsOverrides[`${programId}:${dayIndex}:${target.name}`]) || (p.isSet ? p.sets : 1)
   }
   const superset = supersetLabel(steps, stepIndex)
 
@@ -414,7 +417,7 @@ export default function App() {
 
   function enterWork(nextStepIndex, nextSetIndex = 0) {
     const target = steps[nextStepIndex]
-    const work = timedSeconds(target.reps)
+    const work = workSecondsFor(target, timedSeconds)
     setStepIndex(nextStepIndex)
     setSetIndex(nextSetIndex)
     setPhase('work')
@@ -528,9 +531,9 @@ export default function App() {
     enterWork(previousIndex, 0)
   }
 
-  function selectDay(index) {
-    const firstStep = allPlans[person].days[index].steps[0]
-    const work = timedSeconds(firstStep.reps)
+  function selectDay(index, selectedPlan = allPlans[person]) {
+    const firstStep = selectedPlan.days[index].steps[0]
+    const work = workSecondsFor(firstStep, timedSeconds)
     setDayIndex(index)
     setStepIndex(0)
     setSetIndex(0)
@@ -541,6 +544,13 @@ export default function App() {
     setClock(work != null ? work : 0, false)
     setWorkSeconds(work != null ? work : 0)
     setShowVideo(false)
+  }
+
+  function changeEnergyMode(mode) {
+    if (person !== ENERGY_ID || !overview || !Object.hasOwn(ENERGY_MODES, mode) || mode === energyMode) return
+    setEnergyMode(mode)
+    try { localStorage.setItem('fitflow-energy-mode-v1',mode) } catch { /* optional preference */ }
+    selectDay(dayIndex, energyPlan(mode))
   }
 
   function pickStep(index) {
@@ -692,7 +702,7 @@ export default function App() {
     setPhase('work')
     setRunning(false)
     const firstStep = allPlans[fallback].days[due].steps[0]
-    const work = timedSeconds(firstStep.reps)
+    const work = workSecondsFor(firstStep, timedSeconds)
     setClock(work != null ? work : 0, false)
     setWorkSeconds(work != null ? work : 0)
     setShowVideo(false)
@@ -785,7 +795,7 @@ export default function App() {
   const ownerName = builtinPlans[currentOwner]?.name || currentOwner
 
   const builtinEntries = Object.entries(builtinPlans)
-  const customEntries = Object.entries(customPlans).filter(([, p]) => (p.owner || 'connie') === currentOwner)
+  const customEntries = Object.entries({ ...customPlans, [ENERGY_ID]: energyPreset }).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
   return (
     <main className={`app ${plan.accent} withTabbar`}>
@@ -812,6 +822,8 @@ export default function App() {
             onPerson={setPerson}
             onNewProgram={createProgram}
             onDay={selectDay}
+            energyMode={energyMode}
+            onEnergyMode={overview && phase !== 'done' ? changeEnergyMode : null}
           />}
           {tab !== 'training' && <header className="ffSubPageHead">
             <span className="ffPageEyebrow"><span className="ffEyebrowDot" /> FITFLOW / STUDIO</span>
@@ -1018,9 +1030,9 @@ export default function App() {
                       {isTimed && (
                         <div className="restPresets" aria-label="Übungs-Dauer">
                           <span>Dauer</span>
-                          {WORK_PRESETS.map((preset) => (
+                          {(person === ENERGY_ID && currentStep.type === 'cardio' ? [300,600,900,1200] : WORK_PRESETS).map((preset) => (
                             <button key={preset} className={workSeconds === preset ? 'active' : ''} onClick={() => changeWork(preset)}>
-                              {preset}s
+                              {preset >= 60 && person === ENERGY_ID && currentStep.type === 'cardio' ? preset / 60 + ' Min' : preset + 's'}
                             </button>
                           ))}
                         </div>

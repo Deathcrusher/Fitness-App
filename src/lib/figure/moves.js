@@ -35,7 +35,53 @@ const plankBase = (line, o) => ({
 
 const FA_PLANK = bodyLine([206, 152], [92, 173])
 
+const quadruped = (o={}) => ({ hip:[112,139], lean:90, head:-55, hN:A(165,181),hF:A(160,181),fN:A(87,179),fF:A(83,179),faN:90,faF:90,...o })
+const warrior = (side) => {
+  const x = side === 'Left' ? -1 : 1
+  const pose = {hip:[150,128],lean:0,head:12*x,hN:R(53,0),hF:R(-53,0),fN:A(200,179),fF:A(100,179)}
+  return {view:'front',work:['thigh','glute'],keys:[k({...pose,hip:[150+12*x,135]},2,4,'Vorderes Knie beugen · ruhig atmen'),k({...pose,hip:[150+12*x,134]},2,4,'Arme lang · Schultern locker')]}
+}
+const treePose = (side) => {
+  const x = side === 'Left' ? -1 : 1
+  const pose = {hip:[150,105],lean:0,head:0,hN:A(195,85),hF:R(-15,0),fN:A(x===1?150:159,x===1?179:153),fF:A(x===1?141:150,x===1?153:179)}
+  return {view:'front',work:['glute','thigh'],props:{wall:204},keys:[k(pose,2,5,'Am sicheren Halt abstützen · Fuß tief anlegen'),k({...pose,head:2},2,5,'Ruhig atmen · Knie frei lassen')]}
+}
+const twistPose = (side) => {
+ const x = side === 'Left' ? -1 : 1
+ const pose = {hip:[150,167],lean:0,torsoScale:.65,legScale:.78,head:0,hN:A(205,137),hF:A(95,137),fN:A(150+x*40,179),fF:A(150+x*33,175)}
+ return {view:'front',work:['torso'],props:{mat:true},poles:{knee:[x,-1]},keys:[k(pose,2,5,'Knie sanft zur Seite sinken lassen'),k({...pose,head:-3*x},2,5,'Schultern entspannt · ruhig atmen')]}
+}
 export const MOVES = {
+  chairSquat: {view:'side',work:['thigh','glute'],props:{chair:true},keys:[
+    k(S({hN:R(9,50),hF:R(5,50)}),2,.3,'Po nach hinten führen'),
+    k(S({hip:[126,143],lean:35,head:-12,hN:R(48,12),hF:R(45,15)}),2,.5,'Stuhl berühren · kontrolliert aufstehen')
+  ]},
+  wallPushup:{view:'side',work:['upper','torso'],props:{wall:222},poles:{elbow:[-1,.4]},keys:[
+    k(S({hip:[145,110],lean:20,hN:A(213,82),hF:A(213,86),fN:A(124,Y),fF:A(120,Y)}),2,.3,'Hände an der Wand · Körper gerade'),
+    k(S({hip:[155,111],lean:39,hN:A(213,82),hF:A(213,86),fN:A(124,Y),fF:A(120,Y)}),2,.3,'Ellbogen beugen · wegdrücken')
+  ]},
+  catCow:{view:'side',work:['torso'],props:{mat:true},poles:{knee:[1,1],elbow:[0,-1]},keys:[
+    k(quadruped({hip:[112,136],aim:[155,131],head:-32}),3,1,'Einatmen · Rücken sanft öffnen'),
+    k(quadruped({hip:[112,133],aim:[155,145],head:22}),3,1,'Ausatmen · Rücken sanft runden')
+  ]},
+  childPose:{view:'side',work:['torso'],props:{mat:true},poles:{knee:[1,1]},keys:[
+    k({hip:[105,157],lean:104,head:8,hN:A(195,181),hF:A(190,181),fN:A(78,179),fF:A(74,179),faN:90,faF:90},2,5,'Hüfte Richtung Fersen · Arme lang'),
+    k({hip:[105,158],lean:106,head:8,hN:A(195,181),hF:A(190,181),fN:A(78,179),fF:A(74,179),faN:90,faF:90},2,5,'Ruhig weiteratmen')
+  ]},
+  warriorLeft:warrior('Left'),warriorRight:warrior('Right'),
+  treeLeft:treePose('Left'),treeRight:treePose('Right'),
+  birdDog:{view:'side',work:['torso','glute'],props:{mat:true},poles:{knee:[1,1]},keys:[
+    k(quadruped(),1.5,.3,'Vierfüßlerstand'),
+    k(quadruped({hN:A(207,139),fF:A(40,139),faF:90}),2,1,'Gegenüberliegenden Arm und Bein strecken'),
+    k(quadruped(),1.5,.3,'Zurück zur Mitte'),
+    k(quadruped({hF:A(207,139),fN:A(40,139),faN:90}),2,1,'Andere Seite')
+  ]},
+  butterfly:{view:'front',work:['thigh'],props:{mat:true},poles:{knee:[1,0]},keys:[
+    k({hip:[150,166],lean:0,legScale:.65,hN:A(158,175),hF:A(142,175),fN:A(154,179),fF:A(146,179)},2,5,'Fußsohlen zusammen · Knie locker'),
+    k({hip:[150,166],lean:0,legScale:.65,hN:A(158,175),hF:A(142,175),fN:A(154,179),fF:A(146,179),head:2},2,5,'Nicht nach unten drücken')
+  ]},
+  supineTwistLeft:twistPose('Left'),supineTwistRight:twistPose('Right'),
+
   /* ---------------- Beine ---------------- */
   squat: {
     view: 'side', work: ['thigh', 'glute'],
@@ -333,6 +379,8 @@ export const MOVES = {
 
 /* ---------- Übungsname → Bewegung ---------- */
 const RULES = [
+  [/kniebeugen? zum stuhl/i, 'chairSquat'],
+  [/wandliegestütz/i, 'wallPushup'],
   [/hampelmann|jumping jack/i, 'jumpingJack'],
   [/seilspringen \(ohne seil\)/i, 'jumpRopeAir'],
   [/seilspring/i, 'jumpRope'],
@@ -377,6 +425,7 @@ const RULES = [
 ]
 
 export function moveFor(step) {
+  if (step?.move && Object.hasOwn(MOVES, step.move)) return step.move
   const name = step?.name || ''
   for (const [re, key] of RULES) if (re.test(name)) return key
   return null
