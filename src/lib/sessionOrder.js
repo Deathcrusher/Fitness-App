@@ -34,8 +34,10 @@ export function moveSessionBlock(steps,indices,current,done,log,index,direction)
  if(direction==='next'){
    while(dest>0&&!blocks[dest-1].locked)dest--
  }else if(direction===-1||direction===1){dest=at+direction}
- else return null
- if(dest===at||dest<0||dest>=blocks.length||blocks[dest].locked)return null
+ else if(direction&&Number.isInteger(direction.target)){
+   dest=blocks.findIndex(b=>direction.target>=b.start&&direction.target<=b.end)
+ }else return null
+ if(dest===at||dest<0||dest>=blocks.length||blocks.slice(Math.min(at,dest),Math.max(at,dest)+1).some(b=>b.locked))return null
  const [moved]=blocks.splice(at,1);blocks.splice(dest,0,moved)
  return blocks.flatMap(b=>indices.slice(b.start,b.end+1))
 }
