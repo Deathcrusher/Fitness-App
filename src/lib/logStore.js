@@ -65,6 +65,7 @@ export function isLoggable(step) {
 /** Wird die Übung typischerweise mit Gewicht gemacht? */
 export function usesWeight(step) {
   const key = moveFor(step)
+  if (step?.gentle && (key === 'wallPushup' || key === 'chairSquat' || key === 'calfRaise')) return false
   if (key && MOVES[key]?.bell) return true
   return /hantel|curl|drück|rudern|seitheben|kettlebell|gewicht/i.test(`${step?.name} ${step?.detail}`)
 }
@@ -106,6 +107,7 @@ export function isRecord(previous, set) {
 
 /** Steigerungsvorschlag: doppelte Progression plus Gefühl und Comeback nach Pausen */
 export function suggestion(last, range, step, comeback = null) {
+  if (step?.gentle) return null // No automatic progression for this flexible starter program.
   return smartSuggestion(last, range, step, comeback)
 }
 
@@ -122,6 +124,7 @@ export function draftFor({ log, owner, step, setIndex, today, sessionSets }) {
   const last = lastEntry(log, owner, step.name, today)
   const sug = suggestion(last, range, step, comebackOf(log, owner, step.name, today))
   if (sug) return { w: sug.w, r: sug.r }
+  if (step?.gentle) return { w: 0, r: range[0] }
   if (last) {
     const s = last.sets[Math.min(setIndex, last.sets.length - 1)]
     return { w: s.w, r: s.r }

@@ -111,6 +111,7 @@ function Props({ def, j, t, extra, layer }) {
   const out = []
   if (layer === 'back') {
     if (props.wall) out.push(<rect key="wall" x={props.wall - 9} y={22} width={9} height={GROUND - 22} rx={2} className="figProp" />)
+    if (props.chair) out.push(<g key="chair" className="figProp"><rect x={83} y={148} width={55} height={6} rx={2}/><rect x={83} y={94} width={6} height={60} rx={2}/><rect x={87} y={154} width={5} height={30} rx={2}/><rect x={127} y={154} width={5} height={30} rx={2}/></g>)
     if (props.mat) out.push(<rect key="mat" x={30} y={GROUND - 2} width={VB_W - 60} height={5} rx={2.5} className="figProp" />)
     if (props.bench) {
       out.push(

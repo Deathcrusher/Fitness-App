@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { ChevronDown, ChevronUp, Dumbbell, Plus, Sparkles, Check, MoveUpRight, CalendarDays } from 'lucide-react'
 
+import { ENERGY_ID, ENERGY_MODES } from '../lib/energyPlan'
+
 // The program and day selectors only appear on the actual workout screen.
-export default function ProgramPicker({ plan, person, owner, builtinEntries, customEntries, dayIndex, dueDay, onPerson, onNewProgram, onDay }) {
+export default function ProgramPicker({ plan, person, owner, builtinEntries, customEntries, dayIndex, dueDay, onPerson, onNewProgram, onDay, energyMode, onEnergyMode }) {
   const specialEntries = customEntries.filter(([key, item]) =>
     key === 'chat-arm-special-20261122' || item.name === 'Arme Spezial')
-  const otherEntries = customEntries.filter(([key]) => !specialEntries.some(([special]) => special === key))
+  const energyEntry = customEntries.find(([key]) => key === ENERGY_ID)
+  const otherEntries = customEntries.filter(([key]) => key !== ENERGY_ID && !specialEntries.some(([special]) => special === key))
   const [showOthers, setShowOthers] = useState(() => otherEntries.some(([key]) => key === person))
 
   useEffect(() => {
@@ -45,6 +48,11 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
             <span className="ffProgramText"><strong>Grundtraining</strong><small>Dein 3-Tage-Ganzkörperplan</small></span>
             {plan.builtin && <Check className="ffProgramCheck" size={19} />}
           </button>
+          {energyEntry && <button type="button" className={`ffProgramOption${person === ENERGY_ID ? ' active' : ''}`} onClick={() => onPerson(ENERGY_ID)} aria-pressed={person === ENERGY_ID}>
+            <span className="ffProgramIcon"><Sparkles size={19} /></span>
+            <span className="ffProgramText"><strong>Energy &amp; Balance</strong><small>3 Tage · Kraft, Hula Hoop &amp; Yoga</small></span>
+            {person === ENERGY_ID && <Check className="ffProgramCheck" size={19} />}
+          </button>}
           {specialEntries.map(([key, item]) => (
             <button type="button" key={key} className={`ffProgramOption${person === key ? ' active' : ''}`}
               onClick={() => onPerson(key)} aria-pressed={person === key}>
@@ -75,6 +83,12 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
         </div>
       </section>
 
+      {person === ENERGY_ID && <section className="ffProgramPicker" aria-label="Tagesform">
+        <div className="ffProgramHeading"><strong>DEINE TAGESFORM</strong><span>Wähle vor dem Start dein Tempo. Pausieren ist jederzeit okay.</span></div>
+        <div className="ffProgramChoices">
+          {Object.entries(ENERGY_MODES).map(([key,label]) => <button key={key} type="button" className={`ffProgramOption${energyMode === key ? ' active' : ''}`} aria-pressed={energyMode === key} disabled={!onEnergyMode} onClick={() => onEnergyMode?.(key)}><span className="ffProgramText"><strong>{label}</strong></span>{energyMode === key && <Check size={19} />}</button>)}
+        </div>
+      </section>}
       <div className="ffDayHeader"><span><CalendarDays size={16} /> DEINE TRAININGSTAGE</span><small>{plan.days.length} {plan.days.length === 1 ? 'Einheit' : 'Einheiten'}</small></div>
       <nav className="dayTabsRail" aria-label="Trainingstag wählen">
         {plan.days.map((item, index) => (
