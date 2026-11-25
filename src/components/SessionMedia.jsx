@@ -1,7 +1,10 @@
 import React from 'react'
 import ExerciseFigure from './ExerciseFigure'
+import ExerciseDemo from './ExerciseDemo'
+import { exerciseVideoFor } from '../lib/exerciseVideos'
 
 export default function SessionMedia({ phase, step, stepKey, imageMode, onImageMode, image, imageFocus, guide, hasAnim, badge }) {
+  if (phase === 'work' && exerciseVideoFor(step)) return <ExerciseDemo key={stepKey} step={step}/>
   return (
     <div className={`sessionImageWrap${phase === 'rest' ? ' resting' : ''}`}>
       {phase === 'work' && hasAnim && imageMode === 'anim' ? (
