@@ -5,7 +5,7 @@ import { ENERGY_ID, ENERGY_MODES } from '../lib/energyPlan'
 import { goalFor, isMaintenance } from '../lib/fitnessGoals'
 
 // The program and day selectors only appear on the actual workout screen.
-export default function ProgramPicker({ plan, person, owner, builtinEntries, customEntries, dayIndex, dueDay, onPerson, onNewProgram, onDay, energyMode, onEnergyMode }) {
+export default function ProgramPicker({ plan, person, owner, builtinEntries, customEntries, dayIndex, dueDay, onPerson, onNewProgram, onDay, energyMode, onEnergyMode, showProfiles = true }) {
   const specialEntries = customEntries.filter(([key, item]) =>
     key === 'chat-arm-special-20261122' || item.name === 'Arme Spezial')
   const energyEntry = customEntries.find(([key]) => key === ENERGY_ID)
@@ -29,13 +29,13 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
         </div>
       </header>
 
-      <div className="segmented personSeg ffPersonSeg" role="tablist" aria-label="Person wählen">
+      {showProfiles && <div className="segmented personSeg ffPersonSeg" role="tablist" aria-label="Person wählen">
         {builtinEntries.map(([key, item]) => (
           <button key={key} role="tab" aria-selected={owner === key} className={owner === key ? 'active' : ''} onClick={() => onPerson(key)}>
             {item.name}
           </button>
         ))}
-      </div>
+      </div>}
 
       <section className="ffProgramPicker" aria-label="Trainingsprogramm auswählen">
         <div className="ffProgramHeading">
