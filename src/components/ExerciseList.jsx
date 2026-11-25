@@ -4,7 +4,7 @@ import { TYPE_META } from '../lib/plans'
 import { supersetLabel } from '../lib/superset'
 import { orderBlocks } from '../lib/sessionOrder'
 
-export default function ExerciseList({ plan, day, steps, progress, stepIndex, phase, doneSteps, hasVideo, onPick, onInfo, activeWorkout=false, sessionLog={}, onMove, onResume }) {
+export default function ExerciseList({ plan, day, steps, progress, stepIndex, phase, doneSteps, hasVideo, onPick, onInfo, activeWorkout=false, sessionLog={}, onMove, onResume, editing=false, onEditing }) {
   const blocks=orderBlocks(steps,stepIndex,doneSteps,sessionLog)
   return (
     <aside className="planPanel ffOrderPanel">
@@ -13,13 +13,14 @@ export default function ExerciseList({ plan, day, steps, progress, stepIndex, ph
         <span>{progress}%</span>
       </div>
       <p className="dayTone">{day.tone}</p>
-      {activeWorkout&&<div className="ffOrderIntro"><ListOrdered size={22}/><div><strong>Reihenfolge für dieses Training</strong><p>Offene Übungen mit den Pfeilen verschieben. Der laufende Satz und bisherige Leistungen bleiben erhalten. Supersätze bleiben zusammen.</p></div></div>}
+      {activeWorkout&&<div className="ffOrderToolbar"><span>Deine aktuelle Einheit</span><button type="button" aria-pressed={editing} onClick={()=>onEditing?.(!editing)}><ListOrdered size={17}/>{editing?'Fertig':'Sortieren'}</button></div>}
+      {activeWorkout&&editing&&<p className="ffOrderHelp">Offene Übungen verschieben. Supersätze bleiben zusammen.</p>}
       <div className="stepList">
         {blocks.map((block,bi)=>{
           const canUp=activeWorkout&&!block.locked&&bi>0&&!blocks[bi-1].locked
           const canDown=activeWorkout&&!block.locked&&bi<blocks.length-1&&!blocks[bi+1].locked
           const group=block.end>block.start
-          return <div key={steps.slice(block.start,block.end+1).map(s=>s.name).join('|')+'-'+block.start} className={'ffOrderBlock'+(activeWorkout&&group?' grouped':'')}>
+          return <div key={steps.slice(block.start,block.end+1).map(s=>s.name).join('|')+'-'+block.start} className={'ffOrderBlock'+(activeWorkout&&editing&&group?' grouped':'')}>
             {steps.slice(block.start,block.end+1).map((item,offset)=>{
               const index=block.start+offset
               const ItemIcon=TYPE_META[item.type].icon
@@ -34,7 +35,7 @@ export default function ExerciseList({ plan, day, steps, progress, stepIndex, ph
                 <button className="stepInfo" onClick={()=>onInfo(index)} aria-label={item.name+': Details und Verlauf'}><ChevronRight size={18}/></button>
               </div>
             })}
-            {activeWorkout&&<div className="ffOrderControls">
+            {activeWorkout&&editing&&<div className="ffOrderControls">
               {block.locked?<span className="ffOrderLocked"><Lock size={13}/> {group?'Supersatz · ':''}Fixiert</span>:<>
                 <span>{group?'Supersatz verschieben':'Übung verschieben'}</span>
                 <button type="button" disabled={!canUp} onClick={()=>onMove(block.start,'next')} aria-label={steps[block.start].name+' als nächste offene Übung'} title="An erste offene Position"><ArrowUpToLine size={17}/></button>
