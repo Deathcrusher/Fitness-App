@@ -27,7 +27,7 @@ export default function AuthGate(){
     if(!alive)return
     applyPlanFixes();await bootstrapCloudSync();repairMondayPlankSets()
     if(alive&&currentCloudUser())setState('ready')
-   }catch(e){if(alive){setError(e.status===401||e.status===403?'Bitte melde dich erneut an.':'Zugang konnte nicht geprüft werden. Internetverbindung prüfen.');setState('login')}}
+   }catch(e){if(e.status===401||e.status===403)await cloudSignOut();if(alive){setError(e.status===401||e.status===403?'Bitte melde dich erneut an.':'Zugang konnte nicht geprüft werden. Internetverbindung prüfen.');setState('login')}}
   }
   start()
   return()=>{alive=false}
@@ -53,7 +53,7 @@ export default function AuthGate(){
   e.preventDefault();if(busy)return
   setBusy(true);setError('')
   try{await cloudSignIn(email.trim(),password);setPassword('');await unlock()}
-  catch(e){setError(e.status===403?'Zugang nicht freigegeben.':e.status===401||e.status===400?'E-Mail oder Passwort falsch.': 'Anmeldung fehlgeschlagen. Verbindung oder ursprüngliches Cloud-Konto prüfen.')}
+  catch(e){if((e.status===401||e.status===403)&&currentCloudUser())await cloudSignOut();setError(e.status===403?'Zugang nicht freigegeben.':e.status===401||e.status===400?'E-Mail oder Passwort falsch.': 'Anmeldung fehlgeschlagen. Verbindung oder ursprüngliches Cloud-Konto prüfen.')}
   finally{setBusy(false)}
  }
  async function retry(){setBusy(true);setError('');try{await unlock()}catch{setError('Zugang nicht verfügbar. Bitte erneut anmelden.')}finally{setBusy(false)}}

@@ -4,7 +4,7 @@
  * - Übungsbilder: Cache zuerst, bleiben über Updates erhalten (Version steckt in ?v=)
  */
 // Bump when releasing a visible UI update; old CacheStorage entries must not hide new HTML/CSS.
-const CACHE = 'fitflow-v306-private-studio'
+const CACHE = 'fitflow-v307-security'
 const MEDIA = 'fitflow-media-v1'
 const MEDIA_LIMIT = 200
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icon-192-ff.png', '/icon-512-ff.png', '/brand-mark.svg']
@@ -46,7 +46,11 @@ self.addEventListener('message', (event) => {
   }
   if (event.data?.type === 'PREFETCH' && Array.isArray(event.data.urls)) {
     event.waitUntil(
-      caches.open(MEDIA).then((cache) => Promise.all(event.data.urls.map(async (url) => {
+      caches.open(MEDIA).then((cache) => Promise.all(event.data.urls.slice(0, 200).map(async (url) => {
+        if (typeof url !== 'string') return
+        let target
+        try { target = new URL(url, self.location.origin) } catch { return }
+        if (target.origin !== self.location.origin || !target.pathname.startsWith('/assets/exercises/')) return
         if (await cache.match(url)) return
         try {
           const res = await fetch(url)

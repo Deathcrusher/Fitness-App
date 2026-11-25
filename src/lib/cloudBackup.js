@@ -11,6 +11,8 @@ async function api(path, { method = 'GET', token, body, headers = {} } = {}) {
   try {
     const response = await fetch(API_URL + path, {
       method,
+      cache: 'no-store',
+      redirect: 'error',
       signal: controller.signal,
       headers: {
         apikey: PUBLIC_KEY,
@@ -58,8 +60,13 @@ export async function cloudSignIn(email, password) {
     method: 'POST', body: { email, password },
   })
   if (!session?.access_token) throw new Error('Bitte bestätige zuerst deine E-Mail-Adresse.')
-  await assertApproved(session.access_token, session.user)
-  checkAccount({user:session.user})
+  try {
+    await assertApproved(session.access_token, session.user)
+    checkAccount({user:session.user})
+  } catch (error) {
+    try { await api('/auth/v1/logout?scope=local', {method:'POST',token:session.access_token}) } catch { /* best-effort revocation */ }
+    throw error
+  }
   storeAuth(session)
   window.dispatchEvent(new Event('fitflow-cloud-auth'))
   return session.user
@@ -81,22 +88,66 @@ async function assertApproved(token,user){
 export async function verifyCloudAccess(){
   const auth=await validAuth()
   const user=await api('/auth/v1/user',{token:auth.access_token})
+  if (user?.id !== auth.user.id) {
+    const error = new Error('Ungültige Sitzung.')
+    error.status = 401
+    throw error
+  }
   await assertApproved(auth.access_token,user)
   checkAccount({user})
   return user
 }
 
+let refreshInFlight = null
 async function validAuth() {
   let auth
   try { auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null') } catch { /* ignored */ }
-  if (!auth?.refresh_token) throw new Error('Bitte zuerst mit deinem Cloud-Konto anmelden.')
-  if (auth.expires_at && auth.expires_at > Date.now() / 1000 + 90) return auth
-  const session = await api('/auth/v1/token?grant_type=refresh_token', {
-    method: 'POST', body: { refresh_token: auth.refresh_token },
-  })
-  if(!currentCloudUser()||currentCloudUser().id!==auth.user?.id)throw new Error('Sitzung wurde beendet.')
-  storeAuth(session)
-  return JSON.parse(localStorage.getItem(AUTH_KEY))
+  if (!auth?.refresh_token || !auth?.user?.id) {
+    const error = new Error('Bitte zuerst mit deinem Cloud-Konto anmelden.')
+    error.status = 401
+    throw error
+  }
+  if (auth.access_token && auth.expires_at > Date.now() / 1000 + 90) return auth
+  // Deduplicate refresh-token rotation within this tab.
+  if (refreshInFlight?.token === auth.refresh_token) return refreshInFlight.promise
+  const job = {token:auth.refresh_token}
+  const refresh = async () => {
+    // A second tab may have rotated the token while we waited for the lock.
+    const latest = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null')
+    if (latest?.user?.id !== auth.user.id) {
+      const error = new Error('Sitzung wurde beendet.')
+      error.status = 401
+      throw error
+    }
+    if (latest.access_token && latest.expires_at > Date.now()/1000+90) return latest
+    let session
+    try {
+      session = await api('/auth/v1/token?grant_type=refresh_token', {
+        method:'POST', body:{refresh_token:latest.refresh_token},
+      })
+    } catch (error) {
+      if (error.status === 400) error.status = 401
+      throw error
+    }
+    const current = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null')
+    if (current?.user?.id !== auth.user.id || current.refresh_token !== latest.refresh_token) {
+      const error = new Error('Sitzung wurde geändert.')
+      error.status = 401
+      throw error
+    }
+    if (session.user?.id !== auth.user.id || !session.access_token || !session.refresh_token) {
+      const error = new Error('Ungültige Sitzung.')
+      error.status = 401
+      throw error
+    }
+    storeAuth(session)
+    return JSON.parse(localStorage.getItem(AUTH_KEY))
+  }
+  job.promise = (navigator.locks?.request
+    ? navigator.locks.request('fitflow-auth-refresh', refresh)
+    : refresh()).finally(() => { if (refreshInFlight === job) refreshInFlight = null })
+  refreshInFlight = job
+  return job.promise
 }
 
 // Download first, only insert when no backup exists. The DB grants no UPDATE/DELETE.
