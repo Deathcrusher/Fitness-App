@@ -215,12 +215,13 @@ export default function App() {
 
   const parsed = parseSets(currentStep.reps)
   const defaultSets = parsed.isSet ? parsed.sets : 1
-  const effectiveSets = person === ENERGY_ID ? defaultSets : (setsOverrides[`${programId}:${dayIndex}:${currentStep.name}`] || defaultSets)
+  const setsKey = (name) => `${programId}:${dayIndex}:${name}${person === ENERGY_ID ? ':' + energyMode : ''}`
+  const effectiveSets = setsOverrides[setsKey(currentStep.name)] || defaultSets
   const setsOf = (j) => {
     const target = steps[j]
     if (!target) return 0
     const p = parseSets(target.reps)
-    return (person === ENERGY_ID ? null : setsOverrides[`${programId}:${dayIndex}:${target.name}`]) || (p.isSet ? p.sets : 1)
+    return setsOverrides[setsKey(target.name)] || (p.isSet ? p.sets : 1)
   }
   const superset = supersetLabel(steps, stepIndex)
 
@@ -599,8 +600,8 @@ export default function App() {
   }
 
   function adjustSets(delta) {
-    const key = `${programId}:${dayIndex}:${currentStep.name}`
-    const updated = Math.max(1, Math.min(10, effectiveSets + delta))
+    const key = setsKey(currentStep.name)
+    const updated = Math.max(1, Math.min(person === ENERGY_ID ? defaultSets : 10, effectiveSets + delta))
     setSetsOverrides((prev) => {
       const next = { ...prev }
       if (updated === defaultSets) delete next[key]
@@ -919,7 +920,7 @@ export default function App() {
                       <span className="setIndicator">Satz {setIndex + 1}/{effectiveSets}</span>
                       <div className="setStepper">
                         <button onClick={() => adjustSets(-1)} disabled={effectiveSets <= 1} aria-label="Satz entfernen">−</button>
-                        <button onClick={() => adjustSets(1)} disabled={effectiveSets >= 10} aria-label="Satz hinzufügen">+</button>
+                        <button onClick={() => adjustSets(1)} disabled={effectiveSets >= (person === ENERGY_ID ? defaultSets : 10)} aria-label="Satz hinzufügen">+</button>
                       </div>
                     </div>
                   )}

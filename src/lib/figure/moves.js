@@ -48,8 +48,9 @@ const treePose = (side) => {
 }
 const twistPose = (side) => {
  const x = side === 'Left' ? -1 : 1
- const pose = {hip:[150,167],lean:0,torsoScale:.65,legScale:.78,head:0,hN:A(205,137),hF:A(95,137),fN:A(150+x*40,179),fF:A(150+x*33,175)}
- return {view:'front',work:['torso'],props:{mat:true},poles:{knee:[x,-1]},keys:[k(pose,2,5,'Knie sanft zur Seite sinken lassen'),k({...pose,head:-3*x},2,5,'Schultern entspannt · ruhig atmen')]}
+ const pose = lying({hip:[138,172],hN:A(124,181),hF:A(91,181),fN:A(175,179),fF:A(171,177),headAbs:-90})
+ const lowered = {...pose,fN:A(173,179),fF:A(170,179),headAbs:-90+x*3}
+ return {view:'side',work:['torso'],props:{mat:true},poles:{knee:[.2,-1]},keys:[k(pose,2,2,'Rückenlage · Knie beugen'),k(lowered,2,6,'Knie zur '+(x<0?'linken':'rechten')+' Seite sinken lassen · ruhig atmen')]}
 }
 export const MOVES = {
   chairSquat: {view:'side',work:['thigh','glute'],props:{chair:true},keys:[
