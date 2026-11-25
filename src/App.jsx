@@ -73,6 +73,7 @@ import CloudSyncIndicator from './components/CloudSyncIndicator'
 import ExerciseTechnique from './components/ExerciseTechnique'
 import ExerciseList from './components/ExerciseList'
 import ProgramPicker from './components/ProgramPicker'
+import { orderedIndices, orderSignature, moveSessionBlock } from './lib/sessionOrder'
 import HomeStudio from './components/HomeStudio'
 import Nutrition from './components/Nutrition'
 import MoreStudio from './components/MoreStudio'
@@ -129,7 +130,9 @@ export default function App() {
     Math.max(Number(saved.dayIndex) || 0, 0),
     allPlans[savedPerson].days.length - 1,
   )
-  const savedSteps = allPlans[savedPerson].days[savedDayIndex].steps
+  const savedBaseSteps = allPlans[savedPerson].days[savedDayIndex].steps
+  const savedOrder = saved.order?.key === savedPerson+':'+savedDayIndex ? saved.order : null
+  const savedSteps = orderedIndices(savedBaseSteps,savedOrder).map(i=>savedBaseSteps[i])
   const savedStepIndex = Math.min(
     Math.max(Number(saved.stepIndex) || 0, 0),
     savedSteps.length - 1,
@@ -151,9 +154,10 @@ export default function App() {
   const [person, setPerson] = useState(savedPerson)
   const [dayIndex, setDayIndex] = useState(savedDayIndex)
   const [stepIndex, setStepIndex] = useState(savedStepIndex)
-  const [phase, setPhase] = useState('work')
+  const [sessionOrder,setSessionOrder] = useState(savedOrder)
+  const [phase, setPhase] = useState(saved.overview === false && ['rest','done'].includes(saved.phase) ? saved.phase : 'work')
   const [running, setRunning] = useState(false)
-  const [seconds, setSeconds] = useState(initialWork != null ? initialWork : 0)
+  const [seconds, setSeconds] = useState(saved.overview === false && saved.phase==='rest' ? Math.max(0, Number(saved.pauseSeconds)||60) : (initialWork ?? 0))
   const [workSeconds, setWorkSeconds] = useState(initialWork != null ? initialWork : 0)
   const [pauseSeconds, setPauseSeconds] = useState(saved.pauseSeconds || 60)
   const [showVideo, setShowVideo] = useState(false)
@@ -163,7 +167,7 @@ export default function App() {
   const [generatorOpen, setGeneratorOpen] = useState(false)
   const [updateInfo, setUpdateInfo] = useState(null)
   const [updating, setUpdating] = useState(false)
-  const [setIndex, setSetIndex] = useState(0)
+  const [setIndex, setSetIndex] = useState(() => saved.overview === false ? Math.max(0,Math.floor(Number(saved.setIndex)||0)) : 0)
   const [doneSteps, setDoneSteps] = useState(() => {
     const s = loadState()
     return s.doneSteps || {}
@@ -204,7 +208,10 @@ export default function App() {
   const currentOwner = plan.builtin ? person : (plan.owner || 'connie')
   const activeWorkout = !overview && phase !== 'done'
   const day = plan.days[dayIndex] || plan.days[0]
-  const steps = day.steps
+  const baseSteps = day.steps
+  const orderKey = person+':'+dayIndex
+  const orderIndices = orderedIndices(baseSteps, sessionOrder?.key===orderKey ? sessionOrder : null)
+  const steps = orderIndices.map(i=>baseSteps[i])
   const currentStep = steps[stepIndex] || steps[steps.length - 1]
   const parsedWork = workSecondsFor(currentStep, timedSeconds)
   const isTimed = parsedWork != null
@@ -323,8 +330,8 @@ export default function App() {
   }
 
   useEffect(() => {
-    persist(STORAGE_KEY, { person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview })
-  }, [person, dayIndex, stepIndex, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview])
+    persist(STORAGE_KEY, { person, dayIndex, stepIndex, setIndex, phase, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview, order:sessionOrder })
+  }, [person, dayIndex, stepIndex, setIndex, phase, pauseSeconds, doneSteps, setsDone, sessionLog, prs, overview, sessionOrder])
   useEffect(() => { saveLog(log) }, [log])
   useEffect(() => { persist(GOAL_KEY, String(goal)) }, [goal])
   useEffect(() => { persist(SESSION_KEY, session) }, [session])
@@ -382,6 +389,7 @@ export default function App() {
   }
 
   function resetSession() {
+    setSessionOrder(null)
     setSession({ key: null, startedAt: null, elapsedMs: 0, running: false })
     setSetsDone(0)
     setSessionLog({})
@@ -427,8 +435,8 @@ export default function App() {
   }
 
 
-  function enterWork(nextStepIndex, nextSetIndex = 0) {
-    const target = steps[nextStepIndex]
+  function enterWork(nextStepIndex, nextSetIndex = 0, sourceSteps = steps) {
+    const target = sourceSteps[nextStepIndex]
     const work = workSecondsFor(target, timedSeconds)
     setStepIndex(nextStepIndex)
     setSetIndex(nextSetIndex)
@@ -565,7 +573,20 @@ export default function App() {
     selectDay(dayIndex, energyPlan(mode))
   }
 
+  function reorderExercise(index,direction) {
+    if(!activeWorkout)return
+    const indices=moveSessionBlock(steps,orderIndices,stepIndex,doneSteps,sessionLog,index,direction)
+    if(!indices)return
+    setSessionOrder({key:orderKey,signature:orderSignature(baseSteps),indices})
+    setSheetStep(null)
+  }
+
   function pickStep(index) {
+    if(activeWorkout){
+      if(index===stepIndex){setTab('training');setSheetStep(null)}
+      else setSheetStep(index)
+      return
+    }
     unlockCoach()
     setOverview(false)
     startSession()
@@ -607,7 +628,7 @@ export default function App() {
     setDoneSteps({})
     resetSession()
     setConfirmRestart(false)
-    enterWork(0)
+    enterWork(0,0,baseSteps)
   }
 
   function adjustSets(delta) {
@@ -853,7 +874,7 @@ export default function App() {
             <p>{tab === 'fortschritt' ? 'Jede Wiederholung zählt. Hier siehst du deine Entwicklung.' : tab === 'uebungen' ? 'Dein Trainingsablauf auf einen Blick.' : 'Konzentrier dich auf deinen Rhythmus.'}</p>
           </header>}
 
-          {tab === 'training' && activeWorkout && <div className="ff3ActiveHeader"><span>{plan.builtin?'Grundtraining':plan.name} · {day.title}</span><button onClick={()=>openTab('uebungen')}>Übungsübersicht</button></div>}
+          {tab === 'training' && activeWorkout && <div className="ff3ActiveHeader"><span>{plan.builtin?'Grundtraining':plan.name} · {day.title}</span><button onClick={()=>openTab('uebungen')}>Reihenfolge ändern</button></div>}
           {tab === 'training' && (
           <section className="dashboard singleCol">
             {overview && phase !== 'done' ? (
@@ -1105,6 +1126,10 @@ export default function App() {
               hasVideo={hasVideo}
               onPick={pickStep}
               onInfo={setSheetStep}
+              activeWorkout={activeWorkout}
+              sessionLog={sessionLog}
+              onMove={reorderExercise}
+              onResume={()=>openTab('training')}
             />
           </section>
           )}
@@ -1196,7 +1221,7 @@ export default function App() {
           owner={currentOwner}
           log={log}
           onClose={() => setSheetStep(null)}
-          onStart={sheetStep !== stepIndex || overview ? () => pickStep(sheetStep) : null}
+          onStart={!activeWorkout && (sheetStep !== stepIndex || overview) ? () => pickStep(sheetStep) : null}
         />
       )}
 

@@ -252,3 +252,17 @@ html[data-theme="dark"] .ff3Week .done{color:var(--bg)}
  .ff3App .ff3Nav button span{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.ff4RingValue,.ff4FoodBar i{transition:none!important}}
+
+/* Session-only reorder controls; no touch drag conflict with vertical scrolling. */
+.ffOrderIntro{display:flex;gap:12px;align-items:flex-start;padding:14px;background:var(--accent-soft);color:var(--accent-strong);border-radius:15px;margin:12px 0}
+.ffOrderIntro>svg{flex:none;margin-top:2px}
+.ffOrderIntro strong{font-size:14px}
+.ffOrderIntro p{font-size:12px;line-height:1.5;margin:4px 0 0;color:var(--ink-soft)}
+.ffOrderBlock{border-bottom:1px solid var(--line);min-width:0}
+.ffOrderBlock:last-child{border-bottom:0}
+.ffOrderBlock.grouped{border-left:3px solid var(--accent);padding-left:5px}
+.ffOrderControls{display:flex;align-items:center;gap:5px;padding:3px 8px 8px;min-height:36px;color:var(--muted);font-size:11px}
+.ffOrderControls>span:first-child{margin-right:auto;display:flex;align-items:center;gap:5px}
+.ffOrderControls button{display:grid;place-items:center;width:44px;min-height:44px;border:1px solid var(--line);background:var(--surface-2);color:var(--accent-strong);border-radius:11px;cursor:pointer}
+.ffOrderControls button:disabled{opacity:.32;cursor:default}
+.ffOrderResume{margin-top:14px}
