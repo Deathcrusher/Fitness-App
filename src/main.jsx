@@ -8,6 +8,7 @@ import '@fontsource-variable/archivo/wdth.css'
 import './styles.css'
 import './designRefresh.css'
 import './motionStudio.css'
+import './studio3.css'
 
 applyPlanFixes()
 
