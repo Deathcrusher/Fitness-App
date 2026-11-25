@@ -4,7 +4,7 @@
  * - Übungsbilder: Cache zuerst, bleiben über Updates erhalten (Version steckt in ?v=)
  */
 // Bump when releasing a visible UI update; old CacheStorage entries must not hide new HTML/CSS.
-const CACHE = 'fitflow-v243-video-centered'
+const CACHE = 'fitflow-v244-optional-exercise-video'
 const MEDIA = 'fitflow-media-v1'
 const MEDIA_LIMIT = 200
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icon-192-ff.png', '/icon-512-ff.png', '/brand-mark.svg']

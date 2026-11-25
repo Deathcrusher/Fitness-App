@@ -2,13 +2,13 @@ import React from 'react'
 import { ArrowUpRight, CalendarCheck2, ChevronRight, Clock3, HeartHandshake, ListChecks, Play, Target, Zap } from 'lucide-react'
 import { FigureFrame, MOVES, animationFor } from './ExerciseFigure'
 import { imageFor } from '../lib/plans'
-import { exerciseVideoFor } from '../lib/exerciseVideos'
+import { prefersVideo } from '../lib/exerciseVideos'
 import { comebackOf, estimateMinutes, isLoggable, lastEntry } from '../lib/logStore'
 import { dateKey } from './ProgressCalendar'
 import { supersetLabel } from '../lib/superset'
 
 function Thumb({ step, imagePerson }) {
-  if (exerciseVideoFor(step)) return <span className="ovThumb"><span className="ffDemoThumb"><Play size={22}/></span></span>
+  if (prefersVideo(step)) return <span className="ovThumb"><span className="ffDemoThumb"><Play size={22}/></span></span>
   const key = animationFor(step)
   if (key) {
     const def = MOVES[key]
