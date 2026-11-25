@@ -4,7 +4,7 @@
  * - Übungsbilder: Cache zuerst, bleiben über Updates erhalten (Version steckt in ?v=)
  */
 // Bump when releasing a visible UI update; old CacheStorage entries must not hide new HTML/CSS.
-const CACHE = 'fitflow-v305-control-polish'
+const CACHE = 'fitflow-v306-private-studio'
 const MEDIA = 'fitflow-media-v1'
 const MEDIA_LIMIT = 200
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icon-192-ff.png', '/icon-512-ff.png', '/brand-mark.svg']
@@ -69,8 +69,8 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request, { cache: 'no-cache' })
         .then((response) => {
-          const copy = response.clone()
-          caches.open(CACHE).then((cache) => cache.put('/index.html', copy))
+          if(response.ok){const copy = response.clone()
+          caches.open(CACHE).then((cache) => cache.put('/index.html', copy))}
           return response
         })
         .catch(() => caches.match('/index.html').then((res) => res || caches.match('/'))),
