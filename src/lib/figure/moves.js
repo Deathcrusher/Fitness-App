@@ -254,6 +254,20 @@ export const MOVES = {
       k(lying({ hip: [138, LIE_Y], fN: P(-86, 74.6), fF: P(-88, 74.6), faN: -100, faF: -100 }), 1.9, 0.2, 'Langsam senken'),
     ],
   },
+  crunch: {
+    view:'side', work:['torso'], props:{mat:true}, poles:{knee:[0,-1],elbow:[1,-.6]},
+    keys:[
+      k(lying({fN:A(183,Y),fF:A(180,Y),hN:T(12,3),hF:T(10,3)}),1.5,.2,'Rückenlage · Knie gebeugt'),
+      k(lying({aim:[99,148],headAbs:-60,fN:A(183,Y),fF:A(180,Y),hN:T(12,3),hF:T(10,3)}),1.7,.5,'Schulterblätter anheben · ausatmen')
+    ],
+  },
+  reverseCrunch: {
+    view:'side',work:['torso'],props:{mat:true},poles:{knee:[.6,-1]},
+    keys:[
+      k(lying({fN:A(176,139),fF:A(173,139),faN:-15,faF:-15}),1.5,.3,'Knie gebeugt · Bauch anspannen'),
+      k(lying({hip:[132,163],aim:[90,172],fN:A(149,120),fF:A(146,120),faN:-30,faF:-30}),1.8,.4,'Becken einrollen · langsam absenken')
+    ],
+  },
   bicycleCrunch: {
     view: 'side', work: ['torso'], props: { mat: true }, poles: { knee: [0.6, -1], elbow: [1, -0.6] },
     keys: [
@@ -409,6 +423,8 @@ const RULES = [
   [/plank|unterarmstütz/i, 'plank'],
   [/russian|twist/i, 'russianTwist'],
   [/bicycle|fahrrad/i, 'bicycleCrunch'],
+  [/reverse[ -]?crunch/i, 'reverseCrunch'],
+  [/crunch/i, 'crunch'],
   [/beinheben liegend|seitlich.*bein/i, 'sideLegRaise'],
   [/beinheben|leg raise/i, 'legRaise'],
   [/arme kreisen \(andere/i, 'armCirclesReverse'],

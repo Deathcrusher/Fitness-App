@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { ChevronDown, ChevronUp, Dumbbell, Plus, Sparkles, Check, MoveUpRight, CalendarDays } from 'lucide-react'
 
 import { ENERGY_ID, ENERGY_MODES } from '../lib/energyPlan'
+import { CORE_SPECIAL_ID } from '../lib/coreSpecial'
 import { goalFor, isMaintenance } from '../lib/fitnessGoals'
 
 // The program and day selectors only appear on the actual workout screen.
 export default function ProgramPicker({ plan, person, owner, builtinEntries, customEntries, dayIndex, dueDay, onPerson, onNewProgram, onDay, energyMode, onEnergyMode, showProfiles = true }) {
   const specialEntries = customEntries.filter(([key, item]) =>
-    key === 'chat-arm-special-20261122' || item.name === 'Arme Spezial')
+    key === 'chat-arm-special-20261122' || item.name === 'Arme Spezial' || key === CORE_SPECIAL_ID)
   const energyEntry = customEntries.find(([key]) => key === ENERGY_ID)
   const otherEntries = customEntries.filter(([key]) => key !== ENERGY_ID && !specialEntries.some(([special]) => special === key))
   const [showOthers, setShowOthers] = useState(() => otherEntries.some(([key]) => key === person))
@@ -58,7 +59,7 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
             <button type="button" key={key} className={`ffProgramOption${person === key ? ' active' : ''}`}
               onClick={() => onPerson(key)} aria-pressed={person === key}>
               <span className="ffProgramIcon"><Sparkles size={19} /></span>
-              <span className="ffProgramText"><strong>{item.name}</strong><small>Optional · Fokus auf Arme</small></span>
+              <span className="ffProgramText"><strong>{item.name}</strong><small>{key === CORE_SPECIAL_ID ? 'Optional · Bauch & Core · 15–20 Min' : 'Optional · Fokus auf Arme'}</small></span>
               {person === key && <Check className="ffProgramCheck" size={19} />}
             </button>
           ))}

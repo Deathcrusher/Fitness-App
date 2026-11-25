@@ -181,7 +181,7 @@ export const builtinPlans = {
     equipment: 'Kurzhanteln, Matte, Laufband',
     builtin: true,
     // Historical workouts retain their old records; new sessions record this version.
-    version: '2026-11-23-ganzkoerper-2',
+    version: '2026-11-25-ganzkoerper-3',
     days: [
       {
         title: 'Montag',
@@ -212,6 +212,7 @@ export const builtinPlans = {
           step('upper', 'Seitheben', 'Kontrolliert ohne Schwung, Gewicht für saubere Technik wählen.', '3 x 10-15'),
           step('upper', 'Hammer Curls', 'Kontrolliert curlen und langsam senken; beansprucht auch die Unterarme.', '2 x 10'),
           step('core', 'Russian Twists', 'Bauch fest, 10 Drehungen pro Seite.', '2 x 20'),
+          step('core', 'Reverse Crunches', 'Knie gebeugt über der Hüfte, Becken langsam einrollen und wieder absenken. Kein Schwung.', '2 x 10-15'),
         ],
       },
       {
@@ -352,6 +353,8 @@ export const EXERCISE_LIBRARY = [
   { type: 'upper', name: 'Seitheben', reps: '3 x 15', detail: 'Leichtes Gewicht, ohne Schwung.', equip: 'db' },
   { type: 'upper', name: 'Brustdrücken am Boden', reps: '3 x 12', detail: 'Hanteln kontrolliert nach oben drücken.', equip: 'db' },
 
+  { type: 'core', name: 'Crunches', reps: '2 x 12-15', detail: 'Schulterblätter kontrolliert anheben, Nacken entspannen; optional Kurzhantel vor der Brust.', equip: 'both' },
+  { type: 'core', name: 'Reverse Crunches', reps: '2 x 10-15', detail: 'Knie gebeugt, Becken kontrolliert einrollen, langsam absenken.', equip: 'bw' },
   { type: 'core', name: 'Plank', reps: '45 Sek', detail: 'Rücken lang, Bauch fest, ruhig atmen.', equip: 'bw' },
   { type: 'core', name: 'Russian Twists', reps: '3 x 20', detail: 'Oberkörper drehen, Core aktiv.', equip: 'bw' },
   { type: 'core', name: 'Bicycle Crunches', reps: '3 x 20', detail: 'Langsam und sauber, nicht am Nacken ziehen.', equip: 'bw' },

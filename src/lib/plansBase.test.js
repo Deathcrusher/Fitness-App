@@ -6,7 +6,7 @@ describe('René Ganzkörperplan 2026-11-23', () => {
 
   it('bewahrt die drei Trainingstage und erstellt neue versionierte Trainings', () => {
     expect(rene.builtin).toBe(true)
-    expect(rene.version).toBe('2026-11-23-ganzkoerper-2')
+    expect(rene.version).toBe('2026-11-25-ganzkoerper-3')
     expect(rene.days.map(d => d.title)).toEqual(['Montag','Mittwoch','Freitag'])
   })
 
