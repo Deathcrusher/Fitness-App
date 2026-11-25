@@ -366,3 +366,6 @@ html[data-theme="dark"] .ffDragGhost{background:#2b382f;color:#f4faf4;border-col
 .ffDragGhostRow+ .ffDragGhostRow{border-top:1px solid #8883}
 .ffDragGhostRow div{flex:1;min-width:0}.ffDragGhostRow strong,.ffDragGhostRow small{display:block}.ffDragGhostRow strong{font-size:14px}.ffDragGhostRow small{font-size:12px;opacity:.7;margin-top:3px}
 @media(prefers-reduced-motion:reduce){.ffDragInner{transition:none}}
+
+.ffDragRowIcons{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0}
+.ffDragList .stepCopy{min-width:0}

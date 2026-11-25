@@ -23,7 +23,7 @@ export default function ExerciseList({plan,day,steps,progress,stepIndex,phase,do
  return <aside className="planPanel ffOrderPanel">
   <div className="panelHead"><div><p className="muted">{plan.equipment}</p><h2>{day.focus}</h2></div><span>{progress}%</span></div>
   <p className="dayTone">{day.tone}</p>
-  {activeWorkout&&<p className="ffDragHint"><GripVertical size={16}/> Übung halten &amp; verschieben <span>· Nur für heute</span></p>}
+  {activeWorkout&&<p className="ffDragHint"><GripVertical size={16}/> Übung halten &amp; verschieben <span>· Nur diese Einheit</span></p>}
   <div className={'stepList ffDragList'+(drag?' dragging':'')} ref={root}>
    {blocks.map(block=>{
     const movable=activeWorkout&&!block.locked,group=block.end>block.start
@@ -36,8 +36,8 @@ export default function ExerciseList({plan,day,steps,progress,stepIndex,phase,do
         <button className="stepMain" onClick={()=>onPick(index)} onKeyDown={e=>keyboardMove(e,block)} aria-label={movable?item.name+' · Halten zum Verschieben, Alt und Pfeiltasten zum Sortieren':undefined}>
          <span className="stepIcon">{state==='done'?<CheckCircle2 size={18}/>:<ItemIcon size={18}/>}</span>
          <span className="stepCopy"><strong>{item.name}{ss&&<em className="ssTag" title="Supersatz">{ss.letter}{ss.pos}</em>}</strong><small>{item.reps}{activeWorkout&&state==='current'?' · Aktuell':doneSteps[index]==='skipped'?' · Übersprungen':''}</small></span>
-         {hasVideo(item)&&<Video size={15} className="stepVideoIcon"/>}
-         {movable&&offset===0&&<GripVertical className="ffDragGrip" size={17} aria-hidden="true"/>}
+         <span className="ffDragRowIcons">{hasVideo(item)&&<Video size={15} className="stepVideoIcon"/>}
+         {movable&&offset===0&&<GripVertical className="ffDragGrip" size={17} aria-hidden="true"/>}</span>
         </button>
         <button className="stepInfo" onClick={()=>onInfo(index)} aria-label={item.name+': Details und Verlauf'}><ChevronRight size={18}/></button>
        </div>
