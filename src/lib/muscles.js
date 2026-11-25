@@ -44,6 +44,8 @@ const MOVE_MUSCLES = {
   sidePlank: { obliques: 1, abs: 0.5, shoulders: 0.25 },
   mountainClimber: { abs: 1, quads: 0.25, shoulders: 0.25 },
   legRaise: { abs: 1 },
+  crunch: { abs: 1 },
+  reverseCrunch: { abs: 1 },
   bicycleCrunch: { abs: 1, obliques: 1 },
   russianTwist: { obliques: 1, abs: 0.5 },
 }

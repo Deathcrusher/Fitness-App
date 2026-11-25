@@ -153,5 +153,6 @@ export function persist(key, value) {
 export function ownerOfEntry(entry, customPlans = {}) {
   if (entry?.owner) return entry.owner
   if (builtinPlans[entry?.programId]) return entry.programId
+  if (entry?.programId === 'rene-core-special-v1') return 'rene'
   return customPlans[entry?.programId]?.owner || 'connie'
 }

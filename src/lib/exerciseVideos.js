@@ -9,6 +9,8 @@ const bird={id:'QQot16miua8',author:'Physical Therapy & Hand Clinic of Hillsboro
 const twist={id:'mNdJti7ZwKI',author:'Vive Health · David Lee, Physiotherapeut',title:'Supine Spinal Twist',start:15,note:'Knie nur sanft zur angegebenen Seite sinken lassen, Schultern am Boden lassen und nicht nachdrücken.'}
 const videos={catCow:cat,childPose:child,warriorLeft:warrior,warriorRight:warrior,treeLeft:tree,treeRight:tree,butterfly,birdDog:bird,supineTwistLeft:twist,supineTwistRight:twist}
 const strengthVideos = {
+  reverseCrunch: {id:'wkP2kvSGIrI',author:'Idris',title:'How to do reverse crunch',note:'Becken langsam einrollen; nicht mit den Beinen schwingen.'},
+  plank: {id:'w3MELBkXDpk',author:'Sha Fitness',title:'How to Do a Forearm Plank',note:'Körper in einer Linie halten; die FitFlow-Zeit gilt.'},
   "romanianDeadlift": {
     "id": "FQKfr1YDhEk",
     "author": "ScottHermanFitness",

@@ -81,6 +81,7 @@ import Nutrition from './components/Nutrition'
 import MoreStudio from './components/MoreStudio'
 import { NUTRITION_KEY, NUTRITION_GOALS_KEY, readNutrition, dailyMeals, totals, saveMeal, removeMeal, localDate } from './lib/nutrition'
 import { ENERGY_ID, ENERGY_MODES, energyPlan, workSecondsFor } from './lib/energyPlan'
+import { CORE_SPECIAL_ID, coreSpecial } from './lib/coreSpecial'
 import { nextDueDay } from './lib/schedule'
 import { COUNTDOWN_FROM, coachEnabled, countWord, say, setCoachEnabled, unlockCoach } from './lib/coach'
 import { newlyUnlocked } from './lib/achievements'
@@ -124,7 +125,7 @@ export default function App() {
   const [history, setHistory] = useState(loadHistory)
   const [energyMode, setEnergyMode] = useState(() => { try { const m = localStorage.getItem('fitflow-energy-mode-v1'); return Object.hasOwn(ENERGY_MODES,m) ? m : 'normal' } catch { return 'normal' } })
   const energyPreset = energyPlan(energyMode)
-  const allPlans = { ...builtinPlans, ...customPlans, [ENERGY_ID]: energyPreset }
+  const allPlans = { ...builtinPlans, ...customPlans, [ENERGY_ID]: energyPreset, [CORE_SPECIAL_ID]: coreSpecial }
 
   const saved = loadState()
   const savedPerson = allPlans[saved.person] ? saved.person : 'connie'
@@ -831,7 +832,7 @@ export default function App() {
   const ownerName = builtinPlans[currentOwner]?.name || currentOwner
 
   const builtinEntries = Object.entries(builtinPlans)
-  const customEntries = Object.entries({ ...customPlans, [ENERGY_ID]: energyPreset }).filter(([, p]) => (p.owner || 'connie') === currentOwner)
+  const customEntries = Object.entries({ ...customPlans, [ENERGY_ID]: energyPreset, [CORE_SPECIAL_ID]: coreSpecial }).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
   const openTab = (key) => { setView('train'); setTab(key); window.scrollTo(0,0) }
   const openPrograms = () => { if(activeWorkout)return;setBuilderOwner(currentOwner);setView('build');window.scrollTo(0,0) }
