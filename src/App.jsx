@@ -4,6 +4,7 @@ import {
   House,
   Utensils,
   Ellipsis,
+  ListChecks,
   CheckCircle2,
   Dumbbell,
   History,
@@ -190,6 +191,7 @@ export default function App() {
     return !(Number(st.stepIndex) > 0 || Object.keys(st.doneSteps || {}).length > 0 || st.overview === false)
   })
   const [sheetStep, setSheetStep] = useState(null)
+  const [editOrder,setEditOrder] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [goal, setGoal] = useState(loadGoal)
   const [voiceOn, setVoiceOn] = useState(coachEnabled)
@@ -831,10 +833,10 @@ export default function App() {
   const builtinEntries = Object.entries(builtinPlans)
   const customEntries = Object.entries({ ...customPlans, [ENERGY_ID]: energyPreset }).filter(([, p]) => (p.owner || 'connie') === currentOwner)
 
-  const openTab = (key) => { setView('train'); setTab(key); window.scrollTo(0,0) }
+  const openTab = (key) => { setView('train'); setTab(key); if(key!=='uebungen')setEditOrder(false);window.scrollTo(0,0) }
   const openPrograms = () => { if(activeWorkout)return;setBuilderOwner(currentOwner);setView('build');window.scrollTo(0,0) }
   const switchProfile = (key) => { if(!activeWorkout && key!==currentOwner)setPerson(key) }
-  const activeNav = view==='build' || ['uebungen','timer','mehr'].includes(tab) ? 'mehr' : tab
+  const activeNav = view==='build' || ['timer','mehr'].includes(tab) ? 'mehr' : tab
   return (
     <main className={`app ${plan.accent} withTabbar ff3App ${maintenance?'ff3Balance':'ff3Strength'}${activeWorkout && tab==='training' && view==='train'?' ff3Focus':''}`}>
       <nav className="topnav" aria-label="Hauptnavigation">
@@ -852,7 +854,7 @@ export default function App() {
         <>
           {tab === 'heute' && <HomeStudio owner={currentOwner} ownerName={ownerName} programId={person} plan={plan} day={activeWorkout?day:plan.days[dueDay]||day} history={personalHistory} weekCount={weekCount} goal={goal} pauseSeconds={pauseSeconds} nutrition={totals(dailyMeals(nutrition,currentOwner,localDate()))} goals={nutritionGoals[currentOwner]} active={activeWorkout} onTraining={()=>{if(!activeWorkout && dueDay!==dayIndex)selectDay(dueDay);openTab('training')}} onNutrition={()=>openTab('ernaehrung')} onProgress={()=>openTab('fortschritt')} onPrograms={openPrograms}/>}
           {tab === 'ernaehrung' && <Nutrition key={currentOwner} owner={currentOwner} ownerName={ownerName} data={nutrition} goals={nutritionGoals[currentOwner]} onSave={(date,raw,id)=>{const key=id||makeId();setNutrition(old=>saveMeal(old,currentOwner,date,raw,key))}} onDelete={id=>setNutrition(old=>removeMeal(old,currentOwner,id))} onGoals={values=>setNutritionGoals(old=>({...old,[currentOwner]:{...values,updatedAt:new Date().toISOString()}}))}/>}
-          {tab === 'mehr' && <MoreStudio active={activeWorkout} onExercises={()=>openTab('uebungen')} onTimer={()=>openTab('timer')} onPrograms={openPrograms} onSettings={()=>setSettingsOpen(true)}/>}
+          {tab === 'mehr' && <MoreStudio active={activeWorkout} onTimer={()=>openTab('timer')} onPrograms={openPrograms} onSettings={()=>setSettingsOpen(true)}/>}
           {tab === 'training' && !activeWorkout && <ProgramPicker
             plan={plan}
             person={person}
@@ -874,7 +876,7 @@ export default function App() {
             <p>{tab === 'fortschritt' ? 'Jede Wiederholung zählt. Hier siehst du deine Entwicklung.' : tab === 'uebungen' ? 'Dein Trainingsablauf auf einen Blick.' : 'Konzentrier dich auf deinen Rhythmus.'}</p>
           </header>}
 
-          {tab === 'training' && activeWorkout && <div className="ff3ActiveHeader"><span>{plan.builtin?'Grundtraining':plan.name} · {day.title}</span><button onClick={()=>openTab('uebungen')}>Reihenfolge ändern</button></div>}
+          {tab === 'training' && activeWorkout && <div className="ff3ActiveHeader"><span>{plan.builtin?'Grundtraining':plan.name} · {day.title}</span><button onClick={()=>{setEditOrder(true);openTab('uebungen')}}><ListChecks size={17}/> Reihenfolge</button></div>}
           {tab === 'training' && (
           <section className="dashboard singleCol">
             {overview && phase !== 'done' ? (
@@ -897,7 +899,7 @@ export default function App() {
                 />
               </article>
             ) : (
-            <article className="sessionCard">
+            <article className={`sessionCard${phase!=='done'?' ffLiveSession':''}${phase==='rest'?' ffLiveRest':''}`}>
               {phase === 'done' ? (
                 <FinishSummary
                   day={day}
@@ -931,7 +933,12 @@ export default function App() {
                   </div>
                   <div className="progressLine" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
 
-                  <SessionMedia
+                  <header className="ffLiveTitle">
+                    <div className="ffLiveEyebrow"><span><TypeIcon size={15}/> {phaseLabel}</span><small>{phase==='rest'?'ERHOLUNG':'ÜBUNG '+String(stepIndex+1).padStart(2,'0')}</small></div>
+                    <h2>{phase==='rest'?(isSetRest?'Satzpause':'Pause'):currentStep.name}</h2>
+                    <p>{phase==='rest'?currentStep.name:currentStep.reps.replace(/(\d)\s*[x×]\s*(\d)/i,'$1 × $2')}{phase==='work'&&effectiveSets>1?' · Satz '+(setIndex+1)+' von '+effectiveSets:''}</p>
+                  </header>
+                  {phase==='work' && <SessionMedia
                     phase={phase}
                     step={currentStep}
                     stepKey={`${programId}-${dayIndex}-${stepIndex}`}
@@ -941,15 +948,9 @@ export default function App() {
                     imageFocus={currentImageFocus}
                     guide={currentGuide}
                     hasAnim={hasAnim}
-                    badge={<><TypeIcon size={16} /> {phaseLabel}</>}
-                  />
-
+                    badge={null}
+                  /> }
                   <div className="sessionBody">
-                  <div className="sessionHeader">
-                    <h2>{phase === 'rest' ? (isSetRest ? 'Satzpause' : 'Pause') : currentStep.name}</h2>
-                    {phase === 'work' && <span className="repFigure">{currentStep.reps.replace(/(\d)\s*[x×]\s*(\d)/i, '$1 × $2')}</span>}
-                  </div>
-
                   {phase === 'work' && superset && (
                     <p className="supersetTag"><Link2 size={14} /> Supersatz {superset.letter}{superset.pos} <span>· {superset.pos < superset.size ? `danach direkt ${steps[stepIndex + 1].name}` : 'danach Pause'}</span></p>
                   )}
@@ -985,40 +986,6 @@ export default function App() {
 
                   {phase === 'rest' && prs.some((p) => p.name === currentStep.name) && (sessionLog[stepIndex] || []).length > 0 && (
                     <p className="recordToast"><Medal size={18} /> Neuer Rekord: {prs.find((p) => p.name === currentStep.name).text}</p>
-                  )}
-
-                  <p className="exerciseText">
-                    {phase === 'rest'
-                      ? restEnded
-                        ? 'Pause vorbei – tippe auf Weiter, wenn du startklar bist.'
-                        : isSetRest
-                          ? 'Kurz erholen, dann kommt der nächste Satz.'
-                          : 'Atmen, kurz trinken und bereit machen.'
-                      : currentStep.detail}
-                  </p>
-                  {phase === 'work' && <ExerciseTechnique step={currentStep} compact />}
-
-                  {phase === 'work' && (stepVideo || plan.builtin || loggable) && (
-                    <div className="videoActions">
-                      {loggable && (
-                        <button className="ghostBtn" onClick={() => setSheetStep(stepIndex)}>
-                          <History size={16} /> Verlauf
-                        </button>
-                      )}
-                      {stepVideo && (
-                        <button className="ghostBtn" onClick={() => setShowVideo((v) => !v)}>
-                          <Video size={16} /> {showVideo ? 'Video ausblenden' : 'Video anzeigen'}
-                        </button>
-                      )}
-                      {plan.builtin && (
-                        <button className="ghostBtn subtle" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: videos[videoKey(programId, dayIndex, currentStep)] || '', name: currentStep.name })}>
-                          {stepVideo ? 'Video ändern' : <><Video size={16} /> Video verknüpfen</>}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  {showVideo && stepVideo && phase === 'work' && (
-                    <VideoPlayer url={stepVideo} onClose={() => setShowVideo(false)} />
                   )}
 
                   {showTimer && (
@@ -1090,6 +1057,42 @@ export default function App() {
                     </>
                   )}
 
+                  {phase==='work'?<details className="ffLiveDetails"><summary>Technik &amp; Verlauf <span>+</span></summary><div>                  <p className="exerciseText">
+                    {phase === 'rest'
+                      ? restEnded
+                        ? 'Pause vorbei – tippe auf Weiter, wenn du startklar bist.'
+                        : isSetRest
+                          ? 'Kurz erholen, dann kommt der nächste Satz.'
+                          : 'Atmen, kurz trinken und bereit machen.'
+                      : currentStep.detail}
+                  </p>
+                  {phase === 'work' && <ExerciseTechnique step={currentStep} compact />}
+
+                  {phase === 'work' && (stepVideo || plan.builtin || loggable) && (
+                    <div className="videoActions">
+                      {loggable && (
+                        <button className="ghostBtn" onClick={() => setSheetStep(stepIndex)}>
+                          <History size={16} /> Verlauf
+                        </button>
+                      )}
+                      {stepVideo && (
+                        <button className="ghostBtn" onClick={() => setShowVideo((v) => !v)}>
+                          <Video size={16} /> {showVideo ? 'Video ausblenden' : 'Video anzeigen'}
+                        </button>
+                      )}
+                      {plan.builtin && (
+                        <button className="ghostBtn subtle" onClick={() => setLinkTarget({ key: videoKey(programId, dayIndex, currentStep), value: videos[videoKey(programId, dayIndex, currentStep)] || '', name: currentStep.name })}>
+                          {stepVideo ? 'Video ändern' : <><Video size={16} /> Video verknüpfen</>}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {showVideo && stepVideo && phase === 'work' && (
+                    <VideoPlayer url={stepVideo} onClose={() => setShowVideo(false)} />
+                  )}
+
+</div></details>:<p className="ffLiveRestHint">{restEnded?'Bereit? Weiter zum nächsten Satz.':'Atmen, trinken und kurz erholen.'}</p>}
+
                   </div>
 
                   {nextUp && (
@@ -1129,6 +1132,8 @@ export default function App() {
               activeWorkout={activeWorkout}
               sessionLog={sessionLog}
               onMove={reorderExercise}
+              editing={editOrder}
+              onEditing={setEditOrder}
               onResume={()=>openTab('training')}
             />
           </section>
@@ -1178,8 +1183,9 @@ export default function App() {
         {[
           ['heute', House, 'Heute'],
           ['training', Dumbbell, 'Training'],
+          ['uebungen', ListChecks, 'Übungen'],
           ['ernaehrung', Utensils, 'Ernährung'],
-          ['fortschritt', ChartColumn, 'Fortschritt'],
+          ['fortschritt', ChartColumn, 'Statistik'],
           ['mehr', Ellipsis, 'Mehr'],
         ].map(([key, Icon, label]) => (
           <button key={key} className={activeNav === key ? 'active' : ''} aria-current={activeNav===key?'page':undefined} onClick={() => openTab(key)}>
