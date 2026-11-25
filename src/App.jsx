@@ -837,6 +837,7 @@ export default function App() {
             person={person}
             owner={currentOwner}
             builtinEntries={builtinEntries}
+            showProfiles={false}
             customEntries={customEntries}
             dayIndex={dayIndex}
             dueDay={dueDay}
@@ -846,7 +847,7 @@ export default function App() {
             energyMode={energyMode}
             onEnergyMode={overview && phase !== 'done' ? changeEnergyMode : null}
           />}
-          {['fortschritt','uebungen','timer'].includes(tab) && <header className="ffSubPageHead">
+          {['uebungen','timer'].includes(tab) && <header className="ffSubPageHead">
             <span className="ffPageEyebrow"><span className="ffEyebrowDot" /> FITFLOW / STUDIO</span>
             <h1>{tab === 'fortschritt' ? 'Dein Fortschritt.' : tab === 'uebungen' ? 'Alle Übungen.' : 'Dein Timer.'}</h1>
             <p>{tab === 'fortschritt' ? 'Jede Wiederholung zählt. Hier siehst du deine Entwicklung.' : tab === 'uebungen' ? 'Dein Trainingsablauf auf einen Blick.' : 'Konzentrier dich auf deinen Rhythmus.'}</p>

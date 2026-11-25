@@ -85,3 +85,170 @@ html[data-theme="dark"] .ff3Primary{color:#14231a}
 @media(min-width:760px){.ff3Home{grid-template-columns:1.2fr 1fr;align-items:start}.ff3Home>.ff3SectionTitle{grid-column:1/-1}.ff3Home>.ff3Hero{grid-row:span 2}.ff3Home>.ff3ProfilePanel{grid-column:1/-1}}
 @media(max-width:480px){.ff3App .topnav .ffBrandStudio{display:none}.ff3App .topnav .brand{gap:6px;font-size:20px}.ff3App .topActions{gap:5px}.ff3App .ffSyncIndicator{padding:0 7px}.ff3App .ffSyncIndicator span{display:none}.ff3App .ff3ProfileSelect select{max-width:82px;padding:0 5px}.ff3Panel{padding:15px}.ff3Hero{padding:20px}.ff3Nav button span{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.ff3App *{scroll-behavior:auto!important}}
+
+/* Premium Studio visual pass: one design language, larger touch targets, less card nesting. */
+.ff3App {
+  --bg:#f5f5f0;--surface:#fff;--surface-2:#f1f2ed;--surface-3:#e5e9e1;
+  --ink:#202822;--ink-soft:#435047;--muted:#65716a;--line:#e1e5dd;
+  --nav-bg:rgba(255,255,255,.95);--ff4-protein:#976527;
+  background:var(--bg);padding-inline:clamp(16px,3vw,30px);
+}
+.ff3App.ff3Balance{--bg:#f6f3f8;--surface-2:#f2eef6;--surface-3:#e8e1ef;--line:#e6dfee;--ff4-protein:#976527}
+html[data-theme="dark"] .ff3App{--bg:#101511;--surface:#1a211c;--surface-2:#232c25;--surface-3:#303c33;--ink:#f2f5ef;--ink-soft:#c5cfc5;--muted:#a4b1a5;--line:#344137;--nav-bg:rgba(25,33,28,.96);--ff4-protein:#e3b77b}
+html[data-theme="dark"] .ff3App.ff3Balance{--bg:#17131d;--surface:#221d2b;--surface-2:#302839;--surface-3:#3d3449;--ink:#f5f0fa;--ink-soft:#d1c6de;--muted:#b3a7c3;--line:#42384e;--nav-bg:rgba(34,29,43,.96)}
+html[data-theme="dark"] .ff3App.ff3Strength{--accent:#7bcaaa;--accent-strong:#b4efd3;--accent-soft:#294337}
+.ff3App .topnav{max-width:1050px;border:0;margin-bottom:18px;padding:6px 0 8px;gap:8px}
+.ff3App .brand{font-size:23px;letter-spacing:-.055em}
+.ff3App .brand .brandMark{width:39px;height:39px;border-radius:12px}
+.ff3App .ffProfileSelect,.ff3App .themeToggle,.ff3App .ffSyncIndicator{box-shadow:none}
+.ff3App .themeToggle,.ff3App .ffSyncIndicator,.ff3ProfileSelect select{border-radius:100px;min-height:42px}
+.ff3Page,.ff3App .dashboard,.ff3App .progressDashboard,.ff3App .ffPageHead,.ff3App .ffProgramPicker,.ff3App .ffDayHeader,.ff3App .dayTabsRail,.ff3App .ffSubPageHead{max-width:1050px}
+.ff3Page{gap:18px}
+.ff3SectionTitle{padding:4px 0 8px;align-items:flex-start}
+.ff3SectionTitle h1{font-size:clamp(37px,8vw,61px);letter-spacing:-.07em;margin:8px 0 4px;line-height:1.02}
+.ff3SectionTitle h1 span{color:var(--accent)}
+.ff3SectionTitle p{font-size:14px;line-height:1.4}
+.ff4Welcome{align-items:end;flex-wrap:wrap}
+.ff4Welcome>div{min-width:0}
+.ff4ProfileTag{display:flex;align-items:center;gap:7px;min-height:39px;padding:8px 10px;border:1px solid var(--line);border-radius:100px;background:var(--surface);color:var(--accent-strong);font-size:12px;font-weight:720;cursor:pointer;white-space:nowrap}
+.ff4ProfileTag:disabled{cursor:default;opacity:.75}
+.ff3Hero.ff4Workout{gap:20px;padding:26px;min-height:300px;border-radius:28px;background:linear-gradient(128deg,#10291e 0%,#173e2e 70%,#244e3a);box-shadow:0 14px 34px rgba(17,39,28,.16)}
+.ff3Balance .ff3Hero.ff4Workout{background:linear-gradient(128deg,#2c223d,#453451 65%,#584164);box-shadow:0 14px 34px rgba(41,28,55,.16)}
+.ff4Workout::after{display:none}
+.ff4HeroArt{position:absolute;z-index:-1;right:-32px;top:20px;width:230px;height:255px;overflow:hidden;pointer-events:none;color:var(--ff3-bright);opacity:.30;mask-image:linear-gradient(to left,#000 35%,transparent 100%)}
+.ff4HeroArt>span{font-weight:900;font-size:180px;letter-spacing:-.12em;position:absolute;right:0;top:-22px;line-height:1;color:transparent;-webkit-text-stroke:1px var(--ff3-bright)}
+.ff4HeroArt>svg{position:absolute;right:16px;top:77px;width:130px;height:130px;transform:rotate(-24deg);opacity:.68}
+.ff4HeroArt i,.ff4HeroArt b{position:absolute;width:210px;height:210px;border:1px solid currentColor;border-radius:50%;right:-80px;top:24px}
+.ff4HeroArt b{width:260px;height:260px;right:-105px;top:0;opacity:.4}
+.ff3HeroTop>span:first-child{display:flex;gap:8px;align-items:center}
+.ff3HeroTop>span:first-child i{height:7px;width:7px;background:var(--ff3-bright);border-radius:50%;box-shadow:0 0 0 4px rgba(255,255,255,.08)}
+.ff4HeroIndex{font-size:10px;opacity:.7;letter-spacing:.1em}
+.ff4HeroCopy{max-width:88%;position:relative}
+.ff4HeroCopy h2{font-size:clamp(34px,7vw,53px);letter-spacing:-.06em;line-height:1.03;margin:8px 0 12px}
+.ff4HeroCopy p{max-width:40ch;font-size:13px;line-height:1.45;color:#e0e9e3}
+.ff3HeroMeta{font-weight:650;gap:15px}
+.ff3HeroMeta svg{color:var(--ff3-bright)}
+.ff3HeroButton{min-height:60px;border-radius:17px;font-size:16px;box-shadow:0 4px 20px rgba(0,0,0,.07)}
+.ff4Play{display:grid;place-items:center;width:36px;height:36px;background:rgba(23,34,27,.10);border-radius:11px;flex:none}
+.ff3Panel{border-radius:23px;box-shadow:none;padding:20px;gap:16px}
+.ff3Panel h2{font-size:22px;letter-spacing:-.04em}
+.ff4PanelIcon{width:42px;height:42px;border-radius:14px;background:var(--accent-soft);color:var(--accent-strong);display:grid;place-items:center;flex:none}
+.ff4WeekHead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ff4WeekHead h2{margin:5px 0 5px}
+.ff4WeekRing{position:relative;flex:none;width:74px;height:74px;display:grid;place-items:center;color:var(--accent-strong)}
+.ff4WeekRing svg,.ff4NutrientRing svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke-width:7}
+.ff4RingTrack{stroke:var(--surface-3)}
+.ff4RingValue{stroke:currentColor;stroke-linecap:round;transition:stroke-dasharray .35s ease}
+.ff4WeekRing strong{font-size:26px;letter-spacing:-.055em;font-variant-numeric:tabular-nums}
+.ff4WeekRing small{font-size:14px;color:var(--muted)}
+.ff3Week>div>span{width:36px;height:36px;border-radius:50%;font-weight:650}
+.ff3Week .today{outline-offset:3px}
+html[data-theme="dark"] .ff3Week .done{color:var(--bg)}
+.ff3TextButton{min-height:44px;font-size:14px;padding-top:10px}
+.ff3ProfilePanel{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ff3ProfilePanel>div{flex:1;min-width:160px}
+.ff3ProfilePanel .ff3TextButton{border:0;padding:8px 0;flex:0 0 auto}
+.ff3ProfilePanel .ff3TextButton:disabled{opacity:.45;cursor:default}
+.ff4NutrientMeters{gap:0;align-items:start}
+.ff4Nutrient{background:none;border-radius:0;padding:0 8px;color:var(--accent-strong);display:grid;gap:8px;justify-items:center;text-align:center;min-width:0}
+.ff4Nutrient+ .ff4Nutrient{border-left:1px solid var(--line)}
+.ff4Nutrient.protein{color:var(--ff4-protein)}
+.ff4NutrientLabel{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:750;color:currentColor!important}
+.ff4NutrientRing{width:min(100%,134px);aspect-ratio:1;position:relative;display:grid;place-items:center}
+.ff4NutrientRing>div{display:grid;justify-items:center;gap:2px;width:78%;min-width:0}
+.ff4NutrientRing strong{font-size:clamp(21px,5.9vw,30px);line-height:1;letter-spacing:-.055em;color:var(--ink);font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}
+.ff4NutrientRing small{font-size:12px;color:var(--muted);font-weight:600}
+.ff4NutrientFoot{display:grid;gap:3px;line-height:1.25}
+.ff4NutrientFoot small{font-size:11px;color:var(--muted)}
+.ff4NutrientFoot span{font-size:12px;font-weight:750;color:var(--ink-soft)}
+.ff4EntryCount{font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap}
+.ff4FoodSummary .ff3Primary{min-height:54px;border-radius:14px}
+.ff4FoodSummary .ff3Note{text-align:center}
+.ff3DateNav{border-radius:17px;padding:6px 8px}
+.ff3DateNav button,.ff3Meal button{min-width:44px;height:44px;border-radius:12px}
+.ff3DateNav label{gap:1px}
+.ff3MealGroup h3{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:14px;text-transform:none;letter-spacing:0;margin:0 0 9px}
+.ff3MealGroup h3 small{margin-left:auto;color:var(--muted);font-size:12px;font-weight:650}
+.ff4MealIcon{width:33px;height:33px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-strong);border-radius:10px}
+.ff3Meal{padding:10px 0}
+.ff3Meal button{background:transparent;color:var(--muted)}
+.ff3Quick button,.ff3More button{min-height:58px}
+.ff3More button>svg:first-child{padding:10px;width:43px;height:43px;border-radius:13px;background:var(--accent-soft);color:var(--accent-strong)}
+.ff3More{padding:8px;gap:0}
+.ff3More button{background:none;border-radius:10px;padding:12px}
+.ff3More button+button{border-top:1px solid var(--line)}
+.ff4WeekChart .ff3FoodWeek{gap:5px;align-items:stretch}
+.ff4WeekChart .ff3FoodWeek button{grid-template-rows:22px 90px auto auto;background:none;padding:7px 2px;gap:6px;align-items:end}
+.ff4WeekChart .ff3FoodWeek button.selected{background:var(--accent-soft)}
+.ff4FoodBar{width:55%;min-width:13px;max-width:25px;height:90px;background:var(--surface-2);border-radius:8px;display:flex;align-items:end;overflow:hidden}
+.ff4FoodBar i{display:block;width:100%;background:var(--accent);border-radius:8px;transition:height .25s ease}
+.ff4WeekChart .ff3FoodWeek strong{font-variant-numeric:tabular-nums;font-size:clamp(10px,2.7vw,14px)}
+.ff3App .ffPageHead{margin:10px auto 16px}
+.ff3App .ffPageHead h1{font-size:clamp(32px,6.5vw,48px)}
+.ff3App .ffProgramPicker{margin-bottom:12px}
+.ff3App .ffProgramOption{min-height:70px;border-radius:16px;box-shadow:none}
+.ff3App .ffProgramOption.active{box-shadow:none;border-color:var(--accent)}
+.ff3App .dayTabsRail button{min-height:62px;min-width:145px;border-radius:14px}
+.ff3App .ovHero{border-radius:25px;padding:23px}
+.ff3App .ovHeroTitle{margin:19px 0 18px}
+.ff3App .ovHeroTitle h2{font-size:clamp(38px,8vw,60px)}
+.ff3App .ovHero .ovStart{min-height:58px}
+.ff3App .ovList{grid-template-columns:minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:hidden;margin:0}
+.ff3App .ovList li,.ff3App .ovList li+li{border:0;border-radius:0}
+.ff3App .ovList li+li{border-top:1px solid var(--line)}
+.ff3App .ovList button{min-height:77px;padding:10px 12px;gap:10px;grid-template-columns:24px 54px minmax(0,1fr) 18px}
+.ff3App .ovThumb{width:54px;height:54px}
+.ff3App .ovFoot{margin:12px 0 0;padding:10px 4px;border:0;background:none}
+.ff3App .sessionCard:not(.overviewCard){box-shadow:none;border-radius:22px;padding:15px}
+.ff3App .sessionBody .sessionHeader h2{font-size:clamp(24px,5.5vw,34px);letter-spacing:-.04em}
+.ff3App .sessionBody .controls .big{min-height:55px}
+.ff3App .sessionBody .subActions button{min-height:44px}
+.ff3App .sessionImageWrap{min-width:0}
+.ff3App .progressIntro{display:block;grid-column:1/-1;border:0;background:none;padding:3px 0 12px;box-shadow:none}
+.ff3App .progressIntro .eyebrow{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--accent-strong)}
+.ff3App .progressIntro h2{font-size:clamp(33px,6.5vw,47px);letter-spacing:-.055em;line-height:1.1;margin:8px 0}
+.ff3App .progressIntro p:last-child{max-width:65ch;line-height:1.5}
+.ff3App .progressStats article{border-radius:19px;box-shadow:none;min-width:0}
+.ff3App .progressDashboard :is(.chartCard,.muscleCard,.bodyCard,.compareCard,.calendarCard,.badgeCard,.recentCard){border-radius:22px;box-shadow:none;min-width:0}
+.ff3App .muscleList button{grid-template-columns:minmax(0,9.5em) minmax(28px,1fr) 2.4em;gap:8px}
+.ff3App .bottomnav.ff3Nav{border-radius:25px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--nav-bg);backdrop-filter:blur(18px);box-shadow:0 8px 30px rgba(0,0,0,.12);width:min(calc(100% - 22px),680px)}
+.ff3App .ff3Nav button{border-radius:16px;min-height:54px;gap:4px}
+.ff3App .ff3Nav button.active{background:var(--accent-soft)!important;color:var(--accent-strong)}
+.ff3App .ff3Nav button.active svg{stroke-width:2.4}
+.ff3App :is(button,a,input,select):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(min-width:760px){
+ .ff3Home{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:stretch}
+ .ff3Home>.ff4Workout{grid-row:span 2;align-content:space-between;min-height:100%}
+ .ff3Home>.ff3ProfilePanel{grid-column:1/-1}
+ .ff3Home .ff4HeroArt{width:320px;height:400px;right:-38px;top:75px}
+ .ff3Home .ff4HeroArt>span{font-size:245px}
+ .ff3Home .ff4HeroArt>svg{width:190px;height:190px;top:100px}
+ .ff3Nutrition{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+ .ff3Nutrition>.ff3SectionTitle,.ff3Nutrition>.ff3DateNav{grid-column:1/-1}
+ .ff3App .ovList{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ff3App .ovList li:nth-child(even){border-left:1px solid var(--line)}
+ .ff3App .ovList li:nth-child(2){border-top:0}
+}
+@media(max-width:480px){
+ .ff3App{padding-inline:13px}
+ .ff3App .topnav{margin-bottom:12px}
+ .ff3App .brand{font-size:19px;gap:6px}
+ .ff3App .brand .brandMark{width:34px;height:34px}
+ .ff3App .themeToggle,.ff3App .ffSyncIndicator{min-width:38px;width:38px;height:40px;padding:0}
+ .ff3App .ff3ProfileSelect select{min-height:40px;max-width:78px;font-size:11px}
+ .ff3App .topActions{gap:5px}
+ .ff3Page{gap:13px}
+ .ff3Panel{padding:15px;border-radius:21px;gap:13px}
+ .ff3Hero.ff4Workout{padding:20px;min-height:280px;gap:16px}
+ .ff4HeroCopy{max-width:94%}
+ .ff4HeroArt{opacity:.23}
+ .ff4ProfileTag{font-size:11px;min-height:35px;padding:6px 8px}
+ .ff3Week>div>span{width:33px;height:33px}
+ .ff4NutrientRing{width:min(100%,118px)}
+ .ff3App .ffProgramChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ff3App .ffProgramChoices:has(>button:only-child){grid-template-columns:1fr}
+ .ff3App .sessionCard:not(.overviewCard){padding:12px}
+ .ff3App .progressStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ff3App .ff3Nav button span{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.ff4RingValue,.ff4FoodBar i{transition:none!important}}
