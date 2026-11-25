@@ -1,0 +1,41 @@
+/* Shared private studio header and sign-in. */
+.ff3App .topnav{display:flex;justify-content:space-between;gap:10px;position:relative;z-index:20}
+.ff3App .topActions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.ffProfileSwitch{position:relative;flex:none}
+.ffProfileTrigger{display:flex;align-items:center;gap:7px;min-height:44px;padding:4px 8px 4px 5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:100px;font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.ffProfileTrigger:disabled{opacity:.7}
+.ffProfileAvatar{width:32px;height:32px;border-radius:100%;display:grid;place-items:center;background:#e1efe5;color:#236344;font-size:15px;font-weight:850;flex:none}
+.ffProfileAvatar.connie{background:#ebdff8;color:#684391}
+.ffProfileMenu{position:absolute;right:0;top:calc(100% + 10px);min-width:230px;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:19px;box-shadow:0 15px 45px #0003;display:grid;gap:5px;z-index:35}
+.ffProfileMenu>small{font-size:10px;letter-spacing:.1em;font-weight:750;color:var(--muted);padding:7px}
+.ffProfileMenu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px;border:0;border-radius:12px;background:transparent;color:var(--ink);cursor:pointer}
+.ffProfileMenu button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent-strong)}
+.ffProfileMenu button>span:nth-child(2){flex:1}
+.ffProfileMenu strong,.ffProfileMenu button small{display:block}
+.ffProfileMenu button small{font-size:11px;color:var(--muted);margin-top:3px}
+.ff3App .topActions .themeToggle,.ff3App .topActions .ffSyncIndicator{display:flex;align-items:center;justify-content:center;gap:6px;min-width:44px;height:44px;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--ink-soft);padding:0 11px;box-shadow:none}
+.ff3App .topActions .ffSyncIndicator.saved{color:var(--accent-strong)}
+.ff3App .topActions .ffSyncIndicator i{display:none}
+.ffAuthScreen{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 75% 0%,#294a34 0%,#13271c 43%,#0e1b13 100%);color:#edf6ed;display:grid;align-content:center;justify-items:center;gap:24px;padding:calc(24px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom))}
+.ffAuthBrand{display:flex;align-items:center;gap:13px;width:min(100%,410px)}
+.ffAuthBrand img{border-radius:19px}
+.ffAuthBrand strong{display:block;font-size:32px;letter-spacing:-.06em}
+.ffAuthBrand strong span{color:#c8f879}
+.ffAuthBrand small{font-size:10px;font-weight:750;letter-spacing:.12em;color:#a8c3ad}
+.ffAuthCard{width:min(100%,410px);background:#f7f8f3;color:#17251b;border-radius:29px;padding:26px;display:grid;gap:14px;box-shadow:0 22px 60px #0003}
+.ffAuthLock{width:47px;height:47px;border-radius:15px;background:#e2eddd;color:#286545;display:grid;place-items:center}
+.ffAuthCard h1{font-size:clamp(30px,7vw,42px);letter-spacing:-.065em;white-space:pre-line;line-height:1.04;margin:0}
+.ffAuthCard p{font-size:14px;line-height:1.5;color:#627269;margin:0}
+.ffAuthCard form{display:grid;gap:15px;margin-top:4px}
+.ffAuthCard label{display:grid;gap:6px;font-size:13px;font-weight:750}
+.ffAuthCard input{min-width:0;width:100%;min-height:52px;padding:12px 14px;border:1px solid #dce4d8;background:#fff;color:#17251b;border-radius:13px;font:inherit;font-size:16px}
+.ffAuthPassword{position:relative;display:flex}.ffAuthPassword input{padding-right:50px}
+.ffAuthPassword button{position:absolute;right:5px;top:4px;width:44px;height:44px;display:grid;place-items:center;background:none;color:#586d5f;border:0}
+.ffAuthSubmit{display:flex;align-items:center;justify-content:space-between;min-height:55px;padding:12px 16px;border:0;border-radius:15px;background:#245c40;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.ffAuthSubmit:disabled{opacity:.5}
+.ffAuthRetry{min-height:44px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid #dce4d8;background:transparent;color:#345f43;border-radius:12px;font:inherit;font-size:13px}
+.ffAuthCard .ffAuthError{color:#9f372e;font-size:13px}
+.ffAuthCard footer{display:flex;align-items:center;justify-content:center;gap:6px;color:#64746a;font-size:12px;padding-top:12px;border-top:1px solid #dce4d8}
+.ffAuthChecking{font-size:14px;color:#627269;padding:14px 0}
+@media(max-width:480px){.ff3App .topActions{gap:5px}.ff3App .topActions .ffSyncIndicator span{display:none}.ff3App .topActions .themeToggle,.ff3App .topActions .ffSyncIndicator{min-width:40px;width:40px;height:42px;padding:0}.ffProfileTrigger{min-height:42px;font-size:12px;padding-right:5px;gap:4px}.ffProfileAvatar{width:29px;height:29px}.ff3App .brand .brandMark{width:31px;height:31px}.ff3App .brand{font-size:18px}}
+@media(max-width:355px){.ffProfileName{display:none}.ff3App .brand{font-size:17px}}

@@ -303,15 +303,19 @@ export function duplicatePlan(source, personKey) {
 }
 
 export function parseVideo(url) {
-  if (!url) return null
-  const u = String(url).trim()
-  if (!u) return null
-  const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([\w-]{11})/)
-  if (yt) return { kind: 'youtube', embed: `https://www.youtube.com/embed/${yt[1]}?mute=1&rel=0&playsinline=1` }
-  if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(u) || u.startsWith('blob:')) {
-    return { kind: 'file', src: u }
+  if(!url)return null
+  let u
+  try{u=new URL(String(url).trim())}catch{return null}
+  if(u.protocol!=='https:')return null
+  const host=u.hostname.toLowerCase()
+  let id=null
+  if(host==='youtu.be')id=u.pathname.split('/')[1]
+  if(['youtube.com','www.youtube.com','m.youtube.com','www.youtube-nocookie.com','youtube-nocookie.com'].includes(host)){
+   id=u.pathname==='/watch'?u.searchParams.get('v'):u.pathname.match(/^\/(?:embed|shorts|v)\/([\w-]{11})(?:\/|$)/)?.[1]
   }
-  return { kind: 'iframe', src: u }
+  if(id&&/^[\w-]{11}$/.test(id))return {kind:'youtube',embed:'https://www.youtube.com/embed/'+id+'?mute=1&rel=0&playsinline=1'}
+  if(/\.(mp4|webm|ogg|mov|m4v)$/i.test(u.pathname))return {kind:'file',src:u.href}
+  return null
 }
 
 export function youtubeSearchUrl(name) {

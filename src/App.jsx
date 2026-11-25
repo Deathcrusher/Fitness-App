@@ -74,6 +74,7 @@ import CloudSyncIndicator from './components/CloudSyncIndicator'
 import ExerciseTechnique from './components/ExerciseTechnique'
 import ExerciseList from './components/ExerciseList'
 import ProgramPicker from './components/ProgramPicker'
+import ProfileSwitcher from './components/ProfileSwitcher'
 import { orderedIndices, orderSignature, moveSessionBlock } from './lib/sessionOrder'
 import HomeStudio from './components/HomeStudio'
 import Nutrition from './components/Nutrition'
@@ -841,7 +842,7 @@ export default function App() {
       <nav className="topnav" aria-label="Hauptnavigation">
         <span className="brand"><BrandMark /> <span>Fit<span className="ffBrandEmphasis">Flow</span></span><span className="ffBrandStudio">{APP_VERSION}</span></span>
         <div className="topActions">
-          <label className="ff3ProfileSelect"><span className="srOnly">Aktives Profil</span><select aria-label="Aktives Profil" value={currentOwner} disabled={activeWorkout || view==='build'} onChange={e=>switchProfile(e.target.value)}>{builtinEntries.map(([key,item])=><option key={key} value={key}>{item.name}</option>)}</select></label>
+          <ProfileSwitcher owner={currentOwner} entries={builtinEntries} disabled={activeWorkout||view==='build'} onChange={switchProfile}/>
           <CloudSyncIndicator onOpen={() => setSettingsOpen(true)} />
           <button className="themeToggle" onClick={() => setSettingsOpen(true)} aria-label="Einstellungen" title="Einstellungen">
             <Settings size={19} />

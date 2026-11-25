@@ -50,23 +50,40 @@ export function currentCloudUser() {
   try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null')?.user || null } catch { return null }
 }
 
-export async function cloudSignUp(email, password) {
-  return api('/auth/v1/signup', { method: 'POST', body: { email, password } })
-}
+// Registration is deliberately unavailable in the application.
+export async function cloudSignUp() { throw new Error('FitFlow ist privat. Neue Konten werden nur vom Administrator freigegeben.') }
 
 export async function cloudSignIn(email, password) {
   const session = await api('/auth/v1/token?grant_type=password', {
     method: 'POST', body: { email, password },
   })
   if (!session?.access_token) throw new Error('Bitte bestätige zuerst deine E-Mail-Adresse.')
+  await assertApproved(session.access_token, session.user)
+  checkAccount({user:session.user})
   storeAuth(session)
   window.dispatchEvent(new Event('fitflow-cloud-auth'))
   return session.user
 }
 
-export function cloudSignOut() {
+export async function cloudSignOut() {
+  let token
+  try {token=JSON.parse(localStorage.getItem(AUTH_KEY)||'null')?.access_token}catch{/* invalid session */}
   localStorage.removeItem(AUTH_KEY)
   window.dispatchEvent(new Event('fitflow-cloud-auth'))
+  if(token)try{await api('/auth/v1/logout?scope=local',{method:'POST',token})}catch{/* local logout remains effective */}
+}
+async function assertApproved(token,user){
+  if(!user?.id||!user?.email_confirmed_at){const e=new Error('Anmeldung nicht freigegeben.');e.status=403;throw e}
+  const rows=await api('/rest/v1/fitflow_allowed_users?select=user_id&limit=1',{token})
+  if(!Array.isArray(rows)||!rows.some(row=>row.user_id===user.id)){const e=new Error('Anmeldung nicht freigegeben.');e.status=403;throw e}
+  return user
+}
+export async function verifyCloudAccess(){
+  const auth=await validAuth()
+  const user=await api('/auth/v1/user',{token:auth.access_token})
+  await assertApproved(auth.access_token,user)
+  checkAccount({user})
+  return user
 }
 
 async function validAuth() {
@@ -77,6 +94,7 @@ async function validAuth() {
   const session = await api('/auth/v1/token?grant_type=refresh_token', {
     method: 'POST', body: { refresh_token: auth.refresh_token },
   })
+  if(!currentCloudUser()||currentCloudUser().id!==auth.user?.id)throw new Error('Sitzung wurde beendet.')
   storeAuth(session)
   return JSON.parse(localStorage.getItem(AUTH_KEY))
 }
@@ -198,6 +216,7 @@ export function syncFitflowNow() {
         publishStatus('saved', 'Alle vorhandenen FitFlow-Daten sind in der Cloud gesichert.')
         return { saved: true, unchanged: true }
       }
+      if(currentCloudUser()?.id!==auth.user.id)throw new Error('Sitzung wurde beendet.')
       const payload = { app: 'FitFlow', version: 2, exportedAt: new Date().toISOString(), data }
       const saved = await api('/rest/v1/fitflow_sync_snapshots?select=id', {
         token: auth.access_token,

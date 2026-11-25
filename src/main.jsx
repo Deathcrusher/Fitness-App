@@ -1,33 +1,20 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
-import ErrorBoundary from './components/ErrorBoundary'
-import { applyPlanFixes, repairMondayPlankSets } from './lib/planFixes'
-import { bootstrapCloudSync, startAutomaticCloudSync } from './lib/cloudBackup'
+import AuthGate from './components/AuthGate'
 import '@fontsource-variable/archivo/wdth.css'
 import './styles.css'
 import './designRefresh.css'
 import './motionStudio.css'
 import './studio3.css'
 import './controlPolish.css'
+import './privateStudio.css'
 
-applyPlanFixes()
-
-const root = createRoot(document.getElementById('root'))
-if (window.location.search.includes('figures')) {
-  import('./components/FigureDebug.jsx').then(({ default: FigureDebug }) => root.render(<FigureDebug />))
-} else {
-  bootstrapCloudSync().finally(() => {
-    // Cloud settings may reintroduce an old 1-set override. Repair only after import.
-    repairMondayPlankSets()
-    root.render(
-      <ErrorBoundary version={__APP_VERSION__}>
-        <App />
-      </ErrorBoundary>,
-    )
-    startAutomaticCloudSync()
-  })
-}
+try {
+ const pref=localStorage.getItem('fitflow-theme-v1')||'system'
+ document.documentElement.dataset.theme=pref==='dark'||pref==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'
+}catch{/* default theme */}
+const root=createRoot(document.getElementById('root'))
+root.render(<AuthGate/>)
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
