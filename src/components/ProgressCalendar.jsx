@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { CalendarCheck2, Clock3, Flame, Trophy } from 'lucide-react'
 import Achievements, { WeekCompare } from './Achievements'
 import MuscleMap from './MuscleMap'
+import { goalFor, isMaintenance } from '../lib/fitnessGoals'
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
@@ -58,8 +59,8 @@ function niceMax(value) {
   return value
 }
 
-function WeeklyChart({ history, today }) {
-  const [metric, setMetric] = useState('count')
+function WeeklyChart({ history, today, maintenance }) {
+  const [metric, setMetric] = useState(maintenance ? 'minutes' : 'count')
   const weeks = useMemo(() => {
     const current = startOfWeek(today)
     return Array.from({ length: WEEKS }, (_, i) => {
@@ -91,7 +92,7 @@ function WeeklyChart({ history, today }) {
         </div>
       </div>
       <div className="segmented small" role="tablist" aria-label="Kennzahl">
-        {Object.entries(METRICS).map(([key, item]) => (
+        {Object.entries(METRICS).filter(([key]) => !maintenance || key === 'minutes' || key === 'count').map(([key, item]) => (
           <button key={key} role="tab" aria-selected={metric === key} className={metric === key ? 'active' : ''} onClick={() => setMetric(key)}>
             {item.label}
           </button>
@@ -132,7 +133,7 @@ function WeeklyChart({ history, today }) {
   )
 }
 
-function RecentList({ history }) {
+function RecentList({ history, maintenance }) {
   const recent = [...history].sort((a, b) => (b.completedAt || b.date).localeCompare(a.completedAt || a.date)).slice(0, 6)
   if (!recent.length) return null
   return (
@@ -153,8 +154,8 @@ function RecentList({ history }) {
               </span>
               <span className="recentMeta">
                 {entry.durationSec ? <span><Clock3 size={13} /> {Math.max(1, Math.round(entry.durationSec / 60))} Min</span> : null}
-                {entry.volume ? <span>{entry.volume.toLocaleString('de-DE')} kg</span> : entry.sets ? <span>{entry.sets} Sätze</span> : null}
-                {entry.records ? <span className="recentRecord">{entry.records === 1 ? '1 Rekord' : `${entry.records} Rekorde`}</span> : null}
+                {!maintenance && (entry.volume ? <span>{entry.volume.toLocaleString('de-DE')} kg</span> : entry.sets ? <span>{entry.sets} Sätze</span> : null)}
+                {!maintenance && entry.records ? <span className="recentRecord">{entry.records === 1 ? '1 Rekord' : `${entry.records} Rekorde`}</span> : null}
               </span>
             </li>
           )
@@ -165,6 +166,8 @@ function RecentList({ history }) {
 }
 
 export default function ProgressCalendar({ history, goal = 3, log = {}, owner, ownerName, ownerOf, children }) {
+  const maintenance = isMaintenance(owner)
+  const profile = goalFor(owner)
   const personalHistory = owner && ownerOf ? history.filter((entry) => ownerOf(entry) === owner) : history
   const today = new Date()
   const todayKey = dateKey(today)
@@ -177,6 +180,7 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
   }).length
 
   const timed = personalHistory.filter((entry) => entry.durationSec)
+  const totalWeekMinutes = Math.round(personalHistory.filter(e => { const d=new Date(e.date+'T12:00:00');return d>=weekStart && d<weekEnd }).reduce((sum,e)=>sum+(e.durationSec||0),0)/60)
   const avgMinutes = timed.length ? Math.round(timed.reduce((n, e) => n + e.durationSec, 0) / timed.length / 60) : 0
 
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -190,8 +194,8 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
       <div className="progressIntro">
         <div>
           <p className="eyebrow"><CalendarCheck2 size={16} /> Dein Fortschritt</p>
-          <h2>Dranbleiben lohnt sich</h2>
-          <p>Fertige Trainings werden automatisch in deinem Kalender gespeichert.</p>
+          <h2>{ownerName ? ownerName + ' · ' : ''}{profile.title}</h2>
+          <p><strong>{profile.label}</strong> · {profile.description}</p>
         </div>
       </div>
 
@@ -208,9 +212,9 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
           <i className="goalBar" aria-hidden="true"><b style={{ width: `${Math.min(100, (thisWeek / goal) * 100)}%` }} /></i>
         </article>
         <article>
-          <Flame size={18} />
-          <strong>{weekStreak(personalHistory, today)}</strong>
-          <span>Wochen-Serie</span>
+          {maintenance ? <Clock3 size={18}/> : <Flame size={18}/>}
+          <strong>{maintenance ? totalWeekMinutes + '′' : weekStreak(personalHistory, today)}</strong>
+          <span>{maintenance ? 'Bewegungszeit diese Woche' : 'Wochen-Serie'}</span>
         </article>
         <article>
           <Clock3 size={18} />
@@ -219,10 +223,11 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
         </article>
       </div>
 
-      {personalHistory.length > 0 && <WeekCompare history={personalHistory} />}
-      {owner && ownerOf && <MuscleMap history={personalHistory} log={log} owner={owner} ownerName={ownerName} ownerOf={ownerOf} />}
-      {children}
-      {personalHistory.length > 0 && <WeeklyChart history={personalHistory} today={today} />}
+      {maintenance && children}
+      {personalHistory.length > 0 && !maintenance && <WeekCompare history={personalHistory} />}
+      {!maintenance && owner && ownerOf && <MuscleMap history={personalHistory} log={log} owner={owner} ownerName={ownerName} ownerOf={ownerOf} />}
+      {!maintenance && children}
+      {personalHistory.length > 0 && <WeeklyChart history={personalHistory} today={today} maintenance={maintenance} />}
 
       <article className="calendarCard">
         <div className="calendarHead">
@@ -251,8 +256,8 @@ export default function ProgressCalendar({ history, goal = 3, log = {}, owner, o
         </div>
       </article>
 
-      <Achievements history={personalHistory} goal={goal} />
-      <RecentList history={personalHistory} />
+      <Achievements history={personalHistory} goal={goal} maintenance={maintenance} />
+      <RecentList history={personalHistory} maintenance={maintenance} />
 
       {personalHistory.length === 0 && (
         <p className="progressEmpty">Schließe dein erstes Training ab – dann erscheint hier dein erster Erfolg.</p>

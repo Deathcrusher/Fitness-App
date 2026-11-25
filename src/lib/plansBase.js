@@ -123,7 +123,7 @@ export function warmupSteps() {
 export const builtinPlans = {
   connie: {
     name: 'Connie',
-    title: 'Straffen & wohlfühlen',
+    title: 'Fit & Straff · Muskelerhalt & Ausdauer',
     accent: 'coral',
     equipment: 'Hanteln, Matte, Hula Hoop, Hometrainer',
     builtin: true,
@@ -131,7 +131,7 @@ export const builtinPlans = {
       {
         title: 'Montag',
         focus: 'Ganzkörper + Cardio',
-        tone: 'Kalorien verbrennen und Körperspannung aufbauen.',
+        tone: 'Kraft erhalten, Kondition verbessern und sauber trainieren – ohne Steigerungsdruck.',
         steps: [
           ...warmupSteps(),
           step('lower', 'Kniebeugen', 'Brust aufrecht, Knie leicht nach außen, kontrolliert tief gehen.', '3 x 15'),
@@ -146,7 +146,7 @@ export const builtinPlans = {
       {
         title: 'Mittwoch',
         focus: 'Cardio & Core',
-        tone: 'Ausdauer, Bauchspannung und lockerer Rhythmus.',
+        tone: 'Ausdauer und Rumpfstabilität in deinem eigenen Tempo.',
         steps: [
           ...warmupSteps(),
           step('cardio', 'Hula Hoop', 'Gleichmäßiges Tempo, locker bleiben und dranbleiben.', '30 Min'),
@@ -160,7 +160,7 @@ export const builtinPlans = {
       {
         title: 'Freitag',
         focus: 'Ganzkörper + Hula Hoop',
-        tone: 'Po, Beine, Oberkörper und ein leichter Abschluss.',
+        tone: 'Ganzkörperkraft erhalten und mit lockerer Ausdauer abschließen.',
         steps: [
           ...warmupSteps(),
           step('lower', 'Kniebeugen', 'Sauber, ruhig und kontrolliert arbeiten.', '3 x 15'),

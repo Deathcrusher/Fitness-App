@@ -81,7 +81,7 @@ import { workoutMuscles } from './lib/muscles'
 import { afterRest, partnerAfter, supersetLabel, upcoming } from './lib/superset'
 import { loadBody, removeBody, saveBody, upsertBody } from './lib/bodyStore'
 import BodyCard from './components/BodyCard'
-import DuelCard from './components/DuelCard'
+import { isMaintenance, fitnessBadge } from './lib/fitnessGoals'
 import { prefetchMedia } from './lib/backup'
 import {
   STORAGE_KEY,
@@ -248,19 +248,21 @@ export default function App() {
     if (up.kind === 'round') return { kind: 'round', label: steps[up.step].name, sub: `Nach der Pause: Runde ${up.set + 1}`, step: steps[up.step] }
     return { kind: 'step', label: steps[up.step].name, step: steps[up.step] }
   })()
-  const lastWorkout = history[history.length - 1]
+  const personalHistory = history.filter(entry => ownerOfEntry(entry, customPlans) === currentOwner)
+  const maintenance = isMaintenance(currentOwner)
+  const lastWorkout = personalHistory[personalHistory.length - 1]
   const today = dateKey()
   const loggable = phase === 'work' && isLoggable(currentStep)
   const weighted = usesWeight(currentStep)
   const lastLog = loggable ? lastEntry(log, currentOwner, currentStep.name, today) : null
   const comeback = loggable ? comebackOf(log, currentOwner, currentStep.name, today) : null
-  const sug = loggable ? suggestion(lastLog, targetRange(currentStep.reps), currentStep, comeback) : null
+  const sug = loggable ? suggestion(lastLog, targetRange(currentStep.reps), currentStep, comeback, currentOwner) : null
   const draftKey = `${sessionKey}:${stepIndex}:${setIndex}`
   const currentDraft = draft?.key === draftKey
     ? draft
     : { key: draftKey, ...draftFor({ log, owner: currentOwner, step: currentStep, setIndex, today, sessionSets: sessionLog[stepIndex] }) }
   const sessionVolume = Object.values(sessionLog).reduce((n, sets) => n + volumeOf(sets || []), 0)
-  const weekCount = weekCountOf(history.filter((entry) => ownerOfEntry(entry, customPlans) === currentOwner))
+  const weekCount = weekCountOf(personalHistory)
   const dueDay = nextDueDay(history, person, plan.days.length)
 
   // Kurzbefehle vom Homescreen: Parameter nach dem Start wieder aus der Adresse entfernen
@@ -407,7 +409,7 @@ export default function App() {
     const previous = entriesFor(log, currentOwner, currentStep.name).filter((e) => e.date !== today)
     const earlierToday = sets.slice(0, setIndex).filter(Boolean)
     const beatsToday = earlierToday.every((s) => (set.w > 0 ? set.w > s.w || (set.w === s.w && set.r > s.r) : set.r > s.r))
-    if (isRecord(previous, set) && beatsToday) {
+    if (!maintenance && isRecord(previous, set) && beatsToday) {
       setPrs((list) => [...list.filter((p) => p.name !== currentStep.name), { name: currentStep.name, text: fmtSet(set) }])
       signal('record')
     }
@@ -486,7 +488,7 @@ export default function App() {
       records: prs.length,
       muscles,
     }
-    if (!history.some((e) => e.key === completionKey)) setNewBadges(newlyUnlocked(history, [...history, entry], goal))
+    if (!history.some((e) => e.key === completionKey)) setNewBadges(newlyUnlocked(personalHistory, [...personalHistory, entry], goal).filter(b => !maintenance || fitnessBadge(b)))
     setHistory((previous) => {
       if (previous.some((e) => e.key === completionKey)) return previous
       return [...previous, entry]
@@ -860,13 +862,14 @@ export default function App() {
                   day={day}
                   durationMs={lastWorkout?.durationSec ? lastWorkout.durationSec * 1000 : elapsedMs}
                   volume={sessionVolume}
+                  maintenance={maintenance}
                   completed={completedExercises}
                   total={steps.length}
                   sets={lastWorkout?.sets ?? setsDone}
                   weekCount={weekCount}
                   goal={goal}
-                  prs={prs}
-                  badges={newBadges}
+                  prs={maintenance ? [] : prs}
+                  badges={maintenance ? newBadges.filter(fitnessBadge) : newBadges}
                   name={ownerName}
                   muscles={lastWorkout?.muscles}
                   onStats={() => setTab('fortschritt')}
@@ -1093,17 +1096,11 @@ export default function App() {
           )}
 
           {tab === 'fortschritt' && (
-            <ProgressCalendar history={history} goal={goal} log={log} owner={currentOwner} ownerName={ownerName} ownerOf={ownerOf}>
-              <DuelCard
-                history={history}
-                ownerOf={ownerOf}
-                people={[{ key: 'rene', name: builtinPlans.rene?.name || 'René' }, { key: 'connie', name: builtinPlans.connie?.name || 'Connie' }]}
-                me={currentOwner}
-                goal={goal}
-              />
+            <ProgressCalendar key={currentOwner} history={history} goal={goal} log={log} owner={currentOwner} ownerName={ownerName} ownerOf={ownerOf}>
               <BodyCard
                 entries={body[currentOwner] || []}
                 ownerName={ownerName}
+                maintenance={maintenance}
                 onSave={(date, values) => setBody((b) => upsertBody(b, currentOwner, date, values))}
                 onRemove={(date) => setBody((b) => removeBody(b, currentOwner, date))}
               />

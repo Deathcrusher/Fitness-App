@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import BadgeIcon from './BadgeIcon'
 import { evaluateAchievements, weekComparison } from '../lib/achievements'
+import { fitnessBadge } from '../lib/fitnessGoals'
 
 function Delta({ now, before, unit = '' }) {
   if (!before && !now) return <span className="delta same">–</span>
@@ -35,8 +36,8 @@ export function WeekCompare({ history }) {
   )
 }
 
-export default function Achievements({ history, goal }) {
-  const list = evaluateAchievements(history, goal)
+export default function Achievements({ history, goal, maintenance }) {
+  const list = evaluateAchievements(history, goal).filter(b => !maintenance || fitnessBadge(b))
   const unlocked = list.filter((a) => a.unlocked).length
   const [open, setOpen] = useState(null)
   return (

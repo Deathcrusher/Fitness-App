@@ -13,7 +13,7 @@ Mobile-first Web-App fuer persoenliche Trainingsprogramme mit Tagesauswahl, gene
 - Supersätze: Übungen im Editor verbinden, im Training abwechselnd ohne Pause
 - Körperwerte: Gewicht und Umfänge mit Verlauf
 - Teilbare Trainings-Karte als Bild nach dem Training
-- Wochen-Duell René vs. Connie mit gemeinsamem Ziel
+- Persönliche Fortschrittsansichten: Muskelaufbau für René, Fit & Straff für Connie; kein Personenvergleich
 - Trainings-Erinnerungen als wiederkehrende Kalendertermine mit Alarm
 
 - Satz-Log: Gewicht und Wiederholungen pro Satz, vorbefuellt mit dem letzten Mal

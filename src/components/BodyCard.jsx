@@ -61,11 +61,11 @@ function BodyForm({ entries, onSave, onClose }) {
   )
 }
 
-export default function BodyCard({ entries = [], ownerName, onSave, onRemove }) {
+export default function BodyCard({ entries = [], ownerName, onSave, onRemove, maintenance = false }) {
   const [open, setOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const available = Object.keys(BODY_FIELDS).filter((k) => entries.some((e) => e[k] > 0))
-  const [field, setField] = useState('weight')
+  const [field, setField] = useState(maintenance ? 'waist' : 'weight')
   const active = available.includes(field) ? field : available[0]
   const f = BODY_FIELDS[active]
   const series = active ? seriesOf(entries, active) : []
@@ -78,12 +78,13 @@ export default function BodyCard({ entries = [], ownerName, onSave, onRemove }) 
     <article className="bodyCard">
       <div className="chartHead bodyHead">
         <div>
-          <h3><Ruler size={17} /> Körperwerte</h3>
+          <h3><Ruler size={17} /> {maintenance ? 'Körperwerte & Wohlbefinden' : 'Körperwerte'}</h3>
           <p>{ownerName}{latest ? ` · zuletzt ${fmtDate(latest.date, { day: 'numeric', month: 'short' })}` : ''}</p>
         </div>
         <button className="ghostBtn" onClick={() => setOpen(true)}><Plus size={16} /> Eintragen</button>
       </div>
 
+      {maintenance && <p className="chartNote">Gewicht und Umfänge sind freiwillig. Beobachte den längerfristigen Verlauf; kurzfristige Schwankungen sind normal. Die Werte messen keinen direkten Muskel- oder Fettanteil.</p>}
       {available.length > 0 ? (
         <>
           {available.length > 1 && (
@@ -120,7 +121,7 @@ export default function BodyCard({ entries = [], ownerName, onSave, onRemove }) 
           )}
         </>
       ) : (
-        <p className="chartNote">Trag Körpergewicht oder Umfänge ein – der Spiegel lügt manchmal, die Kurve nicht.</p>
+        <p className="chartNote">Wenn du möchtest, kannst du Körpergewicht oder Umfänge eintragen und deinen persönlichen Verlauf ansehen.</p>
       )}
 
       {open && (

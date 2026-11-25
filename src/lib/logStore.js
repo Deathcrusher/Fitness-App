@@ -1,6 +1,7 @@
 import { parseSets, timedSeconds } from './plans'
 import { MOVES, moveFor } from './figure/moves'
 import { comebackFor, smartSuggestion } from './training'
+import { isMaintenance } from './fitnessGoals'
 
 /*
  * Satz-Protokoll pro Person und Übung.
@@ -106,8 +107,15 @@ export function isRecord(previous, set) {
 }
 
 /** Steigerungsvorschlag: doppelte Progression plus Gefühl und Comeback nach Pausen */
-export function suggestion(last, range, step, comeback = null) {
+export function suggestion(last, range, step, comeback = null, owner) {
   if (step?.gentle) return null // No automatic progression for this flexible starter program.
+  if (isMaintenance(owner)) {
+    if (!last?.sets?.length) return null
+    if (comeback?.kind === 'restart') return smartSuggestion(last, range, step, comeback)
+    const w = Math.max(0, ...last.sets.map(s => s.w || 0))
+    const r = Math.max(1, Math.min(range[1], Math.max(...last.sets.map(s => s.r || 0))))
+    return { kind: 'hold', w, r, text: w > 0 ? fmtKg(w) + ' halten' : r + ' Wdh. halten', note:'Kraft erhalten, sauber trainieren und bei Bedarf reduzieren. Keine Pflicht zur Steigerung.' }
+  }
   return smartSuggestion(last, range, step, comeback)
 }
 
@@ -122,7 +130,7 @@ export function draftFor({ log, owner, step, setIndex, today, sessionSets }) {
   const prevThisSession = sessionSets?.[setIndex - 1]
   if (prevThisSession) return { w: prevThisSession.w, r: prevThisSession.r, f: prevThisSession.f }
   const last = lastEntry(log, owner, step.name, today)
-  const sug = suggestion(last, range, step, comebackOf(log, owner, step.name, today))
+  const sug = suggestion(last, range, step, comebackOf(log, owner, step.name, today), owner)
   if (sug) return { w: sug.w, r: sug.r }
   if (step?.gentle) return { w: 0, r: range[0] }
   if (last) {
