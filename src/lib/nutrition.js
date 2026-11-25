@@ -25,7 +25,7 @@ export function validMeal(raw) {
 }
 export function validGoals(raw) {
   const kcal=numberValue(raw.kcal), protein=numberValue(raw.protein)
-  if(kcal!==null && (kcal<=0 || kcal>20000) || protein!==null && (protein<=0 || protein>1000)) return null
+  if((String(raw.kcal??'').trim() && kcal===null) || (String(raw.protein??'').trim() && protein===null) || (kcal!==null && (kcal<=0 || kcal>20000)) || (protein!==null && (protein<=0 || protein>1000))) return null
   return {kcal,protein}
 }
 export function dailyMeals(data,owner,date) {
