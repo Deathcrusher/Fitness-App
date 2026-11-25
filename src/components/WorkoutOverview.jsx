@@ -6,6 +6,7 @@ import { prefersVideo } from '../lib/exerciseVideos'
 import { comebackOf, estimateMinutes, isLoggable, lastEntry } from '../lib/logStore'
 import { dateKey } from './ProgressCalendar'
 import { supersetLabel } from '../lib/superset'
+import { goalFor, isMaintenance } from '../lib/fitnessGoals'
 
 function Thumb({ step, imagePerson }) {
   if (prefersVideo(step)) return <span className="ovThumb"><span className="ffDemoThumb"><Play size={22}/></span></span>
@@ -40,14 +41,14 @@ export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps
   const today = dateKey()
   const comebacks = steps.filter(isLoggable).map((s) => comebackOf(log, owner, s.name, today)).filter(Boolean)
   const restart = comebacks.filter((c) => c.kind === 'restart').sort((a, b) => b.gap - a.gap)[0]
-  const ramping = !restart && comebacks.some((c) => c.kind === 'ramp')
+  const ramping = !isMaintenance(owner) && !restart && comebacks.some((c) => c.kind === 'ramp')
 
   return (
     <div className="overview">
       <section className="ovHero">
         <div className="ovHeroTop">
           <span className="ovHeroTag"><Zap size={15} fill="currentColor" /> DEIN WORKOUT</span>
-          <span className="ovHeroTag secondary">{plan.builtin ? 'GANZKÖRPER' : 'DEIN PROGRAMM'}</span>
+          <span className="ovHeroTag secondary">{goalFor(owner,programKey).title}</span>
         </div>
         <div className="ovHeroTitle">
           <p className="ovHeroPre">{plan.name} / {dayIndex + 1 < 10 ? '0' : ''}{dayIndex + 1}</p>
@@ -75,7 +76,7 @@ export default function WorkoutOverview({ programKey, plan, day, dayIndex, steps
           <HeartHandshake size={20} />
           <p>
             <strong>Willkommen zurück!</strong>
-            <span>{restart.gap} Tage Pause erkannt – die Vorschläge starten heute bei ca. {Math.round(restart.factor * 100)} % und steigern sich in den nächsten Einheiten wieder zu deinem alten Niveau.</span>
+            <span>{restart.gap} Tage Pause erkannt – die Vorschläge starten heute bei ca. {Math.round(restart.factor * 100)} %. {isMaintenance(owner) ? 'Trainiere ohne Steigerungsdruck.' : 'Sie steigen in den nächsten Einheiten wieder zu deinem alten Niveau.'}</span>
           </p>
         </div>
       )}

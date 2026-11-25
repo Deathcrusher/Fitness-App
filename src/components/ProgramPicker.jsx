@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { ChevronDown, ChevronUp, Dumbbell, Plus, Sparkles, Check, MoveUpRight, CalendarDays } from 'lucide-react'
 
 import { ENERGY_ID, ENERGY_MODES } from '../lib/energyPlan'
+import { goalFor, isMaintenance } from '../lib/fitnessGoals'
 
 // The program and day selectors only appear on the actual workout screen.
 export default function ProgramPicker({ plan, person, owner, builtinEntries, customEntries, dayIndex, dueDay, onPerson, onNewProgram, onDay, energyMode, onEnergyMode }) {
@@ -21,8 +22,8 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
         <div className="ffPageEyebrow"><span className="ffEyebrowDot" /> FITFLOW / TRAINING STUDIO</div>
         <div className="ffPageTitleRow">
           <div>
-            <h1>Werde <span>stärker.</span></h1>
-            <p>Dein Training. Dein Tempo. Dein Fortschritt.</p>
+            <h1>{person === ENERGY_ID ? 'Finde deine ' : isMaintenance(owner) ? 'Bleib ' : 'Werde '}<span>{person === ENERGY_ID ? 'Balance.' : isMaintenance(owner) ? 'fit.' : 'stärker.'}</span></h1>
+            <p>{goalFor(owner,person).label} · Dein Training. Dein Tempo.</p>
           </div>
           <span className="ffPageCorner" aria-hidden="true"><MoveUpRight size={29} /></span>
         </div>
@@ -45,7 +46,7 @@ export default function ProgramPicker({ plan, person, owner, builtinEntries, cus
           <button type="button" className={`ffProgramOption${plan.builtin ? ' active' : ''}`}
             onClick={() => onPerson(owner)} aria-pressed={Boolean(plan.builtin)}>
             <span className="ffProgramIcon"><Dumbbell size={19} /></span>
-            <span className="ffProgramText"><strong>Grundtraining</strong><small>Dein 3-Tage-Ganzkörperplan</small></span>
+            <span className="ffProgramText"><strong>Grundtraining</strong><small>{isMaintenance(owner) ? 'Fit & Straff · Muskelerhalt & Ausdauer' : 'Muskelaufbau · 3-Tage-Ganzkörperplan'}</small></span>
             {plan.builtin && <Check className="ffProgramCheck" size={19} />}
           </button>
           {energyEntry && <button type="button" className={`ffProgramOption${person === ENERGY_ID ? ' active' : ''}`} onClick={() => onPerson(ENERGY_ID)} aria-pressed={person === ENERGY_ID}>

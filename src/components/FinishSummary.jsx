@@ -4,7 +4,7 @@ import { renderShareCard, shareImage } from '../lib/shareCard'
 import { fmtVolume, humanDuration } from '../lib/storage'
 import BadgeIcon from './BadgeIcon'
 
-export default function FinishSummary({ day, durationMs, volume, completed, total, sets, weekCount, goal, prs, badges = [], name, muscles, onStats, onRestart }) {
+export default function FinishSummary({ day, durationMs, volume, completed, total, sets, weekCount, goal, prs, badges = [], name, muscles, onStats, onRestart, maintenance = false }) {
   const [sharing, setSharing] = useState(null)
 
   async function share() {
@@ -13,7 +13,7 @@ export default function FinishSummary({ day, durationMs, volume, completed, tota
     try {
       const app = document.querySelector('.app')
       const accent = (app && getComputedStyle(app).getPropertyValue('--accent').trim()) || '#2f7667'
-      const blob = await renderShareCard({ name, dayTitle: day.title, dayFocus: day.focus, durationMs, volume, sets, completed, total, prs, muscles, weekCount, goal, accent })
+      const blob = await renderShareCard({ name, dayTitle: day.title, dayFocus: day.focus, durationMs, volume: maintenance ? 0 : volume, sets, completed, total, prs, muscles, weekCount, goal, accent })
       const stamp = new Date().toISOString().slice(0, 10)
       const result = await shareImage(blob, `fitflow-${stamp}.png`, `${day.title} geschafft 💪`)
       setSharing(result === 'downloaded' ? 'Bild gespeichert' : null)
@@ -29,7 +29,7 @@ export default function FinishSummary({ day, durationMs, volume, completed, tota
         <p>{day.title} · {day.focus}</p>
         <div className="summaryGrid">
           <div><Clock3 size={18} /><strong>{humanDuration(durationMs)}</strong><span>Dauer</span></div>
-          {volume > 0
+          {!maintenance && volume > 0
             ? <div><Dumbbell size={18} /><strong>{fmtVolume(volume)}</strong><span>Volumen</span></div>
             : <div><ListChecks size={18} /><strong>{completed}/{total}</strong><span>Übungen</span></div>}
           <div><CheckCircle2 size={18} /><strong>{sets}</strong><span>Sätze</span></div>
